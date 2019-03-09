@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.28307.438
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VMS", "VMS\VMS.csproj", "{F3451163-61D4-40EB-BF97-349855859BDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{B52AA954-5975-4476-A0D1-48A6EBA65BEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackTool", "PackTool\PackTool.csproj", "{B85B00B0-C148-4314-BA97-EC9B736A4F82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{F3451163-61D4-40EB-BF97-349855859BDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3451163-61D4-40EB-BF97-349855859BDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3451163-61D4-40EB-BF97-349855859BDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B52AA954-5975-4476-A0D1-48A6EBA65BEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B52AA954-5975-4476-A0D1-48A6EBA65BEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B52AA954-5975-4476-A0D1-48A6EBA65BEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B52AA954-5975-4476-A0D1-48A6EBA65BEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B85B00B0-C148-4314-BA97-EC9B736A4F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B85B00B0-C148-4314-BA97-EC9B736A4F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B85B00B0-C148-4314-BA97-EC9B736A4F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B85B00B0-C148-4314-BA97-EC9B736A4F82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
