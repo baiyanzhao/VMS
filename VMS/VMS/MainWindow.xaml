@@ -6,7 +6,12 @@
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+    <Grid Name="Panel">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<ListBox Name="UserList"></ListBox>
+		<ListBox Grid.Column="1" Name="GitList"></ListBox>
     </Grid>
 </Window>
