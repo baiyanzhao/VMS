@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:VMS"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
-    </Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Style/ButtonStyle.xaml" />
+				<!--<ResourceDictionary Source="Style/TabControl.xaml" />-->
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
 </Application>

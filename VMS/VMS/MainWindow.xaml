@@ -5,13 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid Name="Panel">
+        Title="MainWindow" Height="720" Width="1280">
+	<Grid Name="Panel">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
-			<ColumnDefinition/>
+			<ColumnDefinition Width="72"/>
 		</Grid.ColumnDefinitions>
-		<ListBox Name="UserList"></ListBox>
-		<ListBox Grid.Column="1" Name="GitList"></ListBox>
-    </Grid>
+
+		<TabControl TabStripPlacement="Left">
+			<TabItem Header="常规">
+				<ListBox Name="UserList" Background="#5078A080"></ListBox>
+			</TabItem>
+			<TabItem Header="定制">
+				<ListBox Grid.Column="1" Name="GitList" Background="#5078A080"></ListBox>
+			</TabItem>
+			
+		</TabControl>
+		<UniformGrid x:Name="TaskBar" Grid.Column="2" Columns="1" Rows="5">
+			<UniformGrid.Background>
+				<LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+					<GradientStop Color="#FF7896B9" />
+					<GradientStop Color="#FFD4E1EC" Offset="0.03" />
+				</LinearGradientBrush>
+			</UniformGrid.Background>
+
+			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Button_Click">
+				<DockPanel>
+					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="上传"/>
+					<Line Fill="Black" Stroke="#FFE62D2D" />
+					<Image Margin="4,2" Source="Images/Files.png" Stretch="Uniform"/>
+				</DockPanel>
+			</Button>
+			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" >
+				<DockPanel>
+					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="设置"/>
+					<Image Margin="4,2" Source="Images/Set.png" Stretch="Uniform"/>
+				</DockPanel>
+			</Button>
+			</UniformGrid>
+	</Grid>
 </Window>

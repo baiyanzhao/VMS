@@ -1,0 +1,25 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Style x:Key="ListBoxItemStyle" TargetType="ListBoxItem">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="ListBoxItem">
+					<Grid>
+						<Rectangle x:Name="BackgroundGradient" StrokeThickness="0" Margin="0"/>
+						<Rectangle x:Name="Background" Fill="{TemplateBinding Background}" />
+						<ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+					</Grid>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="BackgroundGradient" Property="Fill" Value="AliceBlue"/>
+						</Trigger>
+						<Trigger Property="IsSelected" Value="True">
+							<Setter Property="Foreground" Value="AliceBlue"/>
+							<Setter TargetName="BackgroundGradient" Property="Fill" Value="#CA465A96"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+</ResourceDictionary>
