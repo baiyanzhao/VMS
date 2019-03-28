@@ -6,7 +6,22 @@
         xmlns:local="clr-namespace:PackTool"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+	<Grid>
+		<DockPanel HorizontalAlignment="Left" Height="190" LastChildFill="False" Margin="86,53,0,0" VerticalAlignment="Top" Width="604">
+			<Button Content="Button" Height="190" VerticalAlignment="Top" Width="75"/>
+			<Image Height="190" VerticalAlignment="Top" Width="100"/>
+			<Label DockPanel.Dock="Right" Content="Label" Height="190" VerticalAlignment="Top"/>
+			<ListBox Height="190" VerticalAlignment="Top" Width="100"/>
+		</DockPanel>
+		<Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="100" Margin="187,314,0,0" VerticalAlignment="Top" Width="100"/>
+		<ListView Height="190" VerticalAlignment="Top" Margin="329,204,102,0">
+			<ListView.View>
+				<GridView>
+					<GridViewColumn/>
+					<GridViewColumn/>
+				</GridView>
+			</ListView.View>
+		</ListView>
+
+	</Grid>
 </Window>

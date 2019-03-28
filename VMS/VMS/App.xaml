@@ -7,7 +7,7 @@
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="Style/ButtonStyle.xaml" />
-				<!--<ResourceDictionary Source="Style/TabControl.xaml" />-->
+				<ResourceDictionary Source="Style/TabControl.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</Application.Resources>
