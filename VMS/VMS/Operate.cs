@@ -29,13 +29,23 @@ namespace VMS
 						return;
 				}
 
-				Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + name + ":refs/heads/" + name }, null, null);
-				Commands.Checkout(repo, name, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
-
-				var prj = Directory.GetFiles(repoPath, "*.sln", SearchOption.AllDirectories);
-				if(prj.Length > 0)
+				try
 				{
-					Process.Start(Path.GetDirectoryName( prj[0]));
+					Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + name + ":refs/heads/" + name }, null, null);
+				}
+				catch(Exception x)
+				{
+					if(MessageBox.Show(x.Message + "\n是否继续?", "数据更新失败!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+						return;
+				}
+
+				try
+				{
+					Commands.Checkout(repo, name, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
+				}
+				catch(Exception x)
+				{
+					MessageBox.Show(x.Message, "版本数据不存在!");
 				}
 			}
 		}

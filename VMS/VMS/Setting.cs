@@ -11,5 +11,6 @@ namespace VMS
 		public string User;
 		public string RepoUrl;
 		public string LoaclRepoPath;
+		public string CompareToolPath;
 	}
 }

@@ -5,25 +5,21 @@
 
 	<Style x:Key="ImageButton" TargetType="{x:Type Button}">
 		<Setter Property="Margin" Value="2,0"/>
+		<Setter Property="FontSize" Value="14"/>
+		<Setter Property="Foreground" Value="Black"/>
 		<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type Button}">
-					<Border x:Name="Face" CornerRadius="5" BorderBrush="#FFA0A0A0" BorderThickness="1">
-						<Border.Background>
-							<LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
-								<GradientStop Color="#24FFFFFF" Offset="0" />
-								<GradientStop Color="#64FFFFFF" Offset="0.618" />
-								<GradientStop Color="#24FFFFFF" Offset="1" />
-							</LinearGradientBrush>
-						</Border.Background>
-						<Border>
-							<ContentPresenter Content="{TemplateBinding Content}"/>
-						</Border>
+					<Border x:Name="Face" CornerRadius="5" BorderBrush="#FFA0A0A0" BorderThickness="0">
+						<ContentPresenter Content="{TemplateBinding Content}"/>
 					</Border>
 
 					<ControlTemplate.Triggers>
 						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="Face" Property="BorderThickness" Value="1"/>
+						</Trigger>
+						<Trigger Property="IsPressed" Value="True">
 							<Setter TargetName="Face" Property="Background">
 								<Setter.Value>
 									<LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
@@ -31,15 +27,6 @@
 										<GradientStop Color="LightSteelBlue" Offset="0.618" />
 										<GradientStop Color="#36FFFFFF" Offset="1" />
 									</LinearGradientBrush>
-								</Setter.Value>
-							</Setter>
-						</Trigger>
-						<Trigger Property="IsPressed" Value="True">
-							<Setter Property="RenderTransform">
-								<Setter.Value>
-									<TransformGroup>
-										<TranslateTransform X="1" Y="1"/>
-									</TransformGroup>
 								</Setter.Value>
 							</Setter>
 						</Trigger>
