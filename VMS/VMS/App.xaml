@@ -3,8 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:VMS"
              StartupUri="View/MainWindow.xaml">
-    <Application.Resources>
+	<Application.Resources>
 		<ResourceDictionary>
+			<local:EmptyStringConvert x:Key="EmptyStringConvert"/>
+			
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="Style/ButtonStyle.xaml" />
 				<ResourceDictionary Source="Style/TabControl.xaml" />

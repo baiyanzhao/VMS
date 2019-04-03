@@ -22,6 +22,17 @@ namespace VMS
 		public SettingWindow()
 		{
 			InitializeComponent();
+			Closing += (s, e) =>
+			{
+				foreach(var item in TopPannel.Children.OfType<TextBox>())
+				{
+					if(string.IsNullOrWhiteSpace(item.Text))
+					{
+						e.Cancel = true;
+						return;
+					}
+				}
+			};
 		}
 	}
 }

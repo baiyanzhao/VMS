@@ -5,8 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
-        Title="WindowSetting" Height="300" Width="400">
-    <Grid>
-        
-    </Grid>
+        Title="设置" Height="240" Width="560" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" FontSize="14" ShowInTaskbar="False">
+	<Window.Resources>
+		<Style TargetType="TextBox">
+			<Style.Triggers>
+				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Text, Converter= {StaticResource EmptyStringConvert}}" Value="False">
+					<Setter Property="Background">
+						<Setter.Value>
+							<VisualBrush AlignmentX="Left" AlignmentY="Top" Stretch="None">
+								<VisualBrush.Visual>
+									<TextBlock Padding="5,2" Background="Transparent" Foreground="Silver">[必填]</TextBlock>
+								</VisualBrush.Visual>
+							</VisualBrush>
+						</Setter.Value>
+					</Setter>
+				</DataTrigger>
+			</Style.Triggers>
+		</Style>
+	</Window.Resources>
+	<Grid Name="TopPannel">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition/>
+			<RowDefinition/>
+			<RowDefinition/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<TextBlock Text="用户名" Grid.Row="0" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="版本库URL" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="存储位置" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="差异查看器" Grid.Row="3" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+		<TextBox Name="User" Text="{Binding User}" Grid.Row="0" Grid.Column="1" MaxLength="16" Margin="5,0,2,0" VerticalAlignment="Center"/>
+		<TextBox Name="RepoUrl" Text="{Binding RepoUrl}" Grid.Row="1" Grid.Column="1" Margin="5,0,2,0" VerticalAlignment="Center"/>
+		<TextBox Name="LoaclRepoPath" Text="{Binding LoaclRepoPath}" Grid.Row="2" Grid.Column="1" Margin="5,0,2,0" VerticalAlignment="Center"/>
+		<TextBox Name="CompareToolPath" Text="{Binding CompareToolPath}" Grid.Row="3" Grid.Column="1" Margin="5,0,2,0" VerticalAlignment="Center"/>
+	</Grid>
 </Window>

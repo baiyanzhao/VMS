@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VMS"
-        mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600">
+        mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded">
 	<Window.Resources>
 	</Window.Resources>
 	<Grid Name="Panel" Background="#5078A080">
@@ -15,15 +15,15 @@
 
 		<ProgressBar Name="GitProgress" Margin="0,5,2,0" Width="360" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="SteelBlue" />
 
-		<TabControl TabStripPlacement="Top" FontSize="24">
+		<TabControl Name="TopTab" TabStripPlacement="Top" FontSize="24">
 			<TabItem Header="当前版本">
 				<ListBox Background="#3278A080"></ListBox>
 			</TabItem>
 			<TabItem Header="常规">
-				<ListBox Name="UserList" Background="#3278A080"></ListBox>
+				<ListBox Name="General" Background="#3278A080"></ListBox>
 			</TabItem>
 			<TabItem Header="定制">
-				<ListBox Name="GitList" Background="#3278A080">
+				<ListBox Name="Special" Background="#3278A080">
 					<ListBox.GroupStyle>
 						<GroupStyle/>
 					</ListBox.GroupStyle>

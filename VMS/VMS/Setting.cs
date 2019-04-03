@@ -8,9 +8,9 @@ namespace VMS
 {
 	public class Setting
 	{
-		public string User;
-		public string RepoUrl;
-		public string LoaclRepoPath;
-		public string CompareToolPath;
+		public string User { get; set; }
+		public string RepoUrl { get; set; }
+		public string LoaclRepoPath { get; set; }
+		public string CompareToolPath { get; set; }
 	}
 }

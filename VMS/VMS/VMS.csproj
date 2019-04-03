@@ -23,16 +23,20 @@
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateMode>Background</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
+    <UpdateInterval>1</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>true</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
+    <SupportUrl>http://192.168.1.49/VMS/</SupportUrl>
+    <ProductName>版本管理</ProductName>
+    <PublisherName>Ainuo</PublisherName>
+    <SuiteName>VMS</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.htm</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>23</ApplicationRevision>
+    <ApplicationRevision>24</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -111,6 +115,9 @@
     <Compile Include="View\CommitWindow.xaml.cs">
       <DependentUpon>CommitWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ProgressWindow.xaml.cs">
+      <DependentUpon>ProgressWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
@@ -143,6 +150,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\ProgressWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="View\SettingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -172,31 +183,18 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="LibGit2Sharp.xml">
+    <Content Include="LibGit2Sharp.xml">
       <SubType>Designer</SubType>
-    </None>
-    <Content Include="Images\Checkout.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Package.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\Set.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\Add.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\Upload.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Images\Checkout.png" />
+    <Resource Include="Images\Package.png" />
+    <Resource Include="Images\Set.png" />
+    <Resource Include="Images\Add.png" />
+    <Resource Include="Images\Upload.png" />
     <Resource Include="Images\VisualStudio.png" />
-    <Content Include="Images\Write.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\Files.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Images\Write.png" />
+    <Resource Include="Images\Files.png" />
     <Content Include="Sys\Preset.json" />
     <None Include="VMS_TemporaryKey.pfx" />
   </ItemGroup>
