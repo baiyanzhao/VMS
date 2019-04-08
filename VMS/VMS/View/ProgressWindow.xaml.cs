@@ -36,7 +36,7 @@ namespace VMS
 				}
 				catch(System.Exception x)
 				{
-					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(x.StackTrace, x.Message); });
+					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.StackTrace, x.Message); });
 				}
 			};
 
@@ -48,7 +48,7 @@ namespace VMS
 				}
 				catch(System.Exception x)
 				{
-					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(x.StackTrace, x.Message); });
+					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.StackTrace, x.Message); });
 				}
 				finally
 				{

@@ -26,17 +26,18 @@
     <UpdateInterval>1</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>true</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
+    <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
     <SupportUrl>http://192.168.1.49/VMS/</SupportUrl>
     <ProductName>版本管理</ProductName>
     <PublisherName>Ainuo</PublisherName>
     <SuiteName>VMS</SuiteName>
+    <MinimumRequiredVersion>1.0.0.26</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.htm</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>24</ApplicationRevision>
+    <ApplicationRevision>32</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -91,6 +92,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -110,8 +112,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Converter.cs" />
-    <Compile Include="Setting.cs" />
+    <Compile Include="Data\BranchInfo.cs" />
+    <Compile Include="Data\CommitInfo.cs" />
+    <Compile Include="Data\Global.cs" />
+    <Compile Include="Data\StatusEntryInfo.cs" />
+    <Compile Include="Data\Converter.cs" />
+    <Compile Include="Data\Setting.cs" />
+    <Compile Include="Data\TagInfo.cs" />
     <Compile Include="View\CommitWindow.xaml.cs">
       <DependentUpon>CommitWindow.xaml</DependentUpon>
     </Compile>
@@ -178,15 +185,20 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Content Include="Package\Default.SFX">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Package\sfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Content Include="LibGit2Sharp.xml">
+    <None Include="LibGit2Sharp.xml">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <Resource Include="Images\Checkout.png" />
     <Resource Include="Images\Package.png" />
     <Resource Include="Images\Set.png" />
@@ -195,7 +207,16 @@
     <Resource Include="Images\VisualStudio.png" />
     <Resource Include="Images\Write.png" />
     <Resource Include="Images\Files.png" />
-    <Content Include="Sys\Preset.json" />
+    <Content Include="Package\msi.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Package\WinRAR.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sys\Preset.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sys\Setting.json" />
     <None Include="VMS_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -218,6 +239,17 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <PublishFile Include="Sys\Setting.json">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>DataFile</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

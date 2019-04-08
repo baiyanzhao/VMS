@@ -1,23 +1,19 @@
 ﻿using LibGit2Sharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-//using System.Windows.Shapes;
-using System.Web.Script.Serialization;
-using System.IO;
-using System.Diagnostics;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
+using System.Deployment.Application;
+using VMS.Data;
 
 namespace VMS
 {
@@ -26,13 +22,12 @@ namespace VMS
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		static Setting _setting;
-		const string FILE_SETTING = ".\\Setting.json";
+		static ICollection<TagInfo> _tagInfos = new Collection<TagInfo>(); //Tag信息
+		static ICollection<BranchInfo> _branchInfos = new Collection<BranchInfo>(); //分支信息
 
 		public MainWindow()
 		{
 			InitializeComponent();
-			Title = "源程序版本管理系统 v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 		}
 
 		~MainWindow()
@@ -51,116 +46,85 @@ namespace VMS
 
 		private void Init()
 		{
-			try
+			if(Global.Setting.User == null)
 			{
-				_setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
-			}
-			catch(Exception)
-			{ }
-
-			if(_setting == null)
-			{
-				_setting = new Setting
-				{
-					RepoUrl = @"http://admin:admin@192.168.1.49:2507/r/Test.git",
-					LoaclRepoPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\",
-					CompareToolPath = @"D:\Program Files\Beyond Compare 4\BCompare.exe"
-				};
 				Dispatcher.Invoke(delegate { ShowSetWindow(); });
 			}
 
-			if(!Directory.Exists(_setting.LoaclRepoPath))
-			{
-				Repository.Clone(_setting.RepoUrl, _setting.LoaclRepoPath);
-			}
+			UpdateRepoData();
+			Directory.CreateDirectory(Global.Setting.PackageFolder);
+		}
 
+		/// <summary>
+		/// 更新仓库数据
+		/// </summary>
+		private void UpdateRepoData()
+		{
 			try
 			{
-				using(var repo = new Repository(_setting.LoaclRepoPath))
+				//更新仓库
+				if(Repository.Discover(Global.Setting.LoaclRepoPath) == null)
+				{
+					Repository.Clone(Global._preset.RepoUrl, Global.Setting.LoaclRepoPath);
+				}
+
+				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 				{
 					Commands.Fetch(repo, "origin", new string[0], null, null);
+
+					_tagInfos.Clear();
+					foreach(var tag in repo.Tags)
+					{
+						if(!(tag.Target is Commit commit))
+							continue;
+
+						var name = tag.FriendlyName;
+						if(!System.Version.TryParse(name, out System.Version version))
+							continue;
+
+						_tagInfos.Add(new TagInfo { Version = name, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+					}
+
+					_branchInfos.Clear();
+					foreach(var branch in repo.Branches.Where(p => p.IsRemote))
+					{
+						var commit = branch.Tip;
+						var name = branch.FriendlyName.Split('/').Last();
+						if(commit == null || !System.Version.TryParse(name, out System.Version version))
+							continue;
+
+						_branchInfos.Add(new BranchInfo { Sha = commit.Sha, Version = name, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+					}
 				}
 			}
 			catch(Exception x)
 			{
 				Dispatcher.Invoke(delegate { MessageBox.Show(this, x.Message, "同步失败!"); });
 			}
-			
 		}
 
-		private void InitCompleted()
+		private void UpdateView()
 		{
-			using(var repo = new Repository(_setting.LoaclRepoPath))
+			General.DataContext = null;
+			Special.DataContext = null;
+			General.DataContext = _tagInfos;
+			Special.DataContext = _branchInfos;
+
+			//标题栏
+			StringBuilder title = new StringBuilder("源程序版本管理系统 v");
+			title.Append(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+			title.Append("    当前分支:");
+			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
-				foreach(var tag in repo.Tags)
-				{
-					var name = tag.FriendlyName;
-					if(System.Version.TryParse(name, out System.Version version))
-					{
-						General.Items.Add(CreateButtonItem(name, tag.Target.Sha));
-					}
-				}
-
-				foreach(var branch in repo.Branches.Where(p => p.IsRemote))
-				{
-					var name = branch.FriendlyName.Split('/').Last();
-					if(System.Version.TryParse(name, out System.Version version))
-					{
-						Special.Items.Add(CreateButtonItem(name, name));
-					}
-				}
-
-				//repo.Tags.Add(;
-
-				//repo.Branches.Add
-
-				//repo.Network.Push();
-				Special.Items.Add("Commit:");
-				Special.Items.Add(repo.Head.FriendlyName);
-				var cmt = repo.Head.Tip;
-				Special.Items.Add(cmt.Committer.Name);
-
-
-				// Object lookup
-				//var obj = repo.Lookup("sha");
-				//var commit = repo.Lookup<Commit>("sha");
-				//var tree = repo.Lookup<Tree>("sha");
-				//var tag = repo.Lookup<Tag>("sha");
-
-				//// Rev walking
-				//foreach(var c in repo.Commits.Walk("sha")) { }
-				//var commits = repo.Commits.StartingAt("sha").Where(c => c).ToList();
-				//var sortedCommits = repo.Commits.StartingAt("sha").SortBy(SortMode.Topo).ToList();
-
-				//// Refs
-				//var reference = repo.Refs["refs/heads/master"];
-				//var allRefs = repo.Refs.ToList();
-				//foreach(var c in repo.Refs["HEAD"].Commits) { }
-				//foreach(var c in repo.Head.Commits) { }
-				//var headCommit = repo.Head.Commits.First();
-				//var allCommits = repo.Refs["HEAD"].Commits.ToList();
-				//var newRef = repo.Refs.CreateFrom(reference);
-				//var anotherNewRef = repo.Refs.CreateFrom("sha");
-
-				//// Branches
-				//// special kind of reference
-				//var allBranches = repo.Branches.ToList();
-				//var branch = repo.Branches["master"];
-				//var remoteBranch = repo.Branches["origin/master"];
-				//var localBranches = repo.Branches.Where(p => p.Type == BranchType.Local).ToList();
-				//var remoteBranches = repo.Branches.Where(p => p.Type == BranchType.Remote).ToList();
-				//var newBranch = repo.Branches.CreateFrom("sha");
-				//var anotherNewBranch = repo.Branches.CreateFrom(newBranch);
-				//repo.Branches.Delete(anotherNewBranch);
-
-				//// Tags
-				//// really another special kind of reference
-				//var aTag = repo.Tags["refs/tags/v1.0"];
-				//var allTags = repo.Tags.ToList();
-				//var newTag = repo.Tags.CreateFrom("sha");
-				//var newTag2 = repo.Tags.CreateFrom(commit);
-				//var newTag3 = repo.Tags.CreateFrom(reference);
+				var cmt = repo.Head.Tip as Commit;
+				var name = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(cmt.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
+				title.Append(name);
+				title.Append(" ");
+				title.Append(cmt.Author.Name);
+				title.Append(" ");
+				title.Append(cmt.Author.When.ToString("yyyy-MM-dd HH:mm"));
 			}
+			Title = title.ToString();
 		}
 
 		ListBoxItem CreateButtonItem(string name, string committishOrBranchSpec)
@@ -182,7 +146,6 @@ namespace VMS
 			return item;
 		}
 
-
 		void CreateBranch(Repository repo, Tag tag)
 		{
 			var name = tag.FriendlyName + "-Auto";
@@ -193,37 +156,25 @@ namespace VMS
 		}
 
 		/// <summary>
-		/// 签出版本
-		/// </summary>
-		/// <param name="committishOrBranchSpec"></param>
-		private void Checkout(string committishOrBranchSpec)
-		{
-			if(Operate.Checkout(_setting.LoaclRepoPath, committishOrBranchSpec))
-			{
-				UpdateBranchInfo();
-			}
-		}
-
-		/// <summary>
 		/// 提交新版本
 		/// </summary>
 		/// <returns>提交成功, true: 否则,false</returns>
 		private bool Commit()
 		{
-			using(var repo = new Repository(_setting.LoaclRepoPath))
+			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var entries = repo.RetrieveStatus();
 				if(!entries.IsDirty || !repo.Head.IsTracking)
 					return true;
 
 				List<string> verFiles = new List<string>(); //AssemblyInfo文件的相对路径
-				var allProperties = Directory.GetDirectories(_setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories);	//版本配置文件所在目录的相对路径
+				var allProperties = Directory.GetDirectories(Global.Setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories); //版本配置文件所在目录的相对路径
 				for(int i = 0; i < allProperties.Length; i++)
 				{
-					allProperties[i] = System.IO.Path.GetDirectoryName(allProperties[i]).Substring(_setting.LoaclRepoPath.Length).Replace('\\', '/');
+					allProperties[i] = Path.GetDirectoryName(allProperties[i]).Substring(Global.Setting.LoaclRepoPath.Length).Replace('\\', '/');
 				}
 
-				var infos = new ObservableCollection<CommitInfo>();	//文件信息
+				var infos = new ObservableCollection<StatusEntryInfo>(); //文件信息
 				var commitWindow = new CommitWindow() { Owner = this };
 				commitWindow.BranchName.Text = repo.Head.FriendlyName;
 				foreach(var item in entries)
@@ -235,7 +186,7 @@ namespace VMS
 					case FileStatus.TypeChangeInWorkdir:
 					case FileStatus.RenamedInWorkdir:
 						repo.Index.Add(item.FilePath);
-						infos.Add(new CommitInfo() { FilePath = item.FilePath, State = item.State.ToString().Remove(1) });
+						infos.Add(new StatusEntryInfo() { FilePath = item.FilePath, State = item.State.ToString().Remove(1) });
 						foreach(var path in allProperties)
 						{
 							if(item.FilePath.Contains(path))
@@ -251,7 +202,7 @@ namespace VMS
 
 					case FileStatus.DeletedFromWorkdir:
 						repo.Index.Remove(item.FilePath);
-						infos.Add(new CommitInfo() { FilePath = item.FilePath, State = item.State.ToString().Remove(1) });
+						infos.Add(new StatusEntryInfo() { FilePath = item.FilePath, State = item.State.ToString().Remove(1) });
 						break;
 
 					default:
@@ -267,7 +218,7 @@ namespace VMS
 				var cmtText = new StringBuilder();
 				foreach(var item in verFiles)
 				{
-					if(AddVersion(_setting.LoaclRepoPath + item, out string ver))
+					if(AddVersion(Path.Combine(Global.Setting.LoaclRepoPath, item), out string ver))
 					{
 						cmtText.Append(item.Split('/')[0]);
 						cmtText.Append(' ');
@@ -283,10 +234,11 @@ namespace VMS
 				ProgressWindow.Show(this, delegate
 				{
 					repo.Index.Write();
-					var sign = new Signature(_setting.User, Environment.MachineName, DateTime.Now);
+					var sign = new Signature(Global.Setting.User, Environment.MachineName, DateTime.Now);
 					repo.Commit(cmtText.ToString(), sign, sign);
 					repo.Network.Push(repo.Head);
-				});
+					UpdateRepoData();
+				}, UpdateView);
 			}
 			return true;
 		}
@@ -335,20 +287,46 @@ namespace VMS
 		private void ShowSetWindow()
 		{
 			var setWindow = new SettingWindow() { Owner = this };
-			setWindow.TopPannel.DataContext = _setting;
+			setWindow.TopPannel.DataContext = Global.Setting;
 			setWindow.ShowDialog();
-			_setting.LoaclRepoPath = _setting.LoaclRepoPath.Last() == '\\' ? _setting.LoaclRepoPath : _setting.LoaclRepoPath + "\\";
-			File.WriteAllText(FILE_SETTING, new JavaScriptSerializer().Serialize(_setting));
+			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
+			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
+		}
+
+		/// <summary>
+		/// 签出版本
+		/// </summary>
+		/// <param name="committishOrBranchSpec"></param>
+		public static void Checkout(string committishOrBranchSpec)
+		{
+			if(Operate.Checkout(Global.Setting.LoaclRepoPath, committishOrBranchSpec))
+			{
+				//当前导出项为分支时,配置上游分支
+				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+				{
+					try
+					{
+						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
+					}
+					catch
+					{ }
+				}
+
+				if(Application.Current.MainWindow is MainWindow window)
+				{
+					ProgressWindow.Show(window, window.UpdateRepoData, window.UpdateView);
+				}
+			}
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			ProgressWindow.Show(this, Init, InitCompleted);
+			ProgressWindow.Show(this, Init, UpdateView);
 		}
 
 		private void Open_Click(object sender, RoutedEventArgs e)
 		{
-			var prj = Directory.GetFiles(_setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories);
+			var prj = Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories);
 			if(prj.Length > 0)
 			{
 				Process.Start(prj[0]);
@@ -362,90 +340,46 @@ namespace VMS
 
 		private void Package_Click(object sender, RoutedEventArgs e)
 		{
-			ProgressWindow.Show(this, delegate 
+			ProgressWindow.Show(this, delegate
 			{
-				foreach(var item in Directory.GetFiles(_setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
-					var p = new Process
+					Process.Start(new ProcessStartInfo
 					{
-						StartInfo = new ProcessStartInfo
-						{
-							FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
-							Arguments = "/t:publish /p:Configuration=Release /noconsolelogger \"" + item + "\"",
-							CreateNoWindow = true,
-							WindowStyle = ProcessWindowStyle.Hidden
-						}
-					};
-					p.Start();
-					p.WaitForExit();
+						FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
+						Arguments = "/t:publish /p:Configuration=Release /noconsolelogger \"" + item + "\"",
+						UseShellExecute = false,
+						CreateNoWindow = true,
+						WindowStyle = ProcessWindowStyle.Hidden
+
+					}).WaitForExit();
 				}
+
+				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
+				{
+					var dir = Path.GetDirectoryName(item);
+					var app = Directory.GetFiles(dir, "*.application");
+					if(app.Length <= 0)
+						continue;
+
+					var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
+					Process.Start(new ProcessStartInfo
+					{
+						FileName = Path.Combine(rarPath, "WinRAR.exe"),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]))),
+						WorkingDirectory = dir,
+						UseShellExecute = false,
+						CreateNoWindow = true,
+						WindowStyle = ProcessWindowStyle.Hidden
+					}).WaitForExit();
+				}
+				Process.Start(Global.Setting.PackageFolder);
 			});
-
-
 		}
 
 		private void Set_Click(object sender, RoutedEventArgs e)
 		{
 			ShowSetWindow();
-		}
-
-		/// <summary>
-		/// Git提交信息
-		/// </summary>
-		class CommitInfo
-		{
-			public string FilePath { get; set; }
-			public string State { get; set; }
-			public ICommand Diff
-			{
-				get
-				{
-					if(_diff == null)
-					{
-						_diff = new DiffCommand();
-					}
-					return _diff;
-				}
-			}
-
-			private ICommand _diff;
-			class DiffCommand : ICommand
-			{
-				public event EventHandler CanExecuteChanged;
-				public bool CanExecute(object parameter)
-				{
-					return true;
-				}
-
-				public void Execute(object parameter)
-				{
-					using(var repo = new Repository(_setting.LoaclRepoPath))
-					{
-						var info = parameter as CommitInfo;
-						var tree = repo.Index.WriteToTree();
-						var blob = tree[info.FilePath]?.Target as Blob;
-						if(info == null || blob == null)
-							return;
-
-						try
-						{
-							var filePath = Path.GetTempFileName();
-							File.WriteAllText(filePath, blob.GetContentText());
-							File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
-							Process.Start(_setting.CompareToolPath, " \"" + filePath + "\" \"" + _setting.LoaclRepoPath + info.FilePath + "\"");
-						}
-						catch(Exception x)
-						{
-							MessageBox.Show(x.Message);
-						}
-					}
-				}
-
-				public void RaiseCanExecuteChanged()
-				{
-					CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-				}
-			}
 		}
 	}
 }
