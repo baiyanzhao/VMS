@@ -39,9 +39,9 @@
 		<TextBlock Text="安装包路径" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="差异查看器" Grid.Row="3" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 
-		<TextBox Text="{Binding User}" Foreground="DarkBlue" Grid.Row="0" Grid.Column="1" MaxLength="16" Margin="5,0,2,0" VerticalAlignment="Center"/>
-		<TextBox Text="{Binding LoaclRepoPath}" Foreground="Gray" Grid.Row="1" Grid.Column="1" Margin="5,0,2,0" VerticalAlignment="Center"/>
-		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0,2,0" VerticalAlignment="Center"/>
-		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0,2,0" VerticalAlignment="Center"/>
+		<TextBox Text="{Binding User}" Foreground="DarkBlue" Grid.Row="0" Grid.Column="1" MaxLength="16" Margin="5,0" VerticalAlignment="Center"/>
+		<TextBox Text="{Binding LoaclRepoPath}" Foreground="Gray" Grid.Row="1" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
+		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
+		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 	</Grid>
 </Window>

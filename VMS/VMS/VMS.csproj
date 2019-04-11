@@ -54,6 +54,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -112,13 +113,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Data\BranchInfo.cs" />
-    <Compile Include="Data\CommitInfo.cs" />
-    <Compile Include="Data\Global.cs" />
-    <Compile Include="Data\StatusEntryInfo.cs" />
-    <Compile Include="Data\Converter.cs" />
-    <Compile Include="Data\Setting.cs" />
-    <Compile Include="Data\TagInfo.cs" />
+    <Compile Include="Model\BranchInfo.cs" />
+    <Compile Include="Model\CommitInfo.cs" />
+    <Compile Include="Model\Global.cs" />
+    <Compile Include="Model\StatusEntryInfo.cs" />
+    <Compile Include="Model\Converter.cs" />
+    <Compile Include="Model\Setting.cs" />
+    <Compile Include="Model\TagInfo.cs" />
+    <Compile Include="ViewModel\BranchListView.cs" />
+    <Compile Include="ViewModel\MainView.cs" />
     <Compile Include="View\CommitWindow.xaml.cs">
       <DependentUpon>CommitWindow.xaml</DependentUpon>
     </Compile>
@@ -251,5 +254,6 @@
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -3,117 +3,103 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:VMS"
+        xmlns:local="clr-namespace:VMS.ViewModel"
         mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded">
+	<!--<Window.DataContext>
+		<local:MainView/>
+	</Window.DataContext>-->
 	<Window.Resources>
+
 	</Window.Resources>
-	<Grid Name="Panel" Background="#5078A080">
+	<Grid Name="Panel" Background="AliceBlue">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
 			<ColumnDefinition Width="72"/>
 		</Grid.ColumnDefinitions>
 
-		<ProgressBar Name="GitProgress" Margin="0,5,2,0" Width="360" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="SteelBlue" />
+		<TextBlock Name="Message" Margin="64,12,5,0" Foreground="DarkBlue" HorizontalAlignment="Right" VerticalAlignment="Top"  />
 
-		<TabControl Name="TopTab" TabStripPlacement="Top" FontSize="24">
-			<TabItem Header="当前版本">
-				<ListBox Background="#3278A080"></ListBox>
-			</TabItem>
-			<TabItem Header="常规">
-				<DataGrid Name="General" Margin="5" Grid.Row="1" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" >
-					<DataGrid.CellStyle>
-						<Style TargetType="{x:Type DataGridCell}">
-							<Setter Property="Focusable" Value="False"/>
-							<Setter Property="Background" Value="{x:Null}"/>
-							<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+		<DataGrid Name="BranchInfoGrid" Margin="2" Grid.Row="1" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" >
+			<DataGrid.GroupStyle>
+				<!-- Style for groups at top level. -->
+				<GroupStyle>
+					<GroupStyle.ContainerStyle>
+						<Style TargetType="{x:Type GroupItem}">
+							<Setter Property="Margin" Value="0,0,0,5"/>
 							<Setter Property="Template">
 								<Setter.Value>
-									<ControlTemplate TargetType="{x:Type DataGridCell}">
-										<ContentPresenter Margin="1,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+									<ControlTemplate TargetType="{x:Type GroupItem}">
+										<Expander IsExpanded="True" Background="#FF112255" BorderBrush="#FF002255" Foreground="#FFEEEEEE" BorderThickness="1,1,1,5">
+											<Expander.Header>
+												<DockPanel>
+													<TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0" Width="360"/>
+													<Button Margin="64,0,0,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="切换到此版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+														<Button.Content>
+															<Image Source="/VMS;component/Images/Checkout.png"/>
+														</Button.Content>
+													</Button>
+													<Button Margin="12,0,0,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="基于此版本新建" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+														<Button.Content>
+															<Image Source="/VMS;component/Images/Add.png"/>
+														</Button.Content>
+													</Button>
+												</DockPanel>
+											</Expander.Header>
+											<Expander.Content>
+												<ItemsPresenter />
+											</Expander.Content>
+										</Expander>
 									</ControlTemplate>
 								</Setter.Value>
 							</Setter>
 						</Style>
-					</DataGrid.CellStyle>
-					<DataGrid.Columns>
-						<DataGridTextColumn Width="Auto" Binding="{Binding Version}"/>
-						<DataGridTextColumn Width="Auto" Binding="{Binding Author}" FontSize="16"/>
-						<DataGridTextColumn Width="Auto" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" FontSize="16"/>
-						<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="14"/>
-						<DataGridTemplateColumn Width="36">
-							<DataGridTemplateColumn.CellTemplate>
-								<DataTemplate>
-									<Button Background="{x:Null}" ToolTip="切换到此版本" Focusable="False" Command="{Binding Checkout}" CommandParameter="{Binding}">
-										<Button.Content>
-											<Image Source="/VMS;component/Images/Checkout.png"/>
-										</Button.Content>
-									</Button>
-								</DataTemplate>
-							</DataGridTemplateColumn.CellTemplate>
-						</DataGridTemplateColumn>
-						<DataGridTemplateColumn Width="36">
-							<DataGridTemplateColumn.CellTemplate>
-								<DataTemplate>
-									<Button Background="{x:Null}" ToolTip="基于此版本新建" Focusable="False" Command="{Binding Add}" CommandParameter="{Binding}">
-										<Button.Content>
-											<Image Source="/VMS;component/Images/Add.png"/>
-										</Button.Content>
-									</Button>
-								</DataTemplate>
-							</DataGridTemplateColumn.CellTemplate>
-						</DataGridTemplateColumn>
-					</DataGrid.Columns>
-				</DataGrid>
-			</TabItem>
-			<TabItem Header="定制">
-				<DataGrid Name="Special" Margin="5" Grid.Row="1" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" >
-					<DataGrid.CellStyle>
-						<Style TargetType="{x:Type DataGridCell}">
-							<Setter Property="Focusable" Value="False"/>
-							<Setter Property="Background" Value="{x:Null}"/>
-							<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-							<Setter Property="Template">
-								<Setter.Value>
-									<ControlTemplate TargetType="{x:Type DataGridCell}">
-										<ContentPresenter Margin="1,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-									</ControlTemplate>
-								</Setter.Value>
-							</Setter>
-						</Style>
-					</DataGrid.CellStyle>
-					<DataGrid.Columns>
-						<DataGridTextColumn Width="Auto" Binding="{Binding Version}"/>
-						<DataGridTextColumn Width="Auto" Binding="{Binding Author}" FontSize="16"/>
-						<DataGridTextColumn Width="Auto" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" FontSize="16"/>
-						<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="14"/>
-						<DataGridTemplateColumn Width="36">
-							<DataGridTemplateColumn.CellTemplate>
-								<DataTemplate>
-									<Button Background="{x:Null}" ToolTip="切换到此版本" Focusable="False" Command="{Binding Checkout}" CommandParameter="{Binding}">
-										<Button.Content>
-											<Image Source="/VMS;component/Images/Checkout.png"/>
-										</Button.Content>
-									</Button>
-								</DataTemplate>
-							</DataGridTemplateColumn.CellTemplate>
-						</DataGridTemplateColumn>
-						<DataGridTemplateColumn Width="36">
-							<DataGridTemplateColumn.CellTemplate>
-								<DataTemplate>
-									<Button Background="{x:Null}" ToolTip="基于此版本新建" Focusable="False" Command="{Binding Add}" CommandParameter="{Binding}">
-										<Button.Content>
-											<Image Source="/VMS;component/Images/Add.png"/>
-										</Button.Content>
-									</Button>
-								</DataTemplate>
-							</DataGridTemplateColumn.CellTemplate>
-						</DataGridTemplateColumn>
-					</DataGrid.Columns>
-				</DataGrid>
-
-			</TabItem>
-		</TabControl>
-		<GridSplitter Width="2"/>
+					</GroupStyle.ContainerStyle>
+				</GroupStyle>
+			</DataGrid.GroupStyle>
+			<DataGrid.CellStyle>
+				<Style TargetType="{x:Type DataGridCell}">
+					<Setter Property="Focusable" Value="False"/>
+					<Setter Property="Foreground" Value="Black"/>
+					<Setter Property="Background" Value="{x:Null}"/>
+					<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="{x:Type DataGridCell}">
+								<ContentPresenter Margin="1,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+			</DataGrid.CellStyle>
+			<DataGrid.Columns>
+				<DataGridTextColumn Width="Auto" Binding="{Binding Version}" Foreground="DarkBlue"/>
+				<DataGridTextColumn Width="Auto" Binding="{Binding Author}" FontSize="16"/>
+				<DataGridTextColumn Width="Auto" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" FontSize="16"/>
+				<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="14" Foreground="DarkGray"/>
+				<DataGridTemplateColumn Width="64">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Button Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="切换到此版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+								<Button.Content>
+									<Image Source="/VMS;component/Images/Checkout.png"/>
+								</Button.Content>
+							</Button>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn>
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Button Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="基于此版本新建" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+								<Button.Content>
+									<Image Source="/VMS;component/Images/Add.png"/>
+								</Button.Content>
+							</Button>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+			</DataGrid.Columns>
+		</DataGrid>
 
 		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="5">
 			<UniformGrid.Background>

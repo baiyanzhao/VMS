@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Deployment.Application;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
@@ -13,7 +14,7 @@ namespace VMS.Data
 	static class Global
 	{
 		const string FILE_BRANCH_INFO = "Info.json";    //定制信息
-		const string FILE_PRESET = "Sys\\Preset.json";  //预置
+		const string FILE_PRESET = ".\\Sys\\Preset.json";  //预置
 		const string FILE_SETTING_LOCAL = "Sys\\Setting.json";  //设置
 
 		public static Preset _preset;
@@ -42,5 +43,11 @@ namespace VMS.Data
 			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 		}
+
+		public static string Text<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
+		{
+			return (e.Body as MemberExpression)?.Member.Name;
+		}
+
 	}
 }

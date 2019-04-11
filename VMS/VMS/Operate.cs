@@ -14,11 +14,22 @@ namespace VMS
     static class Operate
     {
 		/// <summary>
-		/// 更新并打开指定版本的工程
+		/// 签出类型
 		/// </summary>
-		/// <param name="repoPath"></param>
-		/// <param name="committishOrBranchSpec"></param>
-		public static bool Checkout(string repoPath, string committishOrBranchSpec)
+		public enum CheckoutType
+		{
+			Branch,
+			Sha,
+			Tag,
+		}
+
+		/// <summary>
+		/// 更新并签出指定版本的工程
+		/// </summary>
+		/// <param name="repoPath">Git库路径</param>
+		/// <param name="mark">签出标识字符串,由<paramref name="type"/>决定类型 </param>
+		/// <param name="type">签出类型</param>
+		public static bool Checkout(string repoPath, string mark, CheckoutType type = CheckoutType.Branch)
 		{
 			using(var repo = new Repository(repoPath))
 			{
@@ -29,14 +40,29 @@ namespace VMS
 						return false;
 				}
 
-				try
+				string committishOrBranchSpec;
+				switch(type)
 				{
-					Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, null, null);
-				}
-				catch(Exception x)
-				{
-					if(MessageBox.Show(x.Message + "\n是否继续?", "数据更新失败!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-						return false;
+				case CheckoutType.Branch:
+					committishOrBranchSpec = mark;
+					try
+					{
+						Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, null, null);
+					}
+					catch(Exception x)
+					{
+						if(MessageBox.Show(x.Message + "\n是否继续?", "数据更新失败!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+							return false;
+					}
+					break;
+
+				case CheckoutType.Tag:
+					committishOrBranchSpec = repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha;
+					break;
+
+				default:
+					committishOrBranchSpec = mark;
+					break;
 				}
 
 				try

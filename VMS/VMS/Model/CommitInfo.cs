@@ -8,10 +8,11 @@ namespace VMS.Data
 {
 	abstract class CommitInfo
 	{
-		public string Message { get; set; }
 		public string Sha { get; set; }
-		public string Version { get; set; }
+		public string Name { get; set; }
 		public string Author { get; set; }
+		public string Message { get; set; }
+		public Version Version { get; set; }
 		public DateTimeOffset When { get; set; }
 	}
 }

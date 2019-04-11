@@ -65,7 +65,7 @@ namespace VMS.Data
 				if(!(parameter is CommitInfo info))
 					return;
 
-				MainWindow.Checkout(info.Sha);
+				//MainWindow.Checkout(info.Sha);
 			}
 
 			public void RaiseCanExecuteChanged()

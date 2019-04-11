@@ -14,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Deployment.Application;
 using VMS.Data;
+using System.Windows.Data;
+using VMS.ViewModel;
 
 namespace VMS
 {
@@ -22,12 +24,13 @@ namespace VMS
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		static ICollection<TagInfo> _tagInfos = new Collection<TagInfo>(); //Tag信息
-		static ICollection<BranchInfo> _branchInfos = new Collection<BranchInfo>(); //分支信息
+		static ICollection<TagInfo> _tagInfos = new ObservableCollection<TagInfo>(); //Tag信息
+		static ICollection<BranchInfo> _branchInfos = new BranchListView(); //分支信息
 
 		public MainWindow()
 		{
 			InitializeComponent();
+			Title = "源程序版本管理系统 v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 		}
 
 		~MainWindow()
@@ -50,16 +53,8 @@ namespace VMS
 			{
 				Dispatcher.Invoke(delegate { ShowSetWindow(); });
 			}
-
-			UpdateRepoData();
 			Directory.CreateDirectory(Global.Setting.PackageFolder);
-		}
 
-		/// <summary>
-		/// 更新仓库数据
-		/// </summary>
-		private void UpdateRepoData()
-		{
 			try
 			{
 				//更新仓库
@@ -67,34 +62,9 @@ namespace VMS
 				{
 					Repository.Clone(Global._preset.RepoUrl, Global.Setting.LoaclRepoPath);
 				}
-
 				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 				{
 					Commands.Fetch(repo, "origin", new string[0], null, null);
-
-					_tagInfos.Clear();
-					foreach(var tag in repo.Tags)
-					{
-						if(!(tag.Target is Commit commit))
-							continue;
-
-						var name = tag.FriendlyName;
-						if(!System.Version.TryParse(name, out System.Version version))
-							continue;
-
-						_tagInfos.Add(new TagInfo { Version = name, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
-					}
-
-					_branchInfos.Clear();
-					foreach(var branch in repo.Branches.Where(p => p.IsRemote))
-					{
-						var commit = branch.Tip;
-						var name = branch.FriendlyName.Split('/').Last();
-						if(commit == null || !System.Version.TryParse(name, out System.Version version))
-							continue;
-
-						_branchInfos.Add(new BranchInfo { Sha = commit.Sha, Version = name, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
-					}
 				}
 			}
 			catch(Exception x)
@@ -103,48 +73,77 @@ namespace VMS
 			}
 		}
 
+		private void BindingBranchInfo()
+		{
+			BranchInfoGrid.DataContext = _branchInfos;
+			var view = CollectionViewSource.GetDefaultView(BranchInfoGrid.ItemsSource);
+			if(view != null)
+			{
+				view.GroupDescriptions.Clear();
+				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
+			}
+		}
+
 		private void UpdateView()
 		{
-			General.DataContext = null;
-			Special.DataContext = null;
-			General.DataContext = _tagInfos;
-			Special.DataContext = _branchInfos;
-
-			//标题栏
-			StringBuilder title = new StringBuilder("源程序版本管理系统 v");
-			title.Append(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-			title.Append("    当前分支:");
+			StringBuilder title = new StringBuilder("当前分支: ");	//当前分支信息
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
+				//更新Tag列表
+				_tagInfos.Clear();
+				foreach(var tag in repo.Tags)
+				{
+					if(!(tag.Target is Commit commit))
+						continue;
+
+					var name = tag.FriendlyName;
+					if(!System.Version.TryParse(name, out System.Version version))
+						continue;
+
+					_tagInfos.Add(new TagInfo { Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				}
+
+				//更新分支列表
+				_branchInfos.Clear();
+				foreach(var branch in repo.Branches.Where(p => p.IsRemote))
+				{
+					var commit = branch.Tip;
+					var name = branch.FriendlyName.Split('/').Last();
+					if(commit == null || !System.Version.TryParse(name, out System.Version version))
+						continue;
+
+					_branchInfos.Add(new BranchInfo { Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				}
+
 				var cmt = repo.Head.Tip as Commit;
-				var name = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(cmt.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
-				title.Append(name);
+				var headName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(cmt.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
+				title.Append(headName);
 				title.Append(" ");
 				title.Append(cmt.Author.Name);
 				title.Append(" ");
 				title.Append(cmt.Author.When.ToString("yyyy-MM-dd HH:mm"));
 			}
-			Title = title.ToString();
+			Message.Text = title.ToString();
 		}
 
-		ListBoxItem CreateButtonItem(string name, string committishOrBranchSpec)
-		{
-			var panel = new DockPanel();
-			var text = new TextBlock { Text = name };
-			var newBranch = new Button { Background = null, Margin = new Thickness(12, 0, 0, 0), BorderThickness = new Thickness(), Content = new Image() { Height = 32, Stretch = Stretch.Uniform, Source = new BitmapImage(new Uri("pack://application:,,,/VMS;Component/Images/Add.png")) }, ToolTip = "基于此版本新建" };
-			var openBranch = new Button { Background = null, Margin = new Thickness(12, 0, 0, 0), BorderThickness = new Thickness(), Content = new Image() { Height = 32, Stretch = Stretch.Uniform, Source = new BitmapImage(new Uri("pack://application:,,,/VMS;Component/Images/Checkout.png")) }, ToolTip = "切换到此版本" };
-			var item = new ListBoxItem() { Content = panel, HorizontalContentAlignment = HorizontalAlignment.Stretch };
+		//ListBoxItem CreateButtonItem(string name, string committishOrBranchSpec)
+		//{
+		//	var panel = new DockPanel();
+		//	var text = new TextBlock { Text = name };
+		//	var newBranch = new Button { Background = null, Margin = new Thickness(12, 0, 0, 0), BorderThickness = new Thickness(), Content = new Image() { Height = 32, Stretch = Stretch.Uniform, Source = new BitmapImage(new Uri("pack://application:,,,/VMS;Component/Images/Add.png")) }, ToolTip = "基于此版本新建" };
+		//	var openBranch = new Button { Background = null, Margin = new Thickness(12, 0, 0, 0), BorderThickness = new Thickness(), Content = new Image() { Height = 32, Stretch = Stretch.Uniform, Source = new BitmapImage(new Uri("pack://application:,,,/VMS;Component/Images/Checkout.png")) }, ToolTip = "切换到此版本" };
+		//	var item = new ListBoxItem() { Content = panel, HorizontalContentAlignment = HorizontalAlignment.Stretch };
 
-			newBranch.Click += delegate { Checkout(committishOrBranchSpec); };
-			openBranch.Click += delegate { Checkout(committishOrBranchSpec); };
+		//	newBranch.Click += delegate { Checkout(committishOrBranchSpec); };
+		//	openBranch.Click += delegate { Checkout(committishOrBranchSpec); };
 
-			DockPanel.SetDock(newBranch, Dock.Right);
-			DockPanel.SetDock(openBranch, Dock.Right);
-			panel.Children.Add(newBranch);
-			panel.Children.Add(openBranch);
-			panel.Children.Add(text);
-			return item;
-		}
+		//	DockPanel.SetDock(newBranch, Dock.Right);
+		//	DockPanel.SetDock(openBranch, Dock.Right);
+		//	panel.Children.Add(newBranch);
+		//	panel.Children.Add(openBranch);
+		//	panel.Children.Add(text);
+		//	return item;
+		//}
 
 		void CreateBranch(Repository repo, Tag tag)
 		{
@@ -153,6 +152,26 @@ namespace VMS
 			var bc = repo.Branches.Add(name, commit, true);
 			repo.Branches.Update(bc, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
 			repo.Network.Push(bc);
+
+
+			//General.ItemsSource = null;
+			//Special.ItemsSource = null;
+			//General.ItemsSource = _tagInfos;
+			//Special.ItemsSource = _branchInfos;
+			//var view = CollectionViewSource.GetDefaultView(BranchList.ItemsSource);
+			//view.GroupDescriptions.Clear();
+			//view.GroupDescriptions.Add(new PropertyGroupDescription("Author"));
+
+
+			//using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			//{
+
+			//	//General.Items[].
+
+
+			//	//repo.ObjectDatabase.Archive(cmt, @"D:\a.zip");
+			//}
+
 		}
 
 		/// <summary>
@@ -237,7 +256,7 @@ namespace VMS
 					var sign = new Signature(Global.Setting.User, Environment.MachineName, DateTime.Now);
 					repo.Commit(cmtText.ToString(), sign, sign);
 					repo.Network.Push(repo.Head);
-					UpdateRepoData();
+
 				}, UpdateView);
 			}
 			return true;
@@ -276,14 +295,6 @@ namespace VMS
 			return false;
 		}
 
-		/// <summary>
-		/// 更新分支信息
-		/// </summary>
-		private void UpdateBranchInfo()
-		{
-			TopTab.SelectedIndex = 0;
-		}
-
 		private void ShowSetWindow()
 		{
 			var setWindow = new SettingWindow() { Owner = this };
@@ -296,10 +307,10 @@ namespace VMS
 		/// <summary>
 		/// 签出版本
 		/// </summary>
-		/// <param name="committishOrBranchSpec"></param>
-		public static void Checkout(string committishOrBranchSpec)
+		/// <param name="branch">分支名称</param>
+		public static void CheckoutBranch(string branch)
 		{
-			if(Operate.Checkout(Global.Setting.LoaclRepoPath, committishOrBranchSpec))
+			if(Operate.Checkout(Global.Setting.LoaclRepoPath, branch))
 			{
 				//当前导出项为分支时,配置上游分支
 				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
@@ -312,16 +323,31 @@ namespace VMS
 					{ }
 				}
 
-				if(Application.Current.MainWindow is MainWindow window)
-				{
-					ProgressWindow.Show(window, window.UpdateRepoData, window.UpdateView);
-				}
+				(Application.Current.MainWindow as MainWindow)?.UpdateView();
 			}
+		}
+
+		/// <summary>
+		/// 签出版本
+		/// </summary>
+		/// <param name="tag">Tag名称</param>
+		public static void CheckoutTag(string tag)
+		{
+			if(Operate.Checkout(Global.Setting.LoaclRepoPath, tag, Operate.CheckoutType.Tag))
+			{
+				(Application.Current.MainWindow as MainWindow)?.UpdateView();
+			}
+		}
+
+		public static void CreateBranch()
+		{
+
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
 			ProgressWindow.Show(this, Init, UpdateView);
+			BindingBranchInfo();
 		}
 
 		private void Open_Click(object sender, RoutedEventArgs e)
