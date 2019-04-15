@@ -5,7 +5,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 
-namespace VMS.Data
+namespace VMS.Model
 {
 	/// <summary>
 	/// Git版本差异信息
@@ -14,26 +14,22 @@ namespace VMS.Data
 	{
 		public string FilePath { get; set; }
 		public string State { get; set; }
+
+		private ICommand _diff;
 		public ICommand Diff
 		{
 			get
 			{
-				if(_diff == null)
-				{
-					_diff = new DiffCommand();
-				}
+				_diff = _diff ?? new DiffCommand();
 				return _diff;
 			}
 		}
 
-		private ICommand _diff;
 		class DiffCommand : ICommand
 		{
 			public event EventHandler CanExecuteChanged;
-			public bool CanExecute(object parameter)
-			{
-				return true;
-			}
+			public bool CanExecute(object parameter) => true;
+			public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 
 			public void Execute(object parameter)
 			{
@@ -57,11 +53,6 @@ namespace VMS.Data
 						MessageBox.Show(x.Message);
 					}
 				}
-			}
-
-			public void RaiseCanExecuteChanged()
-			{
-				CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 	}

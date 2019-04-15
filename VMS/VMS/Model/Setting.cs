@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VMS.Data
+namespace VMS.Model
 {
 	/// <summary>
 	/// 预置

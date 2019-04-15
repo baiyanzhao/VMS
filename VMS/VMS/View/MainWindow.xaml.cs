@@ -13,9 +13,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Deployment.Application;
-using VMS.Data;
 using System.Windows.Data;
 using VMS.ViewModel;
+using VMS.Model;
+using static VMS.Operate;
 
 namespace VMS
 {
@@ -24,8 +25,7 @@ namespace VMS
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		static ICollection<TagInfo> _tagInfos = new ObservableCollection<TagInfo>(); //Tag信息
-		static ICollection<BranchInfo> _branchInfos = new BranchListView(); //分支信息
+		BranchListView _branchInfos = new BranchListView(); //分支信息
 
 		public MainWindow()
 		{
@@ -57,14 +57,20 @@ namespace VMS
 
 			try
 			{
-				//更新仓库
+				//创建仓库
 				if(Repository.Discover(Global.Setting.LoaclRepoPath) == null)
 				{
 					Repository.Clone(Global._preset.RepoUrl, Global.Setting.LoaclRepoPath);
 				}
+
+				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 				{
 					Commands.Fetch(repo, "origin", new string[0], null, null);
+					if(repo.Head.TrackingDetails.AheadBy > 0)
+					{
+						repo.Network.Push(repo.Head);
+					}
 				}
 			}
 			catch(Exception x)
@@ -73,6 +79,9 @@ namespace VMS
 			}
 		}
 
+		/// <summary>
+		/// 绑定分支界面
+		/// </summary>
 		private void BindingBranchInfo()
 		{
 			BranchInfoGrid.DataContext = _branchInfos;
@@ -84,13 +93,15 @@ namespace VMS
 			}
 		}
 
+		/// <summary>
+		/// 更新主界面
+		/// </summary>
 		private void UpdateView()
 		{
-			StringBuilder title = new StringBuilder("当前分支: ");	//当前分支信息
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
-				//更新Tag列表
-				_tagInfos.Clear();
+				//更新分支列表
+				_branchInfos.Clear();
 				foreach(var tag in repo.Tags)
 				{
 					if(!(tag.Target is Commit commit))
@@ -100,11 +111,9 @@ namespace VMS
 					if(!System.Version.TryParse(name, out System.Version version))
 						continue;
 
-					_tagInfos.Add(new TagInfo { Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+					_branchInfos.Add(new BranchInfo { Type = GitType.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
 				}
 
-				//更新分支列表
-				_branchInfos.Clear();
 				foreach(var branch in repo.Branches.Where(p => p.IsRemote))
 				{
 					var commit = branch.Tip;
@@ -112,18 +121,22 @@ namespace VMS
 					if(commit == null || !System.Version.TryParse(name, out System.Version version))
 						continue;
 
-					_branchInfos.Add(new BranchInfo { Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+					_branchInfos.Add(new BranchInfo { Type = GitType.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
 				}
 
-				var cmt = repo.Head.Tip as Commit;
-				var headName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(cmt.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
-				title.Append(headName);
-				title.Append(" ");
-				title.Append(cmt.Author.Name);
-				title.Append(" ");
-				title.Append(cmt.Author.When.ToString("yyyy-MM-dd HH:mm"));
+				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
 			}
-			Message.Text = title.ToString();
+
+			//如果Head未在界面显示,则签出最后的分支
+			if(_branchInfos.FirstOrDefault(s => s.Name == _branchInfos.HeadName) == null)
+			{
+				var branch = _branchInfos.LastOrDefault();
+				if(branch != null)
+				{
+					Operate.Checkout(Global.Setting.LoaclRepoPath, branch.Name, branch.Type);
+					_branchInfos.HeadName = branch.Name;
+				}
+			}
 		}
 
 		//ListBoxItem CreateButtonItem(string name, string committishOrBranchSpec)
@@ -145,34 +158,34 @@ namespace VMS
 		//	return item;
 		//}
 
-		void CreateBranch(Repository repo, Tag tag)
-		{
-			var name = tag.FriendlyName + "-Auto";
-			var commit = repo.Lookup<Commit>(tag.Target.Id);
-			var bc = repo.Branches.Add(name, commit, true);
-			repo.Branches.Update(bc, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
-			repo.Network.Push(bc);
+		//void CreateBranch(Repository repo, Tag tag)
+		//{
+		//	var name = tag.FriendlyName + "-Auto";
+		//	var commit = repo.Lookup<Commit>(tag.Target.Id);
+		//	var bc = repo.Branches.Add(name, commit, true);
+		//	repo.Branches.Update(bc, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
+		//	repo.Network.Push(bc);
 
 
-			//General.ItemsSource = null;
-			//Special.ItemsSource = null;
-			//General.ItemsSource = _tagInfos;
-			//Special.ItemsSource = _branchInfos;
-			//var view = CollectionViewSource.GetDefaultView(BranchList.ItemsSource);
-			//view.GroupDescriptions.Clear();
-			//view.GroupDescriptions.Add(new PropertyGroupDescription("Author"));
+		//	//General.ItemsSource = null;
+		//	//Special.ItemsSource = null;
+		//	//General.ItemsSource = _tagInfos;
+		//	//Special.ItemsSource = _branchInfos;
+		//	//var view = CollectionViewSource.GetDefaultView(BranchList.ItemsSource);
+		//	//view.GroupDescriptions.Clear();
+		//	//view.GroupDescriptions.Add(new PropertyGroupDescription("Author"));
 
 
-			//using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-			//{
+		//	//using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+		//	//{
 
-			//	//General.Items[].
+		//	//	//General.Items[].
 
 
-			//	//repo.ObjectDatabase.Archive(cmt, @"D:\a.zip");
-			//}
+		//	//	//repo.ObjectDatabase.Archive(cmt, @"D:\a.zip");
+		//	//}
 
-		}
+		//}
 
 		/// <summary>
 		/// 提交新版本
@@ -255,9 +268,33 @@ namespace VMS
 					repo.Index.Write();
 					var sign = new Signature(Global.Setting.User, Environment.MachineName, DateTime.Now);
 					repo.Commit(cmtText.ToString(), sign, sign);
-					repo.Network.Push(repo.Head);
 
-				}, UpdateView);
+					var isRetry = false;
+					do
+					{
+						try
+						{
+							isRetry = false;
+							repo.Network.Push(repo.Head);
+						}
+						catch(Exception x)
+						{
+							Dispatcher.Invoke(delegate { isRetry = (MessageBox.Show(this, x.Message, "推送失败,请关闭其它应用后重试!", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK); });
+						}
+
+					} while(isRetry);
+				}, delegate
+				{
+					var commit = repo.Head.Tip;
+					var info = _branchInfos.FirstOrDefault(p => p.Name.Equals(repo.Head.FriendlyName));
+					if(info != null)
+					{
+						info.Sha = commit.Sha;
+						info.Author = commit.Author.Name;
+						info.When = commit.Author.When;
+						info.Message = commit.MessageShort;
+					}
+				});
 			}
 			return true;
 		}
@@ -295,6 +332,9 @@ namespace VMS
 			return false;
 		}
 
+		/// <summary>
+		/// 显示设置界面
+		/// </summary>
 		private void ShowSetWindow()
 		{
 			var setWindow = new SettingWindow() { Owner = this };
@@ -307,33 +347,9 @@ namespace VMS
 		/// <summary>
 		/// 签出版本
 		/// </summary>
-		/// <param name="branch">分支名称</param>
-		public static void CheckoutBranch(string branch)
+		public static void Checkout(string mark, Operate.GitType type)
 		{
-			if(Operate.Checkout(Global.Setting.LoaclRepoPath, branch))
-			{
-				//当前导出项为分支时,配置上游分支
-				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-				{
-					try
-					{
-						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
-					}
-					catch
-					{ }
-				}
-
-				(Application.Current.MainWindow as MainWindow)?.UpdateView();
-			}
-		}
-
-		/// <summary>
-		/// 签出版本
-		/// </summary>
-		/// <param name="tag">Tag名称</param>
-		public static void CheckoutTag(string tag)
-		{
-			if(Operate.Checkout(Global.Setting.LoaclRepoPath, tag, Operate.CheckoutType.Tag))
+			if(Operate.Checkout(Global.Setting.LoaclRepoPath, mark, type))
 			{
 				(Application.Current.MainWindow as MainWindow)?.UpdateView();
 			}
@@ -357,6 +373,11 @@ namespace VMS
 			{
 				Process.Start(prj[0]);
 			}
+		}
+
+		private void Explorer_Click(object sender, RoutedEventArgs e)
+		{
+			Process.Start(Global.Setting.LoaclRepoPath);
 		}
 
 		private void Commit_Click(object sender, RoutedEventArgs e)

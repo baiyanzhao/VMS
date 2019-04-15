@@ -1,22 +1,17 @@
 ﻿using LibGit2Sharp;
-using LibGit2Sharp.Handlers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace VMS
 {
-    static class Operate
+	public static class Operate
     {
 		/// <summary>
 		/// 签出类型
 		/// </summary>
-		public enum CheckoutType
+		public enum GitType
 		{
 			Branch,
 			Sha,
@@ -29,7 +24,7 @@ namespace VMS
 		/// <param name="repoPath">Git库路径</param>
 		/// <param name="mark">签出标识字符串,由<paramref name="type"/>决定类型 </param>
 		/// <param name="type">签出类型</param>
-		public static bool Checkout(string repoPath, string mark, CheckoutType type = CheckoutType.Branch)
+		public static bool Checkout(string repoPath, string mark, GitType type)
 		{
 			using(var repo = new Repository(repoPath))
 			{
@@ -43,7 +38,7 @@ namespace VMS
 				string committishOrBranchSpec;
 				switch(type)
 				{
-				case CheckoutType.Branch:
+				case GitType.Branch:
 					committishOrBranchSpec = mark;
 					try
 					{
@@ -56,7 +51,7 @@ namespace VMS
 					}
 					break;
 
-				case CheckoutType.Tag:
+				case GitType.Tag:
 					committishOrBranchSpec = repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha;
 					break;
 
@@ -68,6 +63,10 @@ namespace VMS
 				try
 				{
 					Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
+					if(type == GitType.Branch && !repo.Head.IsTracking)
+					{
+						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
+					}
 				}
 				catch(Exception x)
 				{

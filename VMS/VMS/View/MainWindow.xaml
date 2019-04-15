@@ -1,23 +1,17 @@
 ﻿<Window x:Class="VMS.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:VMS.ViewModel"
-        mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded">
-	<!--<Window.DataContext>
-		<local:MainView/>
-	</Window.DataContext>-->
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:local="clr-namespace:VMS.ViewModel"
+ mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded">
 	<Window.Resources>
-
 	</Window.Resources>
 	<Grid Name="Panel" Background="AliceBlue">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
 			<ColumnDefinition Width="72"/>
 		</Grid.ColumnDefinitions>
-
-		<TextBlock Name="Message" Margin="64,12,5,0" Foreground="DarkBlue" HorizontalAlignment="Right" VerticalAlignment="Top"  />
 
 		<DataGrid Name="BranchInfoGrid" Margin="2" Grid.Row="1" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" >
 			<DataGrid.GroupStyle>
@@ -29,20 +23,16 @@
 							<Setter Property="Template">
 								<Setter.Value>
 									<ControlTemplate TargetType="{x:Type GroupItem}">
-										<Expander IsExpanded="True" Background="#FF112255" BorderBrush="#FF002255" Foreground="#FFEEEEEE" BorderThickness="1,1,1,5">
+										<Expander Background="#FF112255" BorderBrush="#FF002255" Foreground="#FFEEEEEE" BorderThickness="1,1,1,5">
+											<Expander.IsExpanded>
+												<MultiBinding Mode="OneWay" Converter="{StaticResource StringMatchConverter}">
+													<Binding Path="DataContext.HeadName" RelativeSource="{RelativeSource AncestorType=DataGrid}" Mode="OneWay" />
+													<Binding Path= "Name" Mode="OneWay" />
+												</MultiBinding>
+											</Expander.IsExpanded>
 											<Expander.Header>
 												<DockPanel>
-													<TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0" Width="360"/>
-													<Button Margin="64,0,0,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="切换到此版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-														<Button.Content>
-															<Image Source="/VMS;component/Images/Checkout.png"/>
-														</Button.Content>
-													</Button>
-													<Button Margin="12,0,0,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="基于此版本新建" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-														<Button.Content>
-															<Image Source="/VMS;component/Images/Add.png"/>
-														</Button.Content>
-													</Button>
+													<TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0"/>
 												</DockPanel>
 											</Expander.Header>
 											<Expander.Content>
@@ -58,7 +48,7 @@
 			</DataGrid.GroupStyle>
 			<DataGrid.CellStyle>
 				<Style TargetType="{x:Type DataGridCell}">
-					<Setter Property="Focusable" Value="False"/>
+					<Setter Property="Focusable" Value="True"/>
 					<Setter Property="Foreground" Value="Black"/>
 					<Setter Property="Background" Value="{x:Null}"/>
 					<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -71,37 +61,68 @@
 					</Setter>
 				</Style>
 			</DataGrid.CellStyle>
+			<DataGrid.RowDetailsTemplate>
+				<DataTemplate>
+					<Border BorderThickness="0" Background="#FF7896B9" Padding="10">
+						<StackPanel Orientation="Vertical">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock FontSize="12" Width="4000" Text=": " Foreground="AliceBlue" VerticalAlignment="Center" />
+								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding EmailAddress}" VerticalAlignment="Center" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock FontSize="12" Text="Phone: " Foreground="AliceBlue" VerticalAlignment="Center" />
+								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding Phone}" VerticalAlignment="Center" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock FontSize="12" Text="Sales Person: " Foreground="AliceBlue" VerticalAlignment="Center" />
+								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding SalesPerson}" VerticalAlignment="Center" />
+							</StackPanel>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+			</DataGrid.RowDetailsTemplate>
 			<DataGrid.Columns>
 				<DataGridTextColumn Width="Auto" Binding="{Binding Version}" Foreground="DarkBlue"/>
 				<DataGridTextColumn Width="Auto" Binding="{Binding Author}" FontSize="16"/>
 				<DataGridTextColumn Width="Auto" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" FontSize="16"/>
 				<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="14" Foreground="DarkGray"/>
-				<DataGridTemplateColumn Width="64">
+				<DataGridTemplateColumn Width="Auto">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="切换到此版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-								<Button.Content>
-									<Image Source="/VMS;component/Images/Checkout.png"/>
-								</Button.Content>
-							</Button>
-						</DataTemplate>
-					</DataGridTemplateColumn.CellTemplate>
-				</DataGridTemplateColumn>
-				<DataGridTemplateColumn>
-					<DataGridTemplateColumn.CellTemplate>
-						<DataTemplate>
-							<Button Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="基于此版本新建" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-								<Button.Content>
-									<Image Source="/VMS;component/Images/Add.png"/>
-								</Button.Content>
-							</Button>
+							<WrapPanel>
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="检出版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+									<Button.Content>
+										<Image Source="/VMS;component/Images/Checkout.png"/>
+									</Button.Content>
+								</Button>
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="导出版本,另存为Zip文件" Focusable="False" Command="{Binding Path=DataContext.ArchiveCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+									<Button.Content>
+										<Image Source="/VMS;component/Images/Archive.png"/>
+									</Button.Content>
+								</Button>
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="基于此版本新建分支" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+									<Button.Content>
+										<Image Source="/VMS;component/Images/Branch.png"/>
+									</Button.Content>
+								</Button>
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="编辑版本信息" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+									<Button.Content>
+										<Image Source="/VMS;component/Images/Edit.png"/>
+									</Button.Content>
+								</Button>
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="显示日志" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+									<Button.Content>
+										<Image Source="/VMS;component/Images/Log.png"/>
+									</Button.Content>
+								</Button>
+							</WrapPanel>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
 			</DataGrid.Columns>
 		</DataGrid>
 
-		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="5">
+		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="6">
 			<UniformGrid.Background>
 				<LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
 					<GradientStop Color="#FF7896B9" />
@@ -115,6 +136,12 @@
 					<Image Margin="4,2" Source="/VMS;component/Images/VisualStudio.png" Stretch="Uniform"/>
 				</DockPanel>
 			</Button>
+			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Explorer_Click" ToolTip="打开工程文件夹">
+				<DockPanel>
+					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="浏览"/>
+					<Image Margin="4,2" Source="/VMS;component/Images/Explorer.png" Stretch="Uniform"/>
+				</DockPanel>
+			</Button>
 			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Commit_Click" ToolTip="将更改上传到服务器" >
 				<DockPanel>
 					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="提交"/>
@@ -123,11 +150,11 @@
 			</Button>
 			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Package_Click" ToolTip="生成当前版本的安装包" >
 				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="打包"/>
+					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="安装包"/>
 					<Image Margin="4,2" Source="/VMS;component/Images/Package.png" Stretch="Uniform"/>
 				</DockPanel>
 			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" >
+			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >
 				<DockPanel>
 					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="设置"/>
 					<Image Margin="4,2" Source="/VMS;component/Images/Set.png" Stretch="Uniform"/>

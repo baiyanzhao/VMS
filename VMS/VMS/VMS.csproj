@@ -114,14 +114,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\BranchInfo.cs" />
-    <Compile Include="Model\CommitInfo.cs" />
     <Compile Include="Model\Global.cs" />
     <Compile Include="Model\StatusEntryInfo.cs" />
     <Compile Include="Model\Converter.cs" />
     <Compile Include="Model\Setting.cs" />
-    <Compile Include="Model\TagInfo.cs" />
+    <Compile Include="Model\VersionInfo.cs" />
     <Compile Include="ViewModel\BranchListView.cs" />
-    <Compile Include="ViewModel\MainView.cs" />
+    <Compile Include="View\BranchWindow.xaml.cs">
+      <DependentUpon>BranchWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\CommitWindow.xaml.cs">
       <DependentUpon>CommitWindow.xaml</DependentUpon>
     </Compile>
@@ -131,6 +132,10 @@
     <Compile Include="View\SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\BranchWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -139,7 +144,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Operate.cs" />
+    <Compile Include="Model\Operate.cs" />
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -188,6 +193,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Resource Include="Images\Checked.png" />
+    <Resource Include="Images\Folder.png" />
+    <Resource Include="Images\Explorer.png" />
+    <Resource Include="Images\Archive.png" />
+    <Resource Include="Images\Branch.png" />
+    <Resource Include="Images\Log.png" />
     <Content Include="Package\Default.SFX">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -208,8 +219,7 @@
     <Resource Include="Images\Add.png" />
     <Resource Include="Images\Upload.png" />
     <Resource Include="Images\VisualStudio.png" />
-    <Resource Include="Images\Write.png" />
-    <Resource Include="Images\Files.png" />
+    <Resource Include="Images\Edit.png" />
     <Content Include="Package\msi.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

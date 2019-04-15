@@ -6,6 +6,7 @@
 	<Application.Resources>
 		<ResourceDictionary>
 			<local:EmptyStringConvert x:Key="EmptyStringConvert"/>
+			<local:StringMatchConverter x:Key="StringMatchConverter"/>
 			
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="Style/ButtonStyle.xaml" />

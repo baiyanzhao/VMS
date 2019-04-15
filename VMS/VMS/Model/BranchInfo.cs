@@ -1,18 +1,57 @@
 ﻿using System;
-using System.Windows.Input;
+using System.ComponentModel;
+using System.Linq.Expressions;
+using static VMS.Operate;
 
-namespace VMS.Data
+namespace VMS.Model
 {
 	/// <summary>
-	/// Git Tag信息
+	/// Git 分支信息
 	/// </summary>
-	class BranchInfo
+	class BranchInfo : INotifyPropertyChanged
 	{
+		public event PropertyChangedEventHandler PropertyChanged;
+		void OnPropertyChanged<TProperty>(Expression<Func<INotifyPropertyChanged, TProperty>> exp)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
+		}
+
 		public string Sha { get; set; }
 		public string Name { get; set; }
-		public string Author { get; set; }
-		public string Message { get; set; }
+		public GitType Type { get; set; }
 		public Version Version { get; set; }
-		public DateTimeOffset When { get; set; }
+
+		string _author;
+		public string Author
+		{
+			get => _author;
+			set
+			{
+				_author = value;
+				OnPropertyChanged(p => Author);
+			}
+		}
+
+		string _message;
+		public string Message
+		{
+			get => _message;
+			set
+			{
+				_message = value;
+				OnPropertyChanged(p => Message);
+			}
+		}
+
+		DateTimeOffset _when;
+		public DateTimeOffset When
+		{
+			get => _when;
+			set
+			{
+				_when = value;
+				OnPropertyChanged(p => When);
+			}
+		}
 	}
 }

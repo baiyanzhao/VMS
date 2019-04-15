@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace VMS
@@ -34,7 +30,7 @@ namespace VMS
 			switch(value)
 			{
 			case Version version:
-				return new Version(version.Major, version.Minor, 0, 0).ToString();
+				return version.ToString(2);
 			default:
 				return value;
 			}
@@ -46,5 +42,23 @@ namespace VMS
 		}
 	}
 
+	/// <summary>
+	/// 字符串匹配
+	/// </summary>
+	class StringMatchConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			if(values.Length >= 2 && values[0] is string full && values[1] is string head)
+			{
+				return full.StartsWith(head);
+			}
+			return false;
+		}
 
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+	}
 }

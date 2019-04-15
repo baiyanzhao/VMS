@@ -6,12 +6,10 @@
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
         Title="提交版本文件" Height="450" Width="800" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
-	<Window.Resources>
-		<local:EmptyStringConvert x:Key="EmptyStringConvert"/>
-	</Window.Resources>
 
 	<Grid Background="#3278A080" FocusManager.FocusedElement="{Binding ElementName=Message}">
 		<Grid.RowDefinitions>
+			<RowDefinition Height="1*"/>
 			<RowDefinition Height="1*"/>
 			<RowDefinition Height="5*"/>
 		</Grid.RowDefinitions>
