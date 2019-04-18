@@ -8,14 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Deployment.Application;
 using System.Windows.Data;
-using VMS.ViewModel;
 using VMS.Model;
+using VMS.ViewModel;
 using static VMS.Operate;
 
 namespace VMS
@@ -25,10 +20,12 @@ namespace VMS
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		BranchListView _branchInfos = new BranchListView(); //分支信息
+		public static MainWindow Instance;
+		static BranchListView _branchInfos = new BranchListView(); //分支信息
 
 		public MainWindow()
 		{
+			Instance = this;
 			InitializeComponent();
 			Title = "源程序版本管理系统 v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 		}
@@ -57,21 +54,7 @@ namespace VMS
 
 			try
 			{
-				//创建仓库
-				if(Repository.Discover(Global.Setting.LoaclRepoPath) == null)
-				{
-					Repository.Clone(Global._preset.RepoUrl, Global.Setting.LoaclRepoPath);
-				}
-
-				//同步仓库,并推送当前分支
-				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-				{
-					Commands.Fetch(repo, "origin", new string[0], null, null);
-					if(repo.Head.TrackingDetails.AheadBy > 0)
-					{
-						repo.Network.Push(repo.Head);
-					}
-				}
+				Global.Git.Sync();
 			}
 			catch(Exception x)
 			{
@@ -90,6 +73,8 @@ namespace VMS
 			{
 				view.GroupDescriptions.Clear();
 				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
+
+				view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 			}
 		}
 
@@ -125,17 +110,6 @@ namespace VMS
 				}
 
 				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
-			}
-
-			//如果Head未在界面显示,则签出最后的分支
-			if(_branchInfos.FirstOrDefault(s => s.Name == _branchInfos.HeadName) == null)
-			{
-				var branch = _branchInfos.LastOrDefault();
-				if(branch != null)
-				{
-					Operate.Checkout(Global.Setting.LoaclRepoPath, branch.Name, branch.Type);
-					_branchInfos.HeadName = branch.Name;
-				}
 			}
 		}
 
@@ -190,25 +164,29 @@ namespace VMS
 		/// <summary>
 		/// 提交新版本
 		/// </summary>
-		/// <returns>提交成功, true: 否则,false</returns>
-		private bool Commit()
+		/// <returns>工程未更改或提交成功, true: 否则,false</returns>
+		public static bool Commit()
 		{
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var entries = repo.RetrieveStatus();
-				if(!entries.IsDirty || !repo.Head.IsTracking)
+				if(!entries.IsDirty)
 					return true;
 
-				List<string> verFiles = new List<string>(); //AssemblyInfo文件的相对路径
-				var allProperties = Directory.GetDirectories(Global.Setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories); //版本配置文件所在目录的相对路径
-				for(int i = 0; i < allProperties.Length; i++)
+				if(!repo.Head.IsTracking)
 				{
-					allProperties[i] = Path.GetDirectoryName(allProperties[i]).Substring(Global.Setting.LoaclRepoPath.Length).Replace('\\', '/');
+					if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", "禁用提交!", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+					{
+						repo.Reset(ResetMode.Hard);
+						return true;
+					}
+					return false;
 				}
 
-				var infos = new ObservableCollection<StatusEntryInfo>(); //文件信息
-				var commitWindow = new CommitWindow() { Owner = this };
-				commitWindow.BranchName.Text = repo.Head.FriendlyName;
+				//读取文件状态
+				var versionInfo = Global.ReadVersionInfo();
+				var assemblyList = Global.GetAssemblyInfo();
+				var status = new Collection<StatusEntryInfo>();
 				foreach(var item in entries)
 				{
 					switch(item.State)
@@ -217,77 +195,62 @@ namespace VMS
 					case FileStatus.ModifiedInWorkdir:
 					case FileStatus.TypeChangeInWorkdir:
 					case FileStatus.RenamedInWorkdir:
-						repo.Index.Add(item.FilePath);
-						infos.Add(new StatusEntryInfo() { FilePath = item.FilePath, State = item.State.ToString().Remove(1) });
-						foreach(var path in allProperties)
+					case FileStatus.DeletedFromWorkdir:
+						status.Add(new StatusEntryInfo() { FilePath = item.FilePath, FileStatus = item.State });
+						foreach(var assembly in assemblyList)
 						{
-							if(item.FilePath.Contains(path))
+							if(item.FilePath.Contains(assembly.ProjectPath))
 							{
-								var file = path + "/Properties/AssemblyInfo.cs";
-								if(!verFiles.Contains(file))
-								{
-									verFiles.Add(file);
-								}
+								assembly.IsModified = true;
 							}
 						}
 						break;
-
-					case FileStatus.DeletedFromWorkdir:
-						repo.Index.Remove(item.FilePath);
-						infos.Add(new StatusEntryInfo() { FilePath = item.FilePath, State = item.State.ToString().Remove(1) });
-						break;
-
 					default:
 						break;
 					}
 				}
 
-				commitWindow.Info.DataContext = infos;
-				if(commitWindow.ShowDialog() != true)
+				//填写提交信息
+				var commitText = CommitWindow.ShowWindow(Instance, status, versionInfo);
+				if(commitText == null)
 					return false;
 
-				//版本提交说明
-				var cmtText = new StringBuilder();
-				foreach(var item in verFiles)
+				//更新版本信息
+				versionInfo.VersionList=new List<string>();
+				foreach(var assembly in assemblyList)
 				{
-					if(AddVersion(Path.Combine(Global.Setting.LoaclRepoPath, item), out string ver))
-					{
-						cmtText.Append(item.Split('/')[0]);
-						cmtText.Append(' ');
-						cmtText.Append(ver);
-						cmtText.Append('\n');
-
-						repo.Index.Add(item);
-					}
+					assembly.HitVersion();
+					versionInfo.VersionList.Add(Path.GetFileName(assembly.ProjectPath) + " v" + assembly.Version.ToString());
 				}
-				cmtText.Append(commitWindow.Message.Text);
+				versionInfo.VersionNow = new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
+				Global.WriteVersionInfo(versionInfo);
 
 				//提交
-				ProgressWindow.Show(this, delegate
+				ProgressWindow.Show(Instance, delegate
 				{
-					repo.Index.Write();
-					var sign = new Signature(Global.Setting.User, Environment.MachineName, DateTime.Now);
-					repo.Commit(cmtText.ToString(), sign, sign);
-
-					var isRetry = false;
-					do
+					try
 					{
-						try
-						{
-							isRetry = false;
-							repo.Network.Push(repo.Head);
-						}
-						catch(Exception x)
-						{
-							Dispatcher.Invoke(delegate { isRetry = (MessageBox.Show(this, x.Message, "推送失败,请关闭其它应用后重试!", MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.OK); });
-						}
+						Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText);
+					}
+					catch(Exception x)
+					{
+						Instance.Dispatcher.Invoke(delegate { MessageBox.Show(Instance, x.Message, "推送失败,将在下次启动时尝试推送!", MessageBoxButton.OK, MessageBoxImage.Error); });
+					}
 
-					} while(isRetry);
 				}, delegate
 				{
 					var commit = repo.Head.Tip;
-					var info = _branchInfos.FirstOrDefault(p => p.Name.Equals(repo.Head.FriendlyName));
-					if(info != null)
+					var name = repo.Head.FriendlyName;
+					var info = _branchInfos.FirstOrDefault(p => p.Name.Equals(name));
+					if(info == null)
+					{
+						if(!System.Version.TryParse(name, out System.Version version))
+							return;
+
+						info = new BranchInfo { Type = GitType.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
+						_branchInfos.Add(info);
+					}
+					else
 					{
 						info.Sha = commit.Sha;
 						info.Author = commit.Author.Name;
@@ -297,39 +260,6 @@ namespace VMS
 				});
 			}
 			return true;
-		}
-
-		/// <summary>
-		/// 上传时,自动升级版本号
-		/// </summary>
-		/// <param name="file"></param>
-		/// <returns></returns>
-		private bool AddVersion(string file, out string newVersion)
-		{
-			newVersion = string.Empty;
-			try
-			{
-				var lines = File.ReadAllLines(file, Encoding.UTF8);
-				const string verKey = "[assembly: AssemblyFileVersion(\"";
-				for(int i = 0; i < lines.Length; i++)
-				{
-					if(lines[i].IndexOf(verKey) == 0)
-					{
-						var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
-						if(System.Version.TryParse(strVersion, out System.Version version))
-						{
-							newVersion = (new System.Version(version.Major, version.Minor, version.Build, version.Revision + 1)).ToString();
-							lines[i] = lines[i].Replace(strVersion, newVersion);
-						}
-						break;
-					}
-				}
-				File.WriteAllLines(file, lines, Encoding.UTF8);
-				return true;
-			}
-			catch(Exception)
-			{ }
-			return false;
 		}
 
 		/// <summary>
@@ -351,13 +281,8 @@ namespace VMS
 		{
 			if(Operate.Checkout(Global.Setting.LoaclRepoPath, mark, type))
 			{
-				(Application.Current.MainWindow as MainWindow)?.UpdateView();
+				Instance.UpdateView();
 			}
-		}
-
-		public static void CreateBranch()
-		{
-
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -387,6 +312,9 @@ namespace VMS
 
 		private void Package_Click(object sender, RoutedEventArgs e)
 		{
+			if(!Commit())
+				return;
+
 			ProgressWindow.Show(this, delegate
 			{
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))

@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using VMS.Model;
 
 namespace VMS
 {
@@ -27,6 +28,17 @@ namespace VMS
 		private void OK_Click(object sender, RoutedEventArgs e)
 		{
 			DialogResult = true;
+		}
+
+		public static string ShowWindow(Window owner, ICollection<StatusEntryInfo> status, VersionInfo version)
+		{
+			var commitWindow = new CommitWindow() { Owner = owner };
+			commitWindow.Status.DataContext = status;
+			commitWindow.Version.DataContext = version;
+			if(commitWindow.ShowDialog() != true)
+				return null;
+
+			return commitWindow.Message.Text;
 		}
 	}
 }

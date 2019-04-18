@@ -10,49 +10,41 @@ namespace VMS.Model
 	/// <summary>
 	/// Git版本差异信息
 	/// </summary>
-	class StatusEntryInfo
+	public class StatusEntryInfo
 	{
 		public string FilePath { get; set; }
-		public string State { get; set; }
+		public FileStatus FileStatus { get; set; }
+		public string State { get => FileStatus.ToString().Remove(1); }
 
 		private ICommand _diff;
 		public ICommand Diff
 		{
 			get
 			{
-				_diff = _diff ?? new DiffCommand();
-				return _diff;
-			}
-		}
-
-		class DiffCommand : ICommand
-		{
-			public event EventHandler CanExecuteChanged;
-			public bool CanExecute(object parameter) => true;
-			public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-
-			public void Execute(object parameter)
-			{
-				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+				_diff = _diff ?? new DelegateCommand((parameter)=> 
 				{
-					var info = parameter as StatusEntryInfo;
-					var tree = repo.Index.WriteToTree();
-					var blob = tree[info.FilePath]?.Target as Blob;
-					if(info == null || blob == null)
-						return;
+					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+					{
+						var info = parameter as StatusEntryInfo;
+						var tree = repo.Index.WriteToTree();
+						var blob = tree[info.FilePath]?.Target as Blob;
+						if(info == null || blob == null)
+							return;
 
-					try
-					{
-						var filePath = Path.GetTempFileName();
-						File.WriteAllText(filePath, blob.GetContentText());
-						File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
-						Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
+						try
+						{
+							var filePath = Path.GetTempFileName();
+							File.WriteAllText(filePath, blob.GetContentText());
+							File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
+							Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
+						}
+						catch(Exception x)
+						{
+							MessageBox.Show(x.Message);
+						}
 					}
-					catch(Exception x)
-					{
-						MessageBox.Show(x.Message);
-					}
-				}
+				});
+				return _diff;
 			}
 		}
 	}

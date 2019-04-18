@@ -13,7 +13,7 @@
 			<ColumnDefinition Width="72"/>
 		</Grid.ColumnDefinitions>
 
-		<DataGrid Name="BranchInfoGrid" Margin="2" Grid.Row="1" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" >
+		<DataGrid Name="BranchInfoGrid" Margin="2" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.GroupStyle>
 				<!-- Style for groups at top level. -->
 				<GroupStyle>
@@ -55,7 +55,7 @@
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="{x:Type DataGridCell}">
-								<ContentPresenter Margin="1,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+								<ContentPresenter Margin="5,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
 							</ControlTemplate>
 						</Setter.Value>
 					</Setter>
@@ -105,23 +105,13 @@
 										<Image Source="/VMS;component/Images/Branch.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="编辑版本信息" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-									<Button.Content>
-										<Image Source="/VMS;component/Images/Edit.png"/>
-									</Button.Content>
-								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="显示日志" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-									<Button.Content>
-										<Image Source="/VMS;component/Images/Log.png"/>
-									</Button.Content>
-								</Button>
 							</WrapPanel>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
 			</DataGrid.Columns>
 		</DataGrid>
-
+		
 		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="6">
 			<UniformGrid.Background>
 				<LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">

@@ -1,12 +1,14 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
+using LibGit2Sharp;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Windows.Data;
 using System.Windows.Input;
 using VMS.Model;
+using System.Linq;
+using static VMS.Operate;
+using System.Windows.Threading;
+using System.Windows;
+using System.IO;
 
 namespace VMS.ViewModel
 {
@@ -19,41 +21,39 @@ namespace VMS.ViewModel
 
 		public BranchListView()
 		{
-			AddCmd = new AddCommand();
-			ArchiveCmd = new ArchiveCommand();
-			CheckoutCmd = new CheckoutCommand();
-		}
-
-		class AddCommand : ICommand
-		{
-			public event EventHandler CanExecuteChanged;
-			public bool CanExecute(object parameter) => true;
-			public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-
-			public void Execute(object parameter)
+			AddCmd = new DelegateCommand((parameter) =>
 			{
-				switch(parameter)
+				if(parameter is BranchInfo info)
 				{
-				case BranchInfo info:
-//					MainWindow.CreateBranch(info.Name);
-					break;
+					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+					{
+						var entries = repo.RetrieveStatus();
+						if(entries.IsDirty)
+						{
+							MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
+							return;
+						}
 
-				case CollectionViewGroup group:
-//					MainWindow.CheckoutTag(group.Name as string);
-					break;
-				default:
-					break;
+						//创建新分支
+						var build = this.Max((o) => { return (o.Version.Major == info.Version.Major && o.Version.Minor == info.Version.Minor) ? o.Version.Build : 0; }) + 1; //当前版本定制号
+						var version = new System.Version(info.Version.Major, info.Version.Minor, build);
+						var name = version.ToString();
+						var branch = repo.Branches[name] ?? repo.Branches.Add(name, info.Sha);
+
+						Commands.Checkout(repo, branch);
+						repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
+
+						//更新版本信息
+						var versionInfo = Global.ReadVersionInfo();
+						versionInfo.VersionNow = version;
+						versionInfo.VersionBase = info.Version;
+						Global.WriteVersionInfo(versionInfo);
+					}
+					MainWindow.Commit();
 				}
-			}
-		}
+			});
 
-		class ArchiveCommand : ICommand
-		{
-			public event EventHandler CanExecuteChanged;
-			public bool CanExecute(object parameter) => true;
-			public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-
-			public void Execute(object parameter)
+			ArchiveCmd = new DelegateCommand((parameter) =>
 			{
 				if(parameter is BranchInfo info)
 				{
@@ -64,16 +64,9 @@ namespace VMS.ViewModel
 						Process.Start("explorer", "/select,\"" + name + "\"");
 					}
 				}
-			}
-		}
+			});
 
-		class CheckoutCommand : ICommand
-		{
-			public event EventHandler CanExecuteChanged;
-			public bool CanExecute(object parameter) => true;
-			public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-
-			public void Execute(object parameter)
+			CheckoutCmd = new DelegateCommand((parameter) =>
 			{
 				if(parameter is BranchInfo info)
 				{
@@ -89,7 +82,7 @@ namespace VMS.ViewModel
 						}
 					}
 				}
-			}
+			});
 		}
 	}
 }
