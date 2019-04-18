@@ -63,19 +63,16 @@
 			</DataGrid.CellStyle>
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
-					<Border BorderThickness="0" Background="#FF7896B9" Padding="10">
+					<Border BorderThickness="0" Background="#FFD5DCE2" Padding="10" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
 						<StackPanel Orientation="Vertical">
 							<StackPanel Orientation="Horizontal">
-								<TextBlock FontSize="12" Width="4000" Text=": " Foreground="AliceBlue" VerticalAlignment="Center" />
-								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding EmailAddress}" VerticalAlignment="Center" />
-							</StackPanel>
-							<StackPanel Orientation="Horizontal">
-								<TextBlock FontSize="12" Text="Phone: " Foreground="AliceBlue" VerticalAlignment="Center" />
-								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding Phone}" VerticalAlignment="Center" />
+								<TextBlock FontSize="18" Foreground="MidnightBlue" Text="{Binding VersionNow}" VerticalAlignment="Center" />
+								<TextBlock FontSize="16" Margin="2,0" Text="@" Foreground="Black" VerticalAlignment="Center" />
+								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding VersionBase}" VerticalAlignment="Center" />
 							</StackPanel>
 							<StackPanel Orientation="Horizontal">
 								<TextBlock FontSize="12" Text="Sales Person: " Foreground="AliceBlue" VerticalAlignment="Center" />
-								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding SalesPerson}" VerticalAlignment="Center" />
+								<TextBlock FontSize="16" Foreground="MidnightBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
 							</StackPanel>
 						</StackPanel>
 					</Border>

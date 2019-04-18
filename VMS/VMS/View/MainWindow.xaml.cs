@@ -44,24 +44,6 @@ namespace VMS
 			}
 		}
 
-		private void Init()
-		{
-			if(Global.Setting.User == null)
-			{
-				Dispatcher.Invoke(delegate { ShowSetWindow(); });
-			}
-			Directory.CreateDirectory(Global.Setting.PackageFolder);
-
-			try
-			{
-				Global.Git.Sync();
-			}
-			catch(Exception x)
-			{
-				Dispatcher.Invoke(delegate { MessageBox.Show(this, x.Message, "同步失败!"); });
-			}
-		}
-
 		/// <summary>
 		/// 绑定分支界面
 		/// </summary>
@@ -74,14 +56,15 @@ namespace VMS
 				view.GroupDescriptions.Clear();
 				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
 
+				view.SortDescriptions.Clear();
 				view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 			}
 		}
 
 		/// <summary>
-		/// 更新主界面
+		/// 更新界面
 		/// </summary>
-		private void UpdateView()
+		private void UpdateBranchInfo()
 		{
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
@@ -112,54 +95,6 @@ namespace VMS
 				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
 			}
 		}
-
-		//ListBoxItem CreateButtonItem(string name, string committishOrBranchSpec)
-		//{
-		//	var panel = new DockPanel();
-		//	var text = new TextBlock { Text = name };
-		//	var newBranch = new Button { Background = null, Margin = new Thickness(12, 0, 0, 0), BorderThickness = new Thickness(), Content = new Image() { Height = 32, Stretch = Stretch.Uniform, Source = new BitmapImage(new Uri("pack://application:,,,/VMS;Component/Images/Add.png")) }, ToolTip = "基于此版本新建" };
-		//	var openBranch = new Button { Background = null, Margin = new Thickness(12, 0, 0, 0), BorderThickness = new Thickness(), Content = new Image() { Height = 32, Stretch = Stretch.Uniform, Source = new BitmapImage(new Uri("pack://application:,,,/VMS;Component/Images/Checkout.png")) }, ToolTip = "切换到此版本" };
-		//	var item = new ListBoxItem() { Content = panel, HorizontalContentAlignment = HorizontalAlignment.Stretch };
-
-		//	newBranch.Click += delegate { Checkout(committishOrBranchSpec); };
-		//	openBranch.Click += delegate { Checkout(committishOrBranchSpec); };
-
-		//	DockPanel.SetDock(newBranch, Dock.Right);
-		//	DockPanel.SetDock(openBranch, Dock.Right);
-		//	panel.Children.Add(newBranch);
-		//	panel.Children.Add(openBranch);
-		//	panel.Children.Add(text);
-		//	return item;
-		//}
-
-		//void CreateBranch(Repository repo, Tag tag)
-		//{
-		//	var name = tag.FriendlyName + "-Auto";
-		//	var commit = repo.Lookup<Commit>(tag.Target.Id);
-		//	var bc = repo.Branches.Add(name, commit, true);
-		//	repo.Branches.Update(bc, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
-		//	repo.Network.Push(bc);
-
-
-		//	//General.ItemsSource = null;
-		//	//Special.ItemsSource = null;
-		//	//General.ItemsSource = _tagInfos;
-		//	//Special.ItemsSource = _branchInfos;
-		//	//var view = CollectionViewSource.GetDefaultView(BranchList.ItemsSource);
-		//	//view.GroupDescriptions.Clear();
-		//	//view.GroupDescriptions.Add(new PropertyGroupDescription("Author"));
-
-
-		//	//using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-		//	//{
-
-		//	//	//General.Items[].
-
-
-		//	//	//repo.ObjectDatabase.Archive(cmt, @"D:\a.zip");
-		//	//}
-
-		//}
 
 		/// <summary>
 		/// 提交新版本
@@ -281,13 +216,18 @@ namespace VMS
 		{
 			if(Operate.Checkout(Global.Setting.LoaclRepoPath, mark, type))
 			{
-				Instance.UpdateView();
+				Instance.UpdateBranchInfo();
 			}
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			ProgressWindow.Show(this, Init, UpdateView);
+			if(Global.Setting.User == null)
+			{
+				ShowSetWindow();
+			}
+			Directory.CreateDirectory(Global.Setting.PackageFolder);
+			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
 			BindingBranchInfo();
 		}
 

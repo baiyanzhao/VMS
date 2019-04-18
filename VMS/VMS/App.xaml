@@ -7,7 +7,8 @@
 		<ResourceDictionary>
 			<local:EmptyStringConvert x:Key="EmptyStringConvert"/>
 			<local:StringMatchConverter x:Key="StringMatchConverter"/>
-			
+			<local:BranchDetailConverter x:Key="BranchDetailConverter"/>
+
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="Style/ButtonStyle.xaml" />
 				<ResourceDictionary Source="Style/TabControl.xaml" />

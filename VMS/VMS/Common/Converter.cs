@@ -61,4 +61,20 @@ namespace VMS
 			return null;
 		}
 	}
+
+	/// <summary>
+	/// 字符串匹配
+	/// </summary>
+	class BranchDetailConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return Global.ReadVersionInfo(value);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return null;
+		}
+	}
 }

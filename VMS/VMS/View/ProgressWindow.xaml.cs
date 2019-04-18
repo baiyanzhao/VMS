@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
@@ -22,7 +23,7 @@ namespace VMS
 			e.Handled = true;	//屏蔽所有按键
 		}
 
-		public static void Show(Window owner, System.Action work, System.Action completed = null)
+		public static void Show(Window owner, Action work, Action completed = null)
 		{
 			ProgressWindow dlg = new ProgressWindow() { Owner = owner };
 			sInit = new BackgroundWorker() { WorkerReportsProgress = true };
@@ -34,7 +35,7 @@ namespace VMS
 					work?.Invoke();
 					Thread.Sleep(100);
 				}
-				catch(System.Exception x)
+				catch(Exception x)
 				{
 					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.StackTrace, x.Message); });
 				}
@@ -46,9 +47,9 @@ namespace VMS
 				{
 					completed?.Invoke();
 				}
-				catch(System.Exception x)
+				catch(Exception x)
 				{
-					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.StackTrace, x.Message); });
+					MessageBox.Show(owner, x.StackTrace, x.Message);
 				}
 				finally
 				{

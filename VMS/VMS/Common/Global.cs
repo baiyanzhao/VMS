@@ -176,6 +176,27 @@ namespace VMS
 		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO)) ?? new VersionInfo();
 
 		/// <summary>
+		/// 工程版本信息
+		/// </summary>
+		public static VersionInfo ReadVersionInfo(object sha)
+		{
+			if(sha is string branch)
+			{
+				try
+				{
+					using(var repo = new Repository(Setting.LoaclRepoPath))
+					{
+						var obj = repo.Lookup<Commit>(branch).Tree["Version.json"]?.Target as Blob;
+						return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+					}
+				}
+				catch
+				{ }
+			}
+			return null;
+		}
+
+		/// <summary>
 		/// 更新版本,并写入文件
 		/// </summary>
 		/// <param name="info"></param>

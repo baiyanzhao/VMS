@@ -16,12 +16,19 @@ namespace VMS.Model
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
 		}
 
-		public string Sha { get; set; }
 		public string Name { get; set; }
 		public GitType Type { get; set; }
 		public Version Version { get; set; }
 
-		string _author;
+		public string Sha
+		{
+			get => _sha; set
+			{
+				_sha = value;
+				OnPropertyChanged(p => Sha);
+			}
+		}
+
 		public string Author
 		{
 			get => _author;
@@ -32,7 +39,6 @@ namespace VMS.Model
 			}
 		}
 
-		string _message;
 		public string Message
 		{
 			get => _message;
@@ -43,7 +49,6 @@ namespace VMS.Model
 			}
 		}
 
-		DateTimeOffset _when;
 		public DateTimeOffset When
 		{
 			get => _when;
@@ -53,5 +58,10 @@ namespace VMS.Model
 				OnPropertyChanged(p => When);
 			}
 		}
+
+		private string _sha;
+		private string _author;
+		private string _message;
+		private DateTimeOffset _when;
 	}
 }
