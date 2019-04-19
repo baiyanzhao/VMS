@@ -20,7 +20,7 @@ namespace VMS
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public static MainWindow Instance;
+		static MainWindow Instance;
 		static BranchListView _branchInfos = new BranchListView(); //分支信息
 
 		public MainWindow()
@@ -94,6 +94,18 @@ namespace VMS
 
 				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
 			}
+		}
+
+		/// <summary>
+		/// 显示设置界面
+		/// </summary>
+		private void ShowSetWindow()
+		{
+			var setWindow = new SettingWindow() { Owner = this };
+			setWindow.TopPannel.DataContext = Global.Setting;
+			setWindow.ShowDialog();
+			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
+			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
 		}
 
 		/// <summary>
@@ -195,18 +207,6 @@ namespace VMS
 				});
 			}
 			return true;
-		}
-
-		/// <summary>
-		/// 显示设置界面
-		/// </summary>
-		private void ShowSetWindow()
-		{
-			var setWindow = new SettingWindow() { Owner = this };
-			setWindow.TopPannel.DataContext = Global.Setting;
-			setWindow.ShowDialog();
-			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
-			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
 		}
 
 		/// <summary>

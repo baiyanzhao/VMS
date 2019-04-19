@@ -92,7 +92,7 @@
 										<Image Source="/VMS;component/Images/Checkout.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="导出版本,另存为Zip文件" Focusable="False" Command="{Binding Path=DataContext.ArchiveCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ToolTip="导出版本,保存为归档文件" Focusable="False" Command="{Binding Path=DataContext.ArchiveCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/VMS;component/Images/Archive.png"/>
 									</Button.Content>
