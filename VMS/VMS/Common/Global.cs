@@ -14,8 +14,8 @@ namespace VMS
 	static class Global
 	{
 		const string FILE_VERSION_INFO = "Version.json";		//定制信息
-		const string FILE_PRESET = ".\\Sys\\Preset.json";   //预置
-		const string FILE_SETTING_LOCAL = "Sys\\Setting.json";  //设置
+		const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
+		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
 		static Preset _preset;
 		public static Setting Setting;
