@@ -1,14 +1,13 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.Script.Serialization;
-using System.Xml.Serialization;
 using System.Runtime.Serialization.Json;
 using VMS.Model;
+using LibGit2Sharp;
 
 namespace VMS
 {
