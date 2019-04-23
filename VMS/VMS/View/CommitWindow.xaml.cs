@@ -25,7 +25,7 @@ namespace VMS
             InitializeComponent();
         }
 
-		private void OK_Click(object sender, RoutedEventArgs e)
+		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
 			DialogResult = true;
 		}
