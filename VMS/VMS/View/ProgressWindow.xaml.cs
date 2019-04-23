@@ -33,11 +33,11 @@ namespace VMS
 				try
 				{
 					work?.Invoke();
-					Thread.Sleep(100);
+					Thread.Sleep(10);
 				}
 				catch(Exception x)
 				{
-					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.StackTrace, x.Message); });
+					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.Message + "\n" + x.StackTrace, "后台线程异常!"); });
 				}
 			};
 

@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
 using System.Linq.Expressions;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-using System.Runtime.Serialization.Json;
 using VMS.Model;
 
 namespace VMS
@@ -221,9 +220,8 @@ namespace VMS
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
 					Commands.Fetch(repo, "origin", new string[0], null, null);
-					if(repo.Head.TrackingDetails.AheadBy != 0)
+					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
-						//repo.Reset(ResetMode.Mixed);
 						repo.Network.Push(repo.Head);
 					}
 				}

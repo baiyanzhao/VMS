@@ -1,14 +1,10 @@
-﻿using System;
-using LibGit2Sharp;
+﻿using LibGit2Sharp;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using VMS.Model;
-using System.Linq;
-using static VMS.Operate;
-using System.Windows.Threading;
-using System.Windows;
-using System.IO;
 
 namespace VMS.ViewModel
 {
