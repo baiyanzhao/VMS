@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace VMS.Model
 {
@@ -8,11 +9,22 @@ namespace VMS.Model
 	/// </summary>
 	public class VersionInfo
 	{
+		public class StringProperty
+		{
+			public string Value { get; set; }
+		}
+
+		public class StringPair
+		{
+			public string Label { get; set; }
+			public string Value { get; set; }
+		}
+
 		public Version VersionNow { get; set; }
 		public Version VersionBase { get; set; }
 		public string Customer { get; set; }
 		public string OrderNumber { get; set; }
-		public List<string> KeyWords { get; set; }
-		public List<string> VersionList { get; set; }
+		public List<StringPair> VersionList { get; set; }
+		public ObservableCollection<StringProperty> KeyWords { get; set; }
 	}
 }

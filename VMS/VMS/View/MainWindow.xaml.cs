@@ -20,7 +20,7 @@ namespace VMS
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public static MainWindow Instance;
+		static MainWindow Instance;
 		static BranchListView _branchInfos = new BranchListView(); //分支信息
 
 		public MainWindow()
@@ -97,6 +97,18 @@ namespace VMS
 		}
 
 		/// <summary>
+		/// 显示设置界面
+		/// </summary>
+		private void ShowSetWindow()
+		{
+			var setWindow = new SettingWindow() { Owner = this };
+			setWindow.TopPannel.DataContext = Global.Setting;
+			setWindow.ShowDialog();
+			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
+			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
+		}
+
+		/// <summary>
 		/// 提交新版本
 		/// </summary>
 		/// <returns>工程未更改或提交成功, true: 否则,false</returns>
@@ -119,7 +131,6 @@ namespace VMS
 				}
 
 				//读取文件状态
-				var versionInfo = Global.ReadVersionInfo();
 				var assemblyList = Global.GetAssemblyInfo();
 				var status = new Collection<StatusEntryInfo>();
 				foreach(var item in entries)
@@ -146,18 +157,22 @@ namespace VMS
 				}
 
 				//填写提交信息
+				var versionInfo = Global.ReadVersionInfo();
+				versionInfo.KeyWords = versionInfo.KeyWords ?? new ObservableCollection<VersionInfo.StringProperty>();
 				var commitText = CommitWindow.ShowWindow(Instance, status, versionInfo);
 				if(commitText == null)
 					return false;
 
 				//更新版本信息
-				versionInfo.VersionList=new List<string>();
+				System.Version.TryParse(repo.Head.FriendlyName, out System.Version branchVersion);
+				versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
+
+				versionInfo.VersionList = new List<VersionInfo.StringPair>();
 				foreach(var assembly in assemblyList)
 				{
-					assembly.HitVersion();
-					versionInfo.VersionList.Add(Path.GetFileName(assembly.ProjectPath) + " v" + assembly.Version.ToString());
+					assembly.HitVersion(branchVersion == null ? 0 : branchVersion.Build);
+					versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
 				}
-				versionInfo.VersionNow = new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
 				Global.WriteVersionInfo(versionInfo);
 
 				//提交
@@ -172,7 +187,8 @@ namespace VMS
 						Instance.Dispatcher.Invoke(delegate { MessageBox.Show(Instance, x.Message, "推送失败,将在下次启动时尝试推送!", MessageBoxButton.OK, MessageBoxImage.Error); });
 					}
 
-				}, delegate
+				},
+				delegate
 				{
 					var commit = repo.Head.Tip;
 					var name = repo.Head.FriendlyName;
@@ -195,18 +211,6 @@ namespace VMS
 				});
 			}
 			return true;
-		}
-
-		/// <summary>
-		/// 显示设置界面
-		/// </summary>
-		private void ShowSetWindow()
-		{
-			var setWindow = new SettingWindow() { Owner = this };
-			setWindow.TopPannel.DataContext = Global.Setting;
-			setWindow.ShowDialog();
-			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
-			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
 		}
 
 		/// <summary>

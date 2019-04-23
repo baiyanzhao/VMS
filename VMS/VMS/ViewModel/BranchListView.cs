@@ -59,7 +59,7 @@ namespace VMS.ViewModel
 				{
 					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 					{
-						var name = Global.Setting.PackageFolder + info.Name + ".zip";
+						var name = Global.Setting.PackageFolder + info.Name + ".tar";
 						repo.ObjectDatabase.Archive(repo.Lookup<Commit>(info.Sha), name);
 						Process.Start("explorer", "/select,\"" + name + "\"");
 					}

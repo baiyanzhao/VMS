@@ -5,62 +5,71 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
-        Title="提交版本文件" Height="450" Width="800" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+        Title="提交版本文件" Height="500" Width="800" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
 	<Grid Background="#3278A080" FocusManager.FocusedElement="{Binding ElementName=Message}">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
+			<RowDefinition Height="2*"/>
+			<RowDefinition Height="5*"/>
 		</Grid.RowDefinitions>
-		<Grid>
+		<Grid Name="Version">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition />
 				<ColumnDefinition />
+				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<TextBox Name="Message" Margin="5,5,5,0" TextWrapping="Wrap" AcceptsReturn="True">
-				<TextBox.Style>
-					<Style TargetType="TextBox">
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Text, Converter= {StaticResource EmptyStringConvert}}" Value="False">
-								<Setter Property="Background">
-									<Setter.Value>
-										<VisualBrush AlignmentX="Left" AlignmentY="Top" Stretch="None">
-											<VisualBrush.Visual>
-												<TextBlock Padding="5,2" Background="Transparent" Foreground="Silver">提交信息[必填]</TextBlock>
-											</VisualBrush.Visual>
-										</VisualBrush>
-									</Setter.Value>
-								</Setter>
-							</DataTrigger>
-						</Style.Triggers>
+			<DockPanel>
+				<DockPanel DockPanel.Dock="Top" Margin="5,5,0,0">
+					<TextBlock Text="客户名称" Margin="2" VerticalAlignment="Center"/>
+					<TextBox Text="{Binding Customer}" Margin="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+				</DockPanel>
+				<DockPanel DockPanel.Dock="Top" Margin="5,5,0,0">
+					<TextBlock Text="订单编号" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+					<TextBox Text="{Binding OrderNumber}" Margin="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+				</DockPanel>
+				<TextBox Name="Message" DockPanel.Dock="Top" Margin="5,5,0,2" TextWrapping="Wrap" AcceptsReturn="True">
+					<TextBox.Style>
+						<Style TargetType="TextBox">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Text, Converter= {StaticResource EmptyStringConvert}}" Value="False">
+									<Setter Property="Background">
+										<Setter.Value>
+											<VisualBrush AlignmentX="Left" AlignmentY="Top" Stretch="None">
+												<VisualBrush.Visual>
+													<TextBlock Padding="5,2" Background="Transparent" Foreground="Silver">提交信息[必填]</TextBlock>
+												</VisualBrush.Visual>
+											</VisualBrush>
+										</Setter.Value>
+									</Setter>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBox.Style>
+				</TextBox>
+			</DockPanel>
+
+			<DataGrid Grid.Column="1" Margin="5,2" ItemsSource="{Binding KeyWords}" Background="{x:Null}" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" VerticalGridLinesBrush="LightGray" >
+				<DataGrid.ColumnHeaderStyle>
+					<Style TargetType="{x:Type DataGridColumnHeader}">
+						<Setter Property="HorizontalContentAlignment" Value="Center"/>
 					</Style>
-				</TextBox.Style>
-			</TextBox>
+				</DataGrid.ColumnHeaderStyle>
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="关键字" Width="*" Binding="{Binding Path=Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
+				</DataGrid.Columns>
+			</DataGrid>
 
-			<Grid Name="Version" Grid.Column="1">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition />
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<TextBlock Grid.Column="0" Grid.Row="0" Text="客户名称" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-				<TextBlock Grid.Column="0" Grid.Row="1" Text="订单编号" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-				<TextBox Grid.Column="1" Grid.Row="0" Name="Customer" Text="{Binding Customer}" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-				<TextBox Grid.Column="1" Grid.Row="1" Name="OrderNumber" Text="{Binding OrderNumber}" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-				<DataGrid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="5,0"/>
-
-				<TextBlock Grid.Column="2" Grid.Row="0" Text="版本" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-				<TextBlock Grid.Column="2" Grid.Row="1" Text="基础" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-				<TextBlock Grid.Column="3" Grid.Row="0" Text="{Binding VersionNow}" Margin="0,5,5,5" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Blue" />
-				<TextBlock Grid.Column="3" Grid.Row="1" Text="{Binding VersionBase}" Margin="0,5,5,5" HorizontalAlignment="Left" VerticalAlignment="Center" />
-				<Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Margin="5,0" Content="提交" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{Binding Text, ElementName=Message, Converter={StaticResource EmptyStringConvert}}" Width="75" Click="OK_Click" Focusable="False" IsDefault="True"/>
-			</Grid>
+			<DockPanel Grid.Column="2" LastChildFill="False">
+				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,5,0,0">
+					<TextBlock Text="基础:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+					<TextBlock Text="{Binding VersionBase}" Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+				</StackPanel>
+				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,5,0,0">
+					<TextBlock Text="版本:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+					<TextBlock Text="{Binding VersionNow}" Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Blue" />
+				</StackPanel>
+				<Button DockPanel.Dock="Bottom" Content="提交" Margin="5,2" HorizontalAlignment="Right" IsEnabled="{Binding Text, ElementName=Message, Converter={StaticResource EmptyStringConvert}}" Width="75" Click="Commit_Click" Focusable="False" IsDefault="True"/>
+			</DockPanel>
 		</Grid>
 
 		<GridSplitter Grid.Row="1" Margin="2" Height="2" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>

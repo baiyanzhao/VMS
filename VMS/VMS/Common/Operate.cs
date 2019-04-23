@@ -73,6 +73,7 @@ namespace VMS
 			catch(Exception x)
 			{
 				MessageBox.Show(x.Message, "切换版本库错误!");
+				return false;
 			}
 			return true;
 		}

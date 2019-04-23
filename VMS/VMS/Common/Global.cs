@@ -13,7 +13,7 @@ namespace VMS
 {
 	static class Global
 	{
-		const string FILE_VERSION_INFO = "Version.json";		//定制信息
+		const string FILE_VERSION_INFO = "Version.json";        //定制信息
 		const string FILE_PRESET = ".\\Sys\\Preset.json";   //预置
 		const string FILE_SETTING_LOCAL = "Sys\\Setting.json";  //设置
 
@@ -34,7 +34,7 @@ namespace VMS
 
 			//配置默认值
 			_preset = _preset ?? new Preset();
-			_preset.RepoUrl = _preset.RepoUrl ?? @"http://admin:admin@192.168.120.129:2507/r/Test.git";
+			_preset.RepoUrl = _preset.RepoUrl ?? @"http://admin:admin@svn:2507/r/Test.git";
 			_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
 			File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
 
@@ -75,9 +75,9 @@ namespace VMS
 			public System.Version Version { get; set; }
 
 			/// <summary>
-			/// 更新当前版本,如果工程修改则递增版本,并更新相应文件
+			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 			/// </summary>
-			public void HitVersion()
+			public void HitVersion(int versionBuild)
 			{
 				var lines = File.ReadAllLines(FilePath, Encoding.UTF8);
 				const string verKey = "[assembly: AssemblyFileVersion(\"";
@@ -90,7 +90,8 @@ namespace VMS
 						{
 							if(IsModified)
 							{
-								Version = (new System.Version(version.Major, version.Minor, version.Build, version.Revision + 1));
+								int revision = version.Build == versionBuild ? version.Revision + 1 : 0;
+								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
 								lines[i] = lines[i].Replace(strVersion, Version.ToString());
 								File.WriteAllLines(FilePath, lines, Encoding.UTF8);
 							}
@@ -185,7 +186,8 @@ namespace VMS
 				{
 					using(var repo = new Repository(Setting.LoaclRepoPath))
 					{
-						var obj = repo.Lookup<Commit>(branch).Tree["Version.json"]?.Target as Blob;
+						var commit = repo.Lookup<Commit>(branch);
+						var obj = commit.Tree["Version.json"]?.Target as Blob;
 						return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
 					}
 				}
@@ -217,11 +219,12 @@ namespace VMS
 				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
+					Commands.Fetch(repo, "origin", new string[0], null, null);
 					if(repo.Head.TrackingDetails.AheadBy != 0)
 					{
+						//repo.Reset(ResetMode.Mixed);
 						repo.Network.Push(repo.Head);
 					}
-					Commands.Fetch(repo, "origin", new string[0], null, null);
 				}
 			}
 
@@ -235,7 +238,33 @@ namespace VMS
 				Commands.Stage(repo, "*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
 				repo.Commit(message, sign, sign);
-				repo.Network.Push(repo.Head);
+				repo.Network.Push(repo.Head, new PushOptions()
+				{
+					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
+					{
+						return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
+					},
+					CertificateCheck = (certificate, valid, host) =>
+					{
+						return true;
+					},
+					OnPushTransferProgress = (int current, int total, long bytes) =>
+					{
+						return true;
+					},
+					OnNegotiationCompletedBeforePush = (updates) =>
+					{
+						return true;
+					},
+					OnPackBuilderProgress = (stage, current, total) =>
+					{
+						return true;
+					},
+					OnPushStatusError = (updates) =>
+					{
+						return;
+					}
+				});
 			}
 		}
 	}
