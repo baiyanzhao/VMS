@@ -4,7 +4,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
-namespace VMS
+namespace VMS.View
 {
 	/// <summary>
 	/// ProgressWindow.xaml 的交互逻辑

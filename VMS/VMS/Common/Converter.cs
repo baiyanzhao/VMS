@@ -69,7 +69,7 @@ namespace VMS
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			return Global.ReadVersionInfo(value);
+			return Global.ReadVersionInfo(value as string);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

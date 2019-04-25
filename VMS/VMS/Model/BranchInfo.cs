@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
-using static VMS.Operate;
 
 namespace VMS.Model
 {
@@ -16,10 +15,24 @@ namespace VMS.Model
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
 		}
 
+		/// <summary>
+		/// 名称
+		/// </summary>
 		public string Name { get; set; }
+
+		/// <summary>
+		/// 类型
+		/// </summary>
 		public GitType Type { get; set; }
+
+		/// <summary>
+		/// 版本
+		/// </summary>
 		public Version Version { get; set; }
 
+		/// <summary>
+		/// Git提交的Sha
+		/// </summary>
 		public string Sha
 		{
 			get => _sha; set
@@ -29,6 +42,9 @@ namespace VMS.Model
 			}
 		}
 
+		/// <summary>
+		/// 提交者
+		/// </summary>
 		public string Author
 		{
 			get => _author;
@@ -39,6 +55,9 @@ namespace VMS.Model
 			}
 		}
 
+		/// <summary>
+		/// 提交信息
+		/// </summary>
 		public string Message
 		{
 			get => _message;
@@ -49,6 +68,9 @@ namespace VMS.Model
 			}
 		}
 
+		/// <summary>
+		/// 提交时间
+		/// </summary>
 		public DateTimeOffset When
 		{
 			get => _when;

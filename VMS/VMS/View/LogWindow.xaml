@@ -1,14 +1,13 @@
-﻿<Window x:Class="VMS.View.MainWindow"
- xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
- xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
- xmlns:local="clr-namespace:VMS.ViewModel"
- mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded">
+﻿<Window x:Class="VMS.View.LogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VMS.View"
+        mc:Ignorable="d" WindowStartupLocation="CenterOwner" Height="600" Width="1024">
 	<Window.Resources>
 		<Style TargetType="DataGridCell">
 			<Setter Property="Focusable" Value="True"/>
-			<!--<Setter Property="VerticalContentAlignment" Value="Center"/>-->
 			<Setter Property="Foreground" Value="Black"/>
 			<Setter Property="Background" Value="{x:Null}"/>
 			<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -21,45 +20,8 @@
 			</Setter>
 		</Style>
 	</Window.Resources>
-	<Grid Name="Panel" Background="AliceBlue">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition/>
-			<ColumnDefinition Width="72"/>
-		</Grid.ColumnDefinitions>
-
-		<DataGrid Name="BranchInfoGrid" Margin="2" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
-			<DataGrid.GroupStyle>
-				<!-- Style for groups at top level. -->
-				<GroupStyle>
-					<GroupStyle.ContainerStyle>
-						<Style TargetType="{x:Type GroupItem}">
-							<Setter Property="Margin" Value="0,0,0,5"/>
-							<Setter Property="Template">
-								<Setter.Value>
-									<ControlTemplate TargetType="{x:Type GroupItem}">
-										<Expander Background="#FF112255" BorderBrush="#FF002255" Foreground="#FFEEEEEE" BorderThickness="1,1,1,5">
-											<Expander.IsExpanded>
-												<MultiBinding Mode="OneWay" Converter="{StaticResource StringMatchConverter}">
-													<Binding Path="DataContext.HeadName" RelativeSource="{RelativeSource AncestorType=DataGrid}" Mode="OneWay" />
-													<Binding Path= "Name" Mode="OneWay" />
-												</MultiBinding>
-											</Expander.IsExpanded>
-											<Expander.Header>
-												<DockPanel>
-													<TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0"/>
-												</DockPanel>
-											</Expander.Header>
-											<Expander.Content>
-												<ItemsPresenter />
-											</Expander.Content>
-										</Expander>
-									</ControlTemplate>
-								</Setter.Value>
-							</Setter>
-						</Style>
-					</GroupStyle.ContainerStyle>
-				</GroupStyle>
-			</DataGrid.GroupStyle>
+	<Grid>
+		<DataGrid Name="BranchInfoGrid" Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
 					<Border BorderThickness="1" BorderBrush="DarkBlue" Background="#FFD5DCE2" Padding="8" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
@@ -114,11 +76,10 @@
 				</DataTemplate>
 			</DataGrid.RowDetailsTemplate>
 			<DataGrid.Columns>
-				<DataGridTextColumn Width="Auto" MinWidth="72" Binding="{Binding Version}" Foreground="DarkBlue"/>
 				<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="16" />
 				<DataGridTextColumn Width="Auto" MinWidth="64" Binding="{Binding Author}" Foreground="DarkSlateGray" FontSize="16"/>
 				<DataGridTextColumn Width="Auto" MinWidth="150" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Foreground="DarkSlateGray" FontSize="16"/>
-				<DataGridTemplateColumn Width="Auto" MinWidth="200">
+				<DataGridTemplateColumn Width="Auto">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
 							<WrapPanel>
@@ -137,56 +98,11 @@
 										<Image Source="/VMS;component/Images/Branch.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,0,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="查看历史记录" Focusable="False" Command="{Binding Path=DataContext.LogCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-									<Button.Content>
-										<Image Source="/VMS;component/Images/Log.png"/>
-									</Button.Content>
-								</Button>
 							</WrapPanel>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
 			</DataGrid.Columns>
 		</DataGrid>
-
-		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="6">
-			<UniformGrid.Background>
-				<LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
-					<GradientStop Color="#FF7896B9" />
-					<GradientStop Color="#FFD4E1EC" Offset="0.03" />
-				</LinearGradientBrush>
-			</UniformGrid.Background>
-
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Open_Click" ToolTip="打开当前工程">
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="打开"/>
-					<Image Margin="4,2" Source="/VMS;component/Images/VisualStudio.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Explorer_Click" ToolTip="打开工程文件夹">
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="浏览"/>
-					<Image Margin="4,2" Source="/VMS;component/Images/Explorer.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Commit_Click" ToolTip="将更改上传到服务器" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="提交"/>
-					<Image Margin="4,2" Source="/VMS;component/Images/Upload.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Package_Click" ToolTip="生成当前版本的安装包" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="安装包"/>
-					<Image Margin="4,2" Source="/VMS;component/Images/Package.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="设置"/>
-					<Image Margin="4,2" Source="/VMS;component/Images/Set.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-		</UniformGrid>
 	</Grid>
 </Window>

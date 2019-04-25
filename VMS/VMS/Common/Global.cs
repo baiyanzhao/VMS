@@ -11,6 +11,16 @@ using VMS.Model;
 
 namespace VMS
 {
+	/// <summary>
+	/// 签出类型
+	/// </summary>
+	public enum GitType
+	{
+		Branch,
+		Sha,
+		Tag,
+	}
+
 	static class Global
 	{
 		const string FILE_VERSION_INFO = "Version.json";		//定制信息
@@ -173,27 +183,25 @@ namespace VMS
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO)) ?? new VersionInfo();
+		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO));
 
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo(object sha)
+		public static VersionInfo ReadVersionInfo(string sha)
 		{
-			if(sha is string branch)
+			try
 			{
-				try
+				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
-					using(var repo = new Repository(Setting.LoaclRepoPath))
-					{
-						var commit = repo.Lookup<Commit>(branch);
-						var obj = commit.Tree["Version.json"]?.Target as Blob;
-						return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
-					}
+					var commit = repo.Lookup<Commit>(sha);
+					var obj = commit.Tree["Version.json"]?.Target as Blob;
+					return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
 				}
-				catch
-				{ }
 			}
+			catch
+			{ }
+
 			return null;
 		}
 
