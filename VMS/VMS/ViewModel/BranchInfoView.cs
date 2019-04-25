@@ -14,94 +14,102 @@ namespace VMS.ViewModel
 	/// </summary>
 	class BranchInfoView : ObservableCollection<BranchInfo>
 	{
-		public ICommand AddCmd { get; }
-		public ICommand LogCmd { get; }
-		public ICommand ArchiveCmd { get; }
-		public ICommand CheckoutCmd { get; }
+		/// <summary>
+		/// 
+		/// </summary>
 		public string HeadName { get; set; }
 
-		public BranchInfoView()
+		/// <summary>
+		/// 新建分支
+		/// </summary>
+		public ICommand AddCmd { get; } = new DelegateCommand((parameter) =>
 		{
-			AddCmd = new DelegateCommand((parameter) =>
+			if(parameter is BranchInfo info)
 			{
-				if(parameter is BranchInfo info)
+				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+				{
+					var entries = repo.RetrieveStatus();
+					if(entries.IsDirty)
+					{
+						MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
+						return;
+					}
+
+					//创建新分支
+					var build = repo.Branches.Max((o) =>
+					{
+						if(o.IsRemote && System.Version.TryParse(o.FriendlyName.Split('/').Last(), out System.Version ver) && ver.Major == info.Version.Major && ver.Minor == info.Version.Minor)
+							return ver.Build;
+						return 0;
+					}) + 1; //当前版本定制号
+					var version = new System.Version(info.Version.Major, info.Version.Minor, build);
+					var name = version.ToString();
+					if(repo.Branches[name] != null)
+					{
+						Commands.Checkout(repo, info.Sha);
+					}
+					var branch = repo.Branches.Add(name, info.Sha, true);
+
+					Commands.Checkout(repo, branch);
+					repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
+
+					//更新版本信息
+					var versionInfo = Global.ReadVersionInfo(info.Sha);
+					versionInfo = versionInfo ?? new VersionInfo();
+					versionInfo.VersionBase = versionInfo.VersionNow;// new System.Version(versionInfo.VersionNow.ToString());
+					versionInfo.VersionNow = version;
+					Global.WriteVersionInfo(versionInfo);
+				}
+				MainWindow.Commit();
+			}
+		});
+
+		/// <summary>
+		/// 显示历史记录
+		/// </summary>
+		public ICommand LogCmd { get; } = new DelegateCommand((parameter) =>
+		{
+			if(parameter is BranchInfo info)
+			{
+				MainWindow.ShowLogWindow(info.Name, info.Version, info.Sha);
+			}
+		});
+
+		/// <summary>
+		/// 另存为归档文件
+		/// </summary>
+		public ICommand ArchiveCmd { get; } = new DelegateCommand((parameter) =>
+		{
+			if(parameter is BranchInfo info)
+			{
+				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+				{
+					var name = Global.Setting.PackageFolder + info.Name + ".tar";
+					repo.ObjectDatabase.Archive(repo.Lookup<Commit>(info.Sha), name);
+					Process.Start("explorer", "/select,\"" + name + "\"");
+				}
+			}
+		});
+
+		/// <summary>
+		/// 检出
+		/// </summary>
+		public ICommand CheckoutCmd { get; } = new DelegateCommand((parameter) =>
+		{
+			if(parameter is BranchInfo info)
+			{
+				if(Operate.Checkout(Global.Setting.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
 				{
 					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 					{
-						var entries = repo.RetrieveStatus();
-						if(entries.IsDirty)
-						{
-							MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
-							return;
-						}
-
-						//创建新分支
-						var build = repo.Branches.Max((o) =>
-						{
-							if(o.IsRemote && System.Version.TryParse(o.FriendlyName.Split('/').Last(), out System.Version ver) && ver.Major == info.Version.Major && ver.Minor == info.Version.Minor)
-								return ver.Build;
-							return 0;
-						}) + 1; //当前版本定制号
-						var version = new System.Version(info.Version.Major, info.Version.Minor, build);
-						var name = version.ToString();
-						if(repo.Branches[name] != null)
-						{
-							Commands.Checkout(repo, info.Sha);
-						}
-						var branch = repo.Branches.Add(name, info.Sha, true);
-
-						Commands.Checkout(repo, branch);
-						repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
-
-						//更新版本信息
-						var versionInfo = Global.ReadVersionInfo(info.Sha);
-						versionInfo = versionInfo ?? new VersionInfo();
-						versionInfo.VersionBase = versionInfo.VersionNow;// new System.Version(versionInfo.VersionNow.ToString());
-						versionInfo.VersionNow = version;
-						Global.WriteVersionInfo(versionInfo);
-					}
-					MainWindow.Commit();
-				}
-			});
-
-			LogCmd = new DelegateCommand((parameter) =>
-			{
-				if(parameter is BranchInfo info)
-				{
-					MainWindow.ShowLogWindow(info.Name, info.Version, info.Sha);
-				}
-			});
-
-			ArchiveCmd = new DelegateCommand((parameter) =>
-			{
-				if(parameter is BranchInfo info)
-				{
-					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-					{
-						var name = Global.Setting.PackageFolder + info.Name + ".tar";
-						repo.ObjectDatabase.Archive(repo.Lookup<Commit>(info.Sha), name);
-						Process.Start("explorer", "/select,\"" + name + "\"");
+						var commit = repo.Head.Tip;
+						info.Sha = commit.Sha;
+						info.Author = commit.Author.Name;
+						info.When = commit.Author.When;
+						info.Message = commit.MessageShort;
 					}
 				}
-			});
-
-			CheckoutCmd = new DelegateCommand((parameter) =>
-			{
-				if(parameter is BranchInfo info)
-				{
-					if(Operate.Checkout(Global.Setting.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
-					{
-						using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-						{
-							var commit = repo.Head.Tip;
-							info.Sha = commit.Sha;
-							info.Author = commit.Author.Name;
-							info.When = commit.Author.When;
-							info.Message = commit.MessageShort;
-						}
-					}
-				}
-			});
-		}
+			}
+		});
 	}
 }
