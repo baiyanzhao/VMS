@@ -14,12 +14,15 @@ namespace VMS.ViewModel
 	/// </summary>
 	class BranchInfoView : ObservableCollection<BranchInfo>
 	{
+		public ICommand AddCmd { get; }
+		public ICommand LogCmd { get; }
+		public ICommand ArchiveCmd { get; }
+		public ICommand CheckoutCmd { get; }
 		public string HeadName { get; set; }
 
-		/// <summary>
-		/// 新建分支
-		/// </summary>
-		public ICommand AddCmd { get; } = new DelegateCommand((parameter) =>
+		public BranchInfoView()
+		{
+			AddCmd = new DelegateCommand((parameter) =>
 			{
 				if(parameter is BranchInfo info)
 				{
@@ -61,52 +64,44 @@ namespace VMS.ViewModel
 				}
 			});
 
-		/// <summary>
-		/// 显示历史记录
-		/// </summary>
-		public ICommand LogCmd { get; } = new DelegateCommand((parameter) =>
-		{
-			if(parameter is BranchInfo info)
+			LogCmd = new DelegateCommand((parameter) =>
 			{
-				MainWindow.ShowLogWindow(info.Name, info.Version, info.Sha);
-			}
-		});
-
-		/// <summary>
-		/// 另存为归档文件
-		/// </summary>
-		public ICommand ArchiveCmd { get; } = new DelegateCommand((parameter) =>
-		{
-			if(parameter is BranchInfo info)
-			{
-				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+				if(parameter is BranchInfo info)
 				{
-					var name = Global.Setting.PackageFolder + info.Name + ".tar";
-					repo.ObjectDatabase.Archive(repo.Lookup<Commit>(info.Sha), name);
-					Process.Start("explorer", "/select,\"" + name + "\"");
+					MainWindow.ShowLogWindow(info.Name, info.Version, info.Sha);
 				}
-			}
-		});
+			});
 
-		/// <summary>
-		/// 检出
-		/// </summary>
-		public ICommand CheckoutCmd { get; } = new DelegateCommand((parameter) =>
-		{
-			if(parameter is BranchInfo info)
+			ArchiveCmd = new DelegateCommand((parameter) =>
 			{
-				if(Operate.Checkout(Global.Setting.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
+				if(parameter is BranchInfo info)
 				{
 					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 					{
-						var commit = repo.Head.Tip;
-						info.Sha = commit.Sha;
-						info.Author = commit.Author.Name;
-						info.When = commit.Author.When;
-						info.Message = commit.MessageShort;
+						var name = Global.Setting.PackageFolder + info.Name + ".tar";
+						repo.ObjectDatabase.Archive(repo.Lookup<Commit>(info.Sha), name);
+						Process.Start("explorer", "/select,\"" + name + "\"");
 					}
 				}
-			}
-		});
+			});
+
+			CheckoutCmd = new DelegateCommand((parameter) =>
+			{
+				if(parameter is BranchInfo info)
+				{
+					if(Operate.Checkout(Global.Setting.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
+					{
+						using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+						{
+							var commit = repo.Head.Tip;
+							info.Sha = commit.Sha;
+							info.Author = commit.Author.Name;
+							info.When = commit.Author.When;
+							info.Message = commit.MessageShort;
+						}
+					}
+				}
+			});
+		}
 	}
 }
