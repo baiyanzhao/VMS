@@ -24,10 +24,10 @@ namespace VMS
 	static class Global
 	{
 		const string FILE_VERSION_INFO = "Version.json";		//定制信息
-		const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
+		//const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
 		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
-		static Preset _preset;
+		//static Preset _preset;
 		public static Setting Setting;
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 
@@ -36,20 +36,20 @@ namespace VMS
 			//配置文件
 			try
 			{
-				_preset = new JavaScriptSerializer().Deserialize<Preset>(File.ReadAllText(FILE_PRESET));
+				//_preset = new JavaScriptSerializer().Deserialize<Preset>(File.ReadAllText(FILE_PRESET));
 				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
 			}
 			catch(Exception)
 			{ }
 
 			//配置默认值
-			_preset = _preset ?? new Preset();
-			_preset.RepoUrl = _preset.RepoUrl ?? @"http://admin:admin@svn:2507/r/Test.git";
-			_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
-			File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
+			//_preset = _preset ?? new Preset();
+			//_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
+			//File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
 
 			Setting = Setting ?? new Setting();
 			Setting.PackageFolder = Setting.PackageFolder ?? @"D:\Package\";
+			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/Straw.git";
 			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 		}
@@ -221,7 +221,7 @@ namespace VMS
 				//创建仓库
 				if(Repository.Discover(Setting.LoaclRepoPath) == null)
 				{
-					Repository.Clone(_preset.RepoUrl, Setting.LoaclRepoPath);
+					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
 				}
 
 				//同步仓库,并推送当前分支
