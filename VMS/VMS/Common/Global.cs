@@ -65,6 +65,11 @@ namespace VMS
 		public class AssemblyInfo
 		{
 			/// <summary>
+			/// 工程类型
+			/// </summary>
+			public ProjectType Type { get; set; }
+
+			/// <summary>
 			/// 工程文件夹的相对路径
 			/// </summary>
 			public string ProjectPath { get; set; }
@@ -87,10 +92,14 @@ namespace VMS
 			/// <summary>
 			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 			/// </summary>
+			/// <param name="versionBuild">版本定制号</param>
 			public void HitVersion(int versionBuild)
 			{
+				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
+				//C工程版本格式为: static const char VERSION[] = "1.0.0.0";
+				var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
+
 				var lines = File.ReadAllLines(FilePath, Encoding.UTF8);
-				const string verKey = "[assembly: AssemblyFileVersion(\"";
 				for(int i = 0; i < lines.Length; i++)
 				{
 					if(lines[i].IndexOf(verKey) == 0)
@@ -114,6 +123,8 @@ namespace VMS
 					}
 				}
 			}
+
+			public enum ProjectType { C, CSharp }
 		}
 
 		/// <summary>
@@ -122,6 +133,8 @@ namespace VMS
 		public static IList<AssemblyInfo> GetAssemblyInfo()
 		{
 			var list = new List<AssemblyInfo>();
+
+			//检索C#工程版本配置
 			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories))
 			{
 				var file = Path.Combine(item, "AssemblyInfo.cs");
@@ -131,9 +144,26 @@ namespace VMS
 				list.Add(new AssemblyInfo()
 				{
 					FilePath = file,
+					Type = AssemblyInfo.ProjectType.CSharp,
 					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
 				});
 			}
+
+			//检索C工程版本
+			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Inc", SearchOption.AllDirectories))
+			{
+				var file = Path.Combine(item, "Version.h");
+				if(!File.Exists(file))
+					continue;
+
+				list.Add(new AssemblyInfo()
+				{
+					FilePath = file,
+					Type = AssemblyInfo.ProjectType.C,
+					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
+				});
+			}
+
 			return list;
 		}
 

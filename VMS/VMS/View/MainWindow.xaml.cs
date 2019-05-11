@@ -288,6 +288,7 @@ namespace VMS.View
 
 			ProgressWindow.Show(this, delegate
 			{
+				//生成解决方案
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
 					Process.Start(new ProcessStartInfo
@@ -297,10 +298,10 @@ namespace VMS.View
 						UseShellExecute = false,
 						CreateNoWindow = true,
 						WindowStyle = ProcessWindowStyle.Hidden
-
 					}).WaitForExit();
 				}
 
+				//生成自解压安装包
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
@@ -319,6 +320,13 @@ namespace VMS.View
 						WindowStyle = ProcessWindowStyle.Hidden
 					}).WaitForExit();
 				}
+
+				//复制hex文件
+				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
+				{
+					File.Copy(item, Path.Combine(Global.Setting.PackageFolder, Path.GetFileName(item)), true);
+				}
+
 				Process.Start(Global.Setting.PackageFolder);
 			});
 		}
