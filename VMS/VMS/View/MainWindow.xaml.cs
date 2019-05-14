@@ -131,7 +131,7 @@ namespace VMS.View
 		/// <summary>
 		/// 提交新版本
 		/// </summary>
-		/// <returns>工程未更改或提交成功, true: 否则,false</returns>
+		/// <returns>工程未更改, null; 提交成功, true: 否则,false</returns>
 		public static bool? Commit()
 		{
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
@@ -281,6 +281,9 @@ namespace VMS.View
 			}
 		}
 
+		/// <summary>
+		/// 生成安装包
+		/// </summary>
 		private void Package_Click(object sender, RoutedEventArgs e)
 		{
 			if(Commit() == false)
@@ -288,6 +291,8 @@ namespace VMS.View
 
 			ProgressWindow.Show(this, delegate
 			{
+				var version = Global.ReadVersionInfo()?.VersionNow?.ToString();
+
 				//生成解决方案
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
@@ -313,7 +318,7 @@ namespace VMS.View
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]))),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]) + " v" + version)),
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,

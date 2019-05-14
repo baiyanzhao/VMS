@@ -224,10 +224,24 @@ namespace VMS
 			{
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
-					var commit = repo.Lookup<Commit>(sha);
-					var obj = commit.Tree["Version.json"]?.Target as Blob;
-					return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+					return ReadVersionInfo(repo.Lookup<Commit>(sha));
 				}
+			}
+			catch
+			{ }
+
+			return null;
+		}
+
+		/// <summary>
+		/// 工程版本信息
+		/// </summary>
+		public static VersionInfo ReadVersionInfo(Commit commit)
+		{
+			try
+			{
+				var obj = commit.Tree["Version.json"]?.Target as Blob;
+				return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
 			}
 			catch
 			{ }
