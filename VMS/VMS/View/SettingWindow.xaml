@@ -36,8 +36,8 @@
 			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<TextBlock Text="用户名" Grid.Row="0" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-		<TextBlock Text="库存储位置" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-		<TextBlock Text="安装包路径" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="工程目录" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="安装包目录" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="差异查看器" Grid.Row="3" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="仓库URL" Grid.Row="4" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 

@@ -15,7 +15,7 @@ namespace VMS.ViewModel
 	class BranchInfoView : ObservableCollection<BranchInfo>
 	{
 		/// <summary>
-		/// 
+		/// Git当前分支名称
 		/// </summary>
 		public string HeadName { get; set; }
 

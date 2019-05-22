@@ -54,7 +54,7 @@ namespace VMS
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 		}
 
-		public static string Text<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
+		public static string MakeText<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
 		{
 			return (e.Body as MemberExpression)?.Member.Name;
 		}
@@ -168,7 +168,7 @@ namespace VMS
 		}
 
 		/// <summary>
-		/// XML序列化
+		/// 序列化
 		/// </summary>
 		static bool WriteObject<T>(string path, T val) where T : class
 		{
@@ -187,7 +187,7 @@ namespace VMS
 		}
 
 		/// <summary>
-		/// XML反序列化
+		/// 反序列化
 		/// </summary>
 		static T ReadObject<T>(string path) where T : class
 		{
