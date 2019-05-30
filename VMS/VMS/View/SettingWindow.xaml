@@ -1,4 +1,4 @@
-﻿<Window x:Class="VMS.SettingWindow"
+﻿<Window x:Class="VMS.View.SettingWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -33,15 +33,18 @@
 			<RowDefinition/>
 			<RowDefinition/>
 			<RowDefinition/>
+			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<TextBlock Text="用户名" Grid.Row="0" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-		<TextBlock Text="库存储位置" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-		<TextBlock Text="安装包路径" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="工程目录" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="安装包目录" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="差异查看器" Grid.Row="3" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="仓库URL" Grid.Row="4" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 
 		<TextBox Text="{Binding User}" Foreground="DarkBlue" Grid.Row="0" Grid.Column="1" MaxLength="16" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding LoaclRepoPath}" Foreground="Gray" Grid.Row="1" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
+		<TextBox Text="{Binding RepoUrl}" Foreground="Gray" Grid.Row="4" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 	</Grid>
 </Window>

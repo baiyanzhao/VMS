@@ -15,37 +15,28 @@ namespace VMS.Model
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
 		public string State { get => FileStatus.ToString().Remove(1); }
-
-		private ICommand _diff;
-		public ICommand Diff
+		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			get
+			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
-				_diff = _diff ?? new DelegateCommand((parameter)=> 
-				{
-					using(var repo = new Repository(Global.Setting.LoaclRepoPath))
-					{
-						var info = parameter as StatusEntryInfo;
-						var tree = repo.Index.WriteToTree();
-						var blob = tree[info.FilePath]?.Target as Blob;
-						if(info == null || blob == null)
-							return;
+				var info = parameter as StatusEntryInfo;
+				var tree = repo.Index.WriteToTree();
+				var blob = tree[info.FilePath]?.Target as Blob;
+				if(info == null || blob == null)
+					return;
 
-						try
-						{
-							var filePath = Path.GetTempFileName();
-							File.WriteAllText(filePath, blob.GetContentText());
-							File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
-							Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
-						}
-						catch(Exception x)
-						{
-							MessageBox.Show(x.Message);
-						}
-					}
-				});
-				return _diff;
+				try
+				{
+					var filePath = Path.GetTempFileName();
+					File.WriteAllText(filePath, blob.GetContentText());
+					File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
+					Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
+				}
+				catch(Exception x)
+				{
+					MessageBox.Show(x.Message);
+				}
 			}
-		}
+		});
 	}
 }

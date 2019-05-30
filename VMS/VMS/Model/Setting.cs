@@ -8,7 +8,6 @@ namespace VMS.Model
 	/// </summary>
 	public class Preset
 	{
-		public string RepoUrl { get; set; }
 		public List<User> Users { get; set; }
 		public List<string> Lables { get; set; }
 
@@ -25,6 +24,7 @@ namespace VMS.Model
 	public class Setting
 	{
 		public string User { get; set; }
+		public string RepoUrl { get; set; }
 		public string LoaclRepoPath { get; set; }
 		public string PackageFolder { get; set; }
 		public string CompareToolPath { get; set; }
