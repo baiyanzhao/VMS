@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>VMS</RootNamespace>
     <AssemblyName>VMS</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -29,23 +29,23 @@
     <UpdatePeriodically>true</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <UpdateUrl>http://svn/VMS/</UpdateUrl>
-    <SupportUrl>http://svn/VMS/</SupportUrl>
+    <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
+    <SupportUrl>http://192.168.1.49/VMS/</SupportUrl>
     <ProductName>版本管理</ProductName>
     <PublisherName>Ainuo</PublisherName>
     <SuiteName>VMS</SuiteName>
-    <MinimumRequiredVersion>1.0.0.26</MinimumRequiredVersion>
+    <MinimumRequiredVersion>1.0.0.32</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.htm</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>37</ApplicationRevision>
+    <ApplicationRevision>40</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <BootstrapperComponentsLocation>Absolute</BootstrapperComponentsLocation>
-    <BootstrapperComponentsUrl>http://svn/VMS</BootstrapperComponentsUrl>
+    <BootstrapperComponentsUrl>http://192.168.1.49/VMS/</BootstrapperComponentsUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -68,10 +68,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>FA6B7C9A6A18EFDC9FCC27A1D2D53012A3C6A660</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>8B8011C10612D72B2F1B439268B12754A47744E9</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>VMS_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -79,14 +80,21 @@
   <PropertyGroup>
     <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>VMS.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup />
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LibGit2Sharp, Version=0.26.0.0, Culture=neutral, PublicKeyToken=7cbde695407f0333, processorArchitecture=MSIL">
@@ -122,9 +130,9 @@
     <Compile Include="Common\Converter.cs" />
     <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\VersionInfo.cs" />
-    <Compile Include="ViewModel\BranchListView.cs" />
-    <Compile Include="View\BranchWindow.xaml.cs">
-      <DependentUpon>BranchWindow.xaml</DependentUpon>
+    <Compile Include="ViewModel\BranchInfoView.cs" />
+    <Compile Include="View\LogWindow.xaml.cs">
+      <DependentUpon>LogWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\CommitWindow.xaml.cs">
       <DependentUpon>CommitWindow.xaml</DependentUpon>
@@ -135,7 +143,7 @@
     <Compile Include="View\SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="View\BranchWindow.xaml">
+    <Page Include="View\LogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -5,27 +5,23 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Data;
 using VMS.Model;
 using VMS.ViewModel;
-using static VMS.Operate;
 
-namespace VMS
+namespace VMS.View
 {
 	/// <summary>
 	/// MainWindow.xaml 的交互逻辑
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		static MainWindow Instance;
-		static BranchListView _branchInfos = new BranchListView(); //分支信息
+		static BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
 
 		public MainWindow()
 		{
-			Instance = this;
 			InitializeComponent();
 			Title = "源程序版本管理系统 v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 		}
@@ -101,24 +97,48 @@ namespace VMS
 		/// </summary>
 		private void ShowSetWindow()
 		{
-			var setWindow = new SettingWindow() { Owner = this };
-			setWindow.TopPannel.DataContext = Global.Setting;
-			setWindow.ShowDialog();
+			var window = new SettingWindow() { Owner = this };
+			window.TopPannel.DataContext = Global.Setting;
+			window.ShowDialog();
 			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
 			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
+		}
+
+		public static void ShowLogWindow(string name, System.Version version, string sha)
+		{
+			BranchInfoView infos = new BranchInfoView();
+			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			{
+				var commit = repo.Lookup<Commit>(sha);
+				if(commit == null)
+					return;
+
+				while(true)
+				{
+					infos.Add(new BranchInfo { Name = name, Version = version, Type = GitType.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+					commit = commit.Parents.FirstOrDefault();
+					if(commit == null)
+						break;
+				}
+			}
+
+			var window = new LogWindow() { Owner = Application.Current.MainWindow };
+			window.Title = name;
+			window.DataContext = infos;
+			window.ShowDialog();
 		}
 
 		/// <summary>
 		/// 提交新版本
 		/// </summary>
-		/// <returns>工程未更改或提交成功, true: 否则,false</returns>
-		public static bool Commit()
+		/// <returns>工程未更改, null; 提交成功, true: 否则,false</returns>
+		public static bool? Commit()
 		{
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var entries = repo.RetrieveStatus();
 				if(!entries.IsDirty)
-					return true;
+					return null;
 
 				if(!repo.Head.IsTracking)
 				{
@@ -158,8 +178,19 @@ namespace VMS
 
 				//填写提交信息
 				var versionInfo = Global.ReadVersionInfo();
+				versionInfo = versionInfo ?? new VersionInfo();
 				versionInfo.KeyWords = versionInfo.KeyWords ?? new ObservableCollection<VersionInfo.StringProperty>();
-				var commitText = CommitWindow.ShowWindow(Instance, status, versionInfo);
+
+				Window instance = null;
+				foreach(Window item in Application.Current.Windows)
+				{
+					if(item.IsActive)
+					{
+						instance = item;
+						break;
+					}
+				}
+				var commitText = CommitWindow.ShowWindow(instance, status, versionInfo);
 				if(commitText == null)
 					return false;
 
@@ -176,7 +207,7 @@ namespace VMS
 				Global.WriteVersionInfo(versionInfo);
 
 				//提交
-				ProgressWindow.Show(Instance, delegate
+				ProgressWindow.Show(instance, delegate
 				{
 					try
 					{
@@ -184,7 +215,7 @@ namespace VMS
 					}
 					catch(Exception x)
 					{
-						Instance.Dispatcher.Invoke(delegate { MessageBox.Show(Instance, x.Message, "推送失败,将在下次启动时尝试推送!", MessageBoxButton.OK, MessageBoxImage.Error); });
+						instance.Dispatcher.Invoke(delegate { MessageBox.Show(instance, x.Message, "推送失败,将在下次启动时尝试推送!", MessageBoxButton.OK, MessageBoxImage.Error); });
 					}
 
 				},
@@ -211,17 +242,6 @@ namespace VMS
 				});
 			}
 			return true;
-		}
-
-		/// <summary>
-		/// 签出版本
-		/// </summary>
-		public static void Checkout(string mark, Operate.GitType type)
-		{
-			if(Operate.Checkout(Global.Setting.LoaclRepoPath, mark, type))
-			{
-				Instance.UpdateBranchInfo();
-			}
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -251,16 +271,29 @@ namespace VMS
 
 		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
-			Commit();
+			if(Commit() == null)
+			{
+				using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+				{
+					_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
+				}
+				MessageBox.Show("当前版本无任何更改!", _branchInfos.HeadName);
+			}
 		}
 
+		/// <summary>
+		/// 生成安装包
+		/// </summary>
 		private void Package_Click(object sender, RoutedEventArgs e)
 		{
-			if(!Commit())
+			if(Commit() == false)
 				return;
 
 			ProgressWindow.Show(this, delegate
 			{
+				var version = Global.ReadVersionInfo()?.VersionNow?.ToString();
+
+				//生成解决方案
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
 					Process.Start(new ProcessStartInfo
@@ -270,10 +303,10 @@ namespace VMS
 						UseShellExecute = false,
 						CreateNoWindow = true,
 						WindowStyle = ProcessWindowStyle.Hidden
-
 					}).WaitForExit();
 				}
 
+				//生成自解压安装包
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
@@ -285,13 +318,20 @@ namespace VMS
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]))),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]) + " v" + version)),
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
 						WindowStyle = ProcessWindowStyle.Hidden
 					}).WaitForExit();
 				}
+
+				//复制hex文件
+				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
+				{
+					File.Copy(item, Path.Combine(Global.Setting.PackageFolder, Path.GetFileName(item)), true);
+				}
+
 				Process.Start(Global.Setting.PackageFolder);
 			});
 		}

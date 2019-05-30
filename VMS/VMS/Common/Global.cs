@@ -1,23 +1,33 @@
-﻿using System;
+﻿using LibGit2Sharp;
+using System;
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
 using System.Linq.Expressions;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Script.Serialization;
-using System.Runtime.Serialization.Json;
 using VMS.Model;
-using LibGit2Sharp;
 
 namespace VMS
 {
+	/// <summary>
+	/// 签出类型
+	/// </summary>
+	public enum GitType
+	{
+		Branch,
+		Sha,
+		Tag,
+	}
+
 	static class Global
 	{
 		const string FILE_VERSION_INFO = "Version.json";		//定制信息
-		const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
+		//const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
 		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
-		static Preset _preset;
+		//static Preset _preset;
 		public static Setting Setting;
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 
@@ -26,25 +36,25 @@ namespace VMS
 			//配置文件
 			try
 			{
-				_preset = new JavaScriptSerializer().Deserialize<Preset>(File.ReadAllText(FILE_PRESET));
+				//_preset = new JavaScriptSerializer().Deserialize<Preset>(File.ReadAllText(FILE_PRESET));
 				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
 			}
 			catch(Exception)
 			{ }
 
 			//配置默认值
-			_preset = _preset ?? new Preset();
-			_preset.RepoUrl = _preset.RepoUrl ?? @"http://admin:admin@svn:2507/r/Test.git";
-			_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
-			File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
+			//_preset = _preset ?? new Preset();
+			//_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
+			//File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
 
 			Setting = Setting ?? new Setting();
 			Setting.PackageFolder = Setting.PackageFolder ?? @"D:\Package\";
+			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/Straw.git";
 			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 		}
 
-		public static string Text<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
+		public static string MakeText<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
 		{
 			return (e.Body as MemberExpression)?.Member.Name;
 		}
@@ -54,6 +64,11 @@ namespace VMS
 		/// </summary>
 		public class AssemblyInfo
 		{
+			/// <summary>
+			/// 工程类型
+			/// </summary>
+			public ProjectType Type { get; set; }
+
 			/// <summary>
 			/// 工程文件夹的相对路径
 			/// </summary>
@@ -77,10 +92,14 @@ namespace VMS
 			/// <summary>
 			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 			/// </summary>
+			/// <param name="versionBuild">版本定制号</param>
 			public void HitVersion(int versionBuild)
 			{
+				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
+				//C工程版本格式为: static const char VERSION[] = "1.0.0.0";
+				var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
+
 				var lines = File.ReadAllLines(FilePath, Encoding.UTF8);
-				const string verKey = "[assembly: AssemblyFileVersion(\"";
 				for(int i = 0; i < lines.Length; i++)
 				{
 					if(lines[i].IndexOf(verKey) == 0)
@@ -104,6 +123,8 @@ namespace VMS
 					}
 				}
 			}
+
+			public enum ProjectType { C, CSharp }
 		}
 
 		/// <summary>
@@ -112,6 +133,8 @@ namespace VMS
 		public static IList<AssemblyInfo> GetAssemblyInfo()
 		{
 			var list = new List<AssemblyInfo>();
+
+			//检索C#工程版本配置
 			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories))
 			{
 				var file = Path.Combine(item, "AssemblyInfo.cs");
@@ -121,14 +144,31 @@ namespace VMS
 				list.Add(new AssemblyInfo()
 				{
 					FilePath = file,
+					Type = AssemblyInfo.ProjectType.CSharp,
 					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
 				});
 			}
+
+			//检索C工程版本
+			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Inc", SearchOption.AllDirectories))
+			{
+				var file = Path.Combine(item, "Version.h");
+				if(!File.Exists(file))
+					continue;
+
+				list.Add(new AssemblyInfo()
+				{
+					FilePath = file,
+					Type = AssemblyInfo.ProjectType.C,
+					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
+				});
+			}
+
 			return list;
 		}
 
 		/// <summary>
-		/// XML序列化
+		/// 序列化
 		/// </summary>
 		static bool WriteObject<T>(string path, T val) where T : class
 		{
@@ -147,7 +187,7 @@ namespace VMS
 		}
 
 		/// <summary>
-		/// XML反序列化
+		/// 反序列化
 		/// </summary>
 		static T ReadObject<T>(string path) where T : class
 		{
@@ -173,27 +213,39 @@ namespace VMS
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO)) ?? new VersionInfo();
+		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO));
 
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo(object sha)
+		public static VersionInfo ReadVersionInfo(string sha)
 		{
-			if(sha is string branch)
+			try
 			{
-				try
+				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
-					using(var repo = new Repository(Setting.LoaclRepoPath))
-					{
-						var commit = repo.Lookup<Commit>(branch);
-						var obj = commit.Tree["Version.json"]?.Target as Blob;
-						return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
-					}
+					return ReadVersionInfo(repo.Lookup<Commit>(sha));
 				}
-				catch
-				{ }
 			}
+			catch
+			{ }
+
+			return null;
+		}
+
+		/// <summary>
+		/// 工程版本信息
+		/// </summary>
+		public static VersionInfo ReadVersionInfo(Commit commit)
+		{
+			try
+			{
+				var obj = commit.Tree["Version.json"]?.Target as Blob;
+				return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+			}
+			catch
+			{ }
+
 			return null;
 		}
 
@@ -213,16 +265,15 @@ namespace VMS
 				//创建仓库
 				if(Repository.Discover(Setting.LoaclRepoPath) == null)
 				{
-					Repository.Clone(_preset.RepoUrl, Setting.LoaclRepoPath);
+					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
 				}
 
 				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
 					Commands.Fetch(repo, "origin", new string[0], null, null);
-					if(repo.Head.TrackingDetails.AheadBy != 0)
+					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
-						//repo.Reset(ResetMode.Mixed);
 						repo.Network.Push(repo.Head);
 					}
 				}
