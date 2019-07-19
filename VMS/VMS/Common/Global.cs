@@ -48,8 +48,8 @@ namespace VMS
 			//File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
 
 			Setting = Setting ?? new Setting();
-			Setting.PackageFolder = Setting.PackageFolder ?? @"D:\Package\";
-			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/Straw.git";
+            Setting.PackageFolder = Setting.PackageFolder ?? Path.GetTempPath() + @"Package\";
+			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/xxx.git";
 			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 		}

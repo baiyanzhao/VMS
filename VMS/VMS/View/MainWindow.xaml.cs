@@ -217,7 +217,6 @@ namespace VMS.View
 					{
 						instance.Dispatcher.Invoke(delegate { MessageBox.Show(instance, x.Message, "推送失败,将在下次启动时尝试推送!", MessageBoxButton.OK, MessageBoxImage.Error); });
 					}
-
 				},
 				delegate
 				{
