@@ -95,7 +95,7 @@
 			</DataGrid.CellStyle>
 			<DataGrid.Columns>
 				<DataGridTextColumn Width="*" Binding="{Binding FilePath}"/>
-				<DataGridTextColumn Width="16" Binding="{Binding State}" Foreground="SteelBlue"/>
+				<DataGridTextColumn Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
 				<DataGridTemplateColumn Width="36">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>

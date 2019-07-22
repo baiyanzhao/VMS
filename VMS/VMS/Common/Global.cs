@@ -271,7 +271,14 @@ namespace VMS
 				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
-					Commands.Fetch(repo, "origin", new string[0], null, null);
+					repo.Network.Fetch(Setting.RepoUrl, new string[0], new FetchOptions()
+					{
+						CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
+						{
+							return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
+						}
+					});
+
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
 						repo.Network.Push(repo.Head);
@@ -286,7 +293,7 @@ namespace VMS
 			/// <param name="message">信息</param>
 			public static void Commit(Repository repo, string message)
 			{
-				Commands.Stage(repo, "*");
+				repo.Stage("*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
 				repo.Commit(message, sign, sign);
 				repo.Network.Push(repo.Head, new PushOptions()
@@ -294,10 +301,6 @@ namespace VMS
 					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
 					{
 						return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
-					},
-					CertificateCheck = (certificate, valid, host) =>
-					{
-						return true;
 					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{

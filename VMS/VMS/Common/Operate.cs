@@ -29,7 +29,7 @@ namespace VMS
 				committishOrBranchSpec = mark;
 				try
 				{
-					Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, null, null);
+					repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
 				}
 				catch(Exception x)
 				{
@@ -49,7 +49,7 @@ namespace VMS
 
 			try
 			{
-				Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
+				repo.Checkout(committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
 				if(type == GitType.Branch && !repo.Head.IsTracking)
 				{
 					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });

@@ -46,11 +46,11 @@ namespace VMS.ViewModel
 					var name = version.ToString();
 					if(repo.Branches[name] != null)
 					{
-						Commands.Checkout(repo, info.Sha);
+						repo.Checkout(info.Sha);
 					}
 					var branch = repo.Branches.Add(name, info.Sha, true);
 
-					Commands.Checkout(repo, branch);
+					repo.Checkout(branch);
 					repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
 
 					//更新版本信息

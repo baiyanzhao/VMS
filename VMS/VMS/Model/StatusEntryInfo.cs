@@ -14,21 +14,20 @@ namespace VMS.Model
 	{
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
-		public string State { get => FileStatus.ToString().Remove(1); }
+		public string State { get => FileStatus.ToString()/*.Remove(1)*/; }
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
 			using (var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var info = parameter as StatusEntryInfo;
-				var tree = repo.Index.WriteToTree();
-				var blob = tree[info.FilePath]?.Target as Blob;
-				if (info == null || blob == null)
+				var blob = repo.Head.Tip.Tree?[info.FilePath]?.Target as Blob;
+				if(info == null || blob == null)
 					return;
 
 				try
 				{
 					var filePath = Path.GetTempFileName();
-					using (var stream = blob.GetContentStream())
+					using(var stream = blob.GetContentStream())
 					{
 						var bytes = new byte[stream.Length];
 						stream.Read(bytes, 0, bytes.Length);
@@ -37,7 +36,7 @@ namespace VMS.Model
 					File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
 					Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
 				}
-				catch (Exception x)
+				catch(Exception x)
 				{
 					MessageBox.Show(x.Message);
 				}
