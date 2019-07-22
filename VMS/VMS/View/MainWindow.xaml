@@ -47,6 +47,7 @@
 											<Expander.Header>
 												<DockPanel>
 													<TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0"/>
+													<TextBlock FontWeight="Normal" Text="{Binding Path=ItemCount, StringFormat=数量: {0}}" Margin="16,0,0,0"/>
 												</DockPanel>
 											</Expander.Header>
 											<Expander.Content>

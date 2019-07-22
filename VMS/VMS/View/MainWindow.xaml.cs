@@ -106,7 +106,7 @@ namespace VMS.View
 
 		public static void ShowLogWindow(string name, System.Version version, string sha)
 		{
-			BranchInfoView infos = new BranchInfoView();
+			var infos = new BranchInfoView();
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var commit = repo.Lookup<Commit>(sha);
