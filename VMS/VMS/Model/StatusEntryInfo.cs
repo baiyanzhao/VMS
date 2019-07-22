@@ -17,22 +17,27 @@ namespace VMS.Model
 		public string State { get => FileStatus.ToString().Remove(1); }
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using (var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var info = parameter as StatusEntryInfo;
 				var tree = repo.Index.WriteToTree();
 				var blob = tree[info.FilePath]?.Target as Blob;
-				if(info == null || blob == null)
+				if (info == null || blob == null)
 					return;
 
 				try
 				{
 					var filePath = Path.GetTempFileName();
-					File.WriteAllText(filePath, blob.GetContentText());
+					using (var stream = blob.GetContentStream())
+					{
+						var bytes = new byte[stream.Length];
+						stream.Read(bytes, 0, bytes.Length);
+						File.WriteAllBytes(filePath, bytes);
+					}
 					File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
 					Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
 				}
-				catch(Exception x)
+				catch (Exception x)
 				{
 					MessageBox.Show(x.Message);
 				}
