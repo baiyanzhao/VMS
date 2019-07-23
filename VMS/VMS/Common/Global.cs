@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -24,7 +25,7 @@ namespace VMS
 	static class Global
 	{
 		const string FILE_VERSION_INFO = "Version.json";		//定制信息
-		//const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
+																//const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
 		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
 		//static Preset _preset;
@@ -48,7 +49,7 @@ namespace VMS
 			//File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
 
 			Setting = Setting ?? new Setting();
-            Setting.PackageFolder = Setting.PackageFolder ?? Path.GetTempPath() + @"Package\";
+			Setting.PackageFolder = Setting.PackageFolder ?? Path.GetTempPath() + @"Package\";
 			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/xxx.git";
 			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
@@ -191,7 +192,7 @@ namespace VMS
 		/// </summary>
 		static T ReadObject<T>(string path) where T : class
 		{
-			T val = default(T);
+			T val = default;
 			if(!File.Exists(path))
 				return val;
 
@@ -271,14 +272,7 @@ namespace VMS
 				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
-					repo.Network.Fetch(Setting.RepoUrl, new string[0], new FetchOptions()
-					{
-						CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
-						{
-							return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
-						}
-					});
-
+					repo.Network.Fetch(repo.Network.Remotes.First());
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
 						repo.Network.Push(repo.Head);

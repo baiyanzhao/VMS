@@ -28,6 +28,7 @@ namespace VMS.View
 
 		~MainWindow()
 		{
+			//清理临时文件
 			foreach(var item in Directory.GetFiles(Path.GetTempPath(), "*.tmp", SearchOption.TopDirectoryOnly))
 			{
 				try
@@ -49,9 +50,11 @@ namespace VMS.View
 			var view = CollectionViewSource.GetDefaultView(BranchInfoGrid.ItemsSource);
 			if(view != null)
 			{
+				//按版本分组
 				view.GroupDescriptions.Clear();
 				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
 
+				//排序
 				view.SortDescriptions.Clear();
 				view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 			}

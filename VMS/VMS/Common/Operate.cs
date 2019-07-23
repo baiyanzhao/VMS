@@ -18,7 +18,7 @@ namespace VMS
 			var entries = repo.RetrieveStatus();
 			if(entries.IsDirty)
 			{
-				if(MessageBox.Show("目录中有文件尚未上传,切换分支将导致所有更改被还原.", "是否继续!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+				if(MessageBox.Show("目录中有文件尚未上传,切换分支将撤销所有更改.", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
 					return false;
 			}
 
