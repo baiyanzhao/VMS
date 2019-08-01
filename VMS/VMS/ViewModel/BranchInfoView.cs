@@ -109,6 +109,7 @@ namespace VMS.ViewModel
 						info.Author = commit.Author.Name;
 						info.When = commit.Author.When;
 						info.Message = commit.MessageShort;
+						MessageBox.Show(info.Author + "\r" + info.Message + "\r" + info.When, "检出版本: " + info.Name);
 					}
 				}
 			}
