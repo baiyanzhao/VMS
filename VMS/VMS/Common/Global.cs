@@ -267,6 +267,10 @@ namespace VMS
 				if(Repository.Discover(Setting.LoaclRepoPath) == null)
 				{
 					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
+					using(var repo = new Repository(Setting.LoaclRepoPath))
+					{
+						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });
+					}
 				}
 
 				//同步仓库,并推送当前分支

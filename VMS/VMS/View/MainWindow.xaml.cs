@@ -42,25 +42,6 @@ namespace VMS.View
 		}
 
 		/// <summary>
-		/// 绑定分支界面
-		/// </summary>
-		private void BindingBranchInfo()
-		{
-			BranchInfoGrid.DataContext = _branchInfos;
-			var view = CollectionViewSource.GetDefaultView(BranchInfoGrid.ItemsSource);
-			if(view != null)
-			{
-				//按版本分组
-				view.GroupDescriptions.Clear();
-				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
-
-				//排序
-				view.SortDescriptions.Clear();
-				view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
-			}
-		}
-
-		/// <summary>
 		/// 更新界面
 		/// </summary>
 		private void UpdateBranchInfo()
@@ -92,6 +73,20 @@ namespace VMS.View
 				}
 
 				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
+			}
+
+			//分组和排序显示
+			BranchInfoGrid.UpdateLayout();  //更新布局,否则显示错位
+			var view = CollectionViewSource.GetDefaultView(BranchInfoGrid.ItemsSource);
+			if(view != null)
+			{
+				//按版本分组
+				view.GroupDescriptions.Clear();
+				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
+
+				//排序
+				view.SortDescriptions.Clear();
+				view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 			}
 		}
 
@@ -145,7 +140,7 @@ namespace VMS.View
 
 				if(!repo.Head.IsTracking)
 				{
-					if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", "禁用提交!", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+					if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", "提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
 					{
 						repo.Reset(ResetMode.Hard);
 						return true;
@@ -252,9 +247,10 @@ namespace VMS.View
 			{
 				ShowSetWindow();
 			}
+
+			BranchInfoGrid.DataContext = _branchInfos;  //先设定上下文,再更新数据
 			Directory.CreateDirectory(Global.Setting.PackageFolder);
 			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
-			BindingBranchInfo();
 		}
 
 		private void Open_Click(object sender, RoutedEventArgs e)
