@@ -18,7 +18,7 @@ namespace VMS.View
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		static BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
+		private static readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
 
 		public MainWindow()
 		{
@@ -56,7 +56,7 @@ namespace VMS.View
 						continue;
 
 					var name = tag.FriendlyName;
-					if(!System.Version.TryParse(name, out System.Version version))
+					if(!System.Version.TryParse(name, out var version))
 						continue;
 
 					_branchInfos.Add(new BranchInfo { Type = GitType.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
@@ -66,7 +66,7 @@ namespace VMS.View
 				{
 					var commit = branch.Tip;
 					var name = branch.FriendlyName.Split('/').Last();
-					if(commit == null || !System.Version.TryParse(name, out System.Version version))
+					if(commit == null || !System.Version.TryParse(name, out var version))
 						continue;
 
 					_branchInfos.Add(new BranchInfo { Type = GitType.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
@@ -75,19 +75,10 @@ namespace VMS.View
 				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
 			}
 
-			//分组和排序显示
-			BranchInfoGrid.UpdateLayout();  //更新布局,否则显示错位
-			var view = CollectionViewSource.GetDefaultView(BranchInfoGrid.ItemsSource);
-			if(view != null)
-			{
-				//按版本分组
-				view.GroupDescriptions.Clear();
-				view.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
-
-				//排序
-				view.SortDescriptions.Clear();
-				view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
-			}
+			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
+			BranchInfoGrid.DataContext = _branchInfos;  //设定上下文
+			BranchInfoGrid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
+			BranchInfoGrid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 		}
 
 		/// <summary>
@@ -248,7 +239,6 @@ namespace VMS.View
 				ShowSetWindow();
 			}
 
-			BranchInfoGrid.DataContext = _branchInfos;  //先设定上下文,再更新数据
 			Directory.CreateDirectory(Global.Setting.PackageFolder);
 			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
 		}
