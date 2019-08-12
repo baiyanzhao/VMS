@@ -35,10 +35,20 @@ namespace VMS.ViewModel
 						return;
 					}
 
+					try
+					{
+						repo.Network.Fetch(repo.Network.Remotes.First());
+					}
+					catch
+					{
+						MessageBox.Show("连接服务器失败,请检查网络连接或重启软件后重试!", "同步失败");
+						return;
+					}
+
 					//创建新分支
 					var build = repo.Branches.Max((o) =>
 					{
-						if(o.IsRemote && System.Version.TryParse(o.FriendlyName.Split('/').Last(), out System.Version ver) && ver.Major == info.Version.Major && ver.Minor == info.Version.Minor)
+						if(o.IsRemote && System.Version.TryParse(o.FriendlyName.Split('/').Last(), out var ver) && ver.Major == info.Version.Major && ver.Minor == info.Version.Minor)
 							return ver.Build;
 						return 0;
 					}) + 1; //当前版本定制号
@@ -48,19 +58,24 @@ namespace VMS.ViewModel
 					{
 						repo.Checkout(info.Sha);
 					}
-					var branch = repo.Branches.Add(name, info.Sha, true);
 
+					var branch = repo.Branches.Add(name, info.Sha, true);
 					repo.Checkout(branch);
 					repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
 
 					//更新版本信息
 					var versionInfo = Global.ReadVersionInfo(info.Sha);
 					versionInfo = versionInfo ?? new VersionInfo();
-					versionInfo.VersionBase = versionInfo.VersionNow;// new System.Version(versionInfo.VersionNow.ToString());
+					versionInfo.VersionBase = versionInfo.VersionNow;
 					versionInfo.VersionNow = version;
 					Global.WriteVersionInfo(versionInfo);
+
+					if(MainWindow.Commit(repo) != true)	//提交新分支,提交失败则删除新分支
+					{
+						repo.Checkout(info.Sha);
+						repo.Branches.Remove(branch);
+					}
 				}
-				MainWindow.Commit();
 			}
 		});
 
@@ -86,6 +101,7 @@ namespace VMS.ViewModel
 				{
 					var cmt = repo.Lookup<Commit>(info.Sha);
 					var version = Global.ReadVersionInfo(cmt)?.VersionNow?.ToString();
+					version = version == null ? info.Name : version + " "+ info.Author;
 					var name = Global.Setting.PackageFolder + (version ?? info.Name) + ".tar";
 					repo.ObjectDatabase.Archive(cmt, name);
 					Process.Start("explorer", "/select,\"" + name + "\"");
