@@ -1,9 +1,9 @@
-﻿using LibGit2Sharp;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using LibGit2Sharp;
 using VMS.Model;
 using VMS.View;
 
@@ -70,7 +70,7 @@ namespace VMS.ViewModel
 					versionInfo.VersionNow = version;
 					Global.WriteVersionInfo(versionInfo);
 
-					if(MainWindow.Commit(repo) != true)	//提交新分支,提交失败则删除新分支
+					if(MainWindow.Commit(repo) != true) //提交新分支,提交失败则删除新分支
 					{
 						repo.Checkout(info.Sha);
 						repo.Branches.Remove(branch);
@@ -101,7 +101,7 @@ namespace VMS.ViewModel
 				{
 					var cmt = repo.Lookup<Commit>(info.Sha);
 					var version = Global.ReadVersionInfo(cmt)?.VersionNow?.ToString();
-					version = version == null ? info.Name : version + " "+ info.Author;
+					version = version == null ? info.Name : version + " " + info.Author;
 					var name = Global.Setting.PackageFolder + (version ?? info.Name) + ".tar";
 					repo.ObjectDatabase.Archive(cmt, name);
 					Process.Start("explorer", "/select,\"" + name + "\"");

@@ -1,5 +1,4 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Data;
+using LibGit2Sharp;
 using VMS.Model;
 using VMS.ViewModel;
 
@@ -36,7 +36,7 @@ namespace VMS.View
 					File.SetAttributes(item, FileAttributes.Normal);
 					File.Delete(item);
 				}
-				catch(Exception)
+				catch
 				{ }
 			}
 		}
@@ -77,6 +77,7 @@ namespace VMS.View
 
 			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
 			BranchInfoGrid.DataContext = _branchInfos;  //设定上下文
+			BranchInfoGrid.UpdateLayout();  //分组显示前,先更新布局,防止分组折叠后,部分列显示不完整.
 			BranchInfoGrid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
 			BranchInfoGrid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 		}
@@ -204,7 +205,10 @@ namespace VMS.View
 				catch(Exception x)
 				{
 					err = true;
-					instance.Dispatcher.Invoke(delegate { MessageBox.Show(instance, x.Message, "连接服务器失败,请检查网络连接或重启软件后重试!", MessageBoxButton.OK, MessageBoxImage.Error); });
+					instance.Dispatcher.Invoke(delegate
+					{
+						MessageBox.Show(instance, x.Message, "连接服务器失败,请检查网络连接或重启软件后重试!", MessageBoxButton.OK, MessageBoxImage.Error);
+					});
 				}
 			});
 
@@ -217,7 +221,7 @@ namespace VMS.View
 			if(info == null)
 			{
 				if(!System.Version.TryParse(name, out var version))
-					return true;	//如果上传非版本分支,如master, 界面不更新
+					return true; //如果上传非版本分支,如master, 界面不更新
 
 				info = new BranchInfo { Type = GitType.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 				_branchInfos.Add(info);

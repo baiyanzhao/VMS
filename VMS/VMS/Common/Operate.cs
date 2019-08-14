@@ -1,12 +1,12 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
+using LibGit2Sharp;
 
 namespace VMS
 {
 	public static class Operate
-    {
+	{
 		/// <summary>
 		/// 更新并签出指定版本的工程
 		/// </summary>

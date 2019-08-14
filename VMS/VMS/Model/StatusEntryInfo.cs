@@ -1,9 +1,9 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using LibGit2Sharp;
 
 namespace VMS.Model
 {
@@ -14,10 +14,10 @@ namespace VMS.Model
 	{
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
-		public string State { get => FileStatus.ToString()/*.Remove(1)*/; }
+		public string State { get => FileStatus.ToString(); }
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			using (var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var info = parameter as StatusEntryInfo;
 				var blob = repo.Head.Tip.Tree?[info.FilePath]?.Target as Blob;

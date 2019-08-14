@@ -1,5 +1,4 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
@@ -8,6 +7,7 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Script.Serialization;
+using LibGit2Sharp;
 using VMS.Model;
 
 namespace VMS
@@ -24,11 +24,9 @@ namespace VMS
 
 	static class Global
 	{
-		const string FILE_VERSION_INFO = "Version.json";		//定制信息
-																//const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
+		const string FILE_VERSION_INFO = "Version.json";        //定制信息
 		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
-		//static Preset _preset;
 		public static Setting Setting;
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 
@@ -37,16 +35,10 @@ namespace VMS
 			//配置文件
 			try
 			{
-				//_preset = new JavaScriptSerializer().Deserialize<Preset>(File.ReadAllText(FILE_PRESET));
 				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
 			}
 			catch(Exception)
 			{ }
-
-			//配置默认值
-			//_preset = _preset ?? new Preset();
-			//_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
-			//File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
 
 			Setting = Setting ?? new Setting();
 			Setting.PackageFolder = Setting.PackageFolder ?? Path.GetTempPath() + @"Package\";
