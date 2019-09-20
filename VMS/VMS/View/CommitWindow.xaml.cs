@@ -8,11 +8,11 @@ namespace VMS.View
 	/// Window1.xaml 的交互逻辑
 	/// </summary>
 	public partial class CommitWindow : Window
-    {
-        public CommitWindow()
-        {
-            InitializeComponent();
-        }
+	{
+		public CommitWindow()
+		{
+			InitializeComponent();
+		}
 
 		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
@@ -24,6 +24,7 @@ namespace VMS.View
 			var commitWindow = new CommitWindow() { Owner = owner };
 			commitWindow.Status.DataContext = status;
 			commitWindow.Version.DataContext = version;
+			commitWindow.Info.Text = status.Count.ToString();
 			if(commitWindow.ShowDialog() != true)
 				return null;
 

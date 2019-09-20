@@ -1,9 +1,9 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using LibGit2Sharp;
 
 namespace VMS.Model
 {
@@ -14,21 +14,25 @@ namespace VMS.Model
 	{
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
-		public string State { get => FileStatus.ToString().Remove(1); }
+		public string State { get => FileStatus.ToString(); }
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
 			{
 				var info = parameter as StatusEntryInfo;
-				var tree = repo.Index.WriteToTree();
-				var blob = tree[info.FilePath]?.Target as Blob;
+				var blob = repo.Head.Tip.Tree?[info.FilePath]?.Target as Blob;
 				if(info == null || blob == null)
 					return;
 
 				try
 				{
 					var filePath = Path.GetTempFileName();
-					File.WriteAllText(filePath, blob.GetContentText());
+					using(var stream = blob.GetContentStream())
+					{
+						var bytes = new byte[stream.Length];
+						stream.Read(bytes, 0, bytes.Length);
+						File.WriteAllBytes(filePath, bytes);
+					}
 					File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
 					Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
 				}

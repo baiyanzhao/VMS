@@ -1,12 +1,13 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Script.Serialization;
+using LibGit2Sharp;
 using VMS.Model;
 
 namespace VMS
@@ -23,11 +24,9 @@ namespace VMS
 
 	static class Global
 	{
-		const string FILE_VERSION_INFO = "Version.json";		//定制信息
-		//const string FILE_PRESET = ".\\Config\\Preset.json";   //预置
+		const string FILE_VERSION_INFO = "Version.json";        //定制信息
 		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
-		//static Preset _preset;
 		public static Setting Setting;
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 
@@ -36,20 +35,14 @@ namespace VMS
 			//配置文件
 			try
 			{
-				//_preset = new JavaScriptSerializer().Deserialize<Preset>(File.ReadAllText(FILE_PRESET));
 				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
 			}
 			catch(Exception)
 			{ }
 
-			//配置默认值
-			//_preset = _preset ?? new Preset();
-			//_preset.Users = _preset.Users ?? new List<Preset.User> { new Preset.User { Name = "Root" }, new Preset.User { Name = "User" } };
-			//File.WriteAllText(FILE_PRESET, new JavaScriptSerializer().Serialize(_preset));
-
 			Setting = Setting ?? new Setting();
-			Setting.PackageFolder = Setting.PackageFolder ?? @"D:\Package\";
-			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/Straw.git";
+			Setting.PackageFolder = Setting.PackageFolder ?? Path.GetTempPath() + @"Package\";
+			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/xxx.git";
 			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 		}
@@ -191,7 +184,7 @@ namespace VMS
 		/// </summary>
 		static T ReadObject<T>(string path) where T : class
 		{
-			T val = default(T);
+			T val = default;
 			if(!File.Exists(path))
 				return val;
 
@@ -266,12 +259,16 @@ namespace VMS
 				if(Repository.Discover(Setting.LoaclRepoPath) == null)
 				{
 					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
+					using(var repo = new Repository(Setting.LoaclRepoPath))
+					{
+						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });
+					}
 				}
 
 				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
-					Commands.Fetch(repo, "origin", new string[0], null, null);
+					repo.Network.Fetch(repo.Network.Remotes.First());
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
 						repo.Network.Push(repo.Head);
@@ -286,7 +283,7 @@ namespace VMS
 			/// <param name="message">信息</param>
 			public static void Commit(Repository repo, string message)
 			{
-				Commands.Stage(repo, "*");
+				repo.Stage("*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
 				repo.Commit(message, sign, sign);
 				repo.Network.Push(repo.Head, new PushOptions()
@@ -294,10 +291,6 @@ namespace VMS
 					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
 					{
 						return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
-					},
-					CertificateCheck = (certificate, valid, host) =>
-					{
-						return true;
 					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{

@@ -68,7 +68,12 @@
 					<TextBlock Text="版本:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 					<TextBlock Text="{Binding VersionNow}" Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Blue" />
 				</StackPanel>
-				<Button DockPanel.Dock="Bottom" Content="提交" Margin="5,2" HorizontalAlignment="Right" IsEnabled="{Binding Text, ElementName=Message, Converter={StaticResource EmptyStringConvert}}" Width="75" Click="Commit_Click" Focusable="False" IsDefault="True"/>
+				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,5,0,0">
+					<TextBlock Text="更改:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+					<TextBlock Name="Info" Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+				</StackPanel>
+
+				<Button DockPanel.Dock="Bottom" Content="提交" Click="Commit_Click" IsEnabled="{Binding Text, ElementName=Message, Converter={StaticResource EmptyStringConvert}}" IsDefault="True" Margin="5,2" HorizontalAlignment="Right" Width="75" Focusable="False"/>
 			</DockPanel>
 		</Grid>
 
@@ -90,7 +95,7 @@
 			</DataGrid.CellStyle>
 			<DataGrid.Columns>
 				<DataGridTextColumn Width="*" Binding="{Binding FilePath}"/>
-				<DataGridTextColumn Width="16" Binding="{Binding State}" Foreground="SteelBlue"/>
+				<DataGridTextColumn Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
 				<DataGridTemplateColumn Width="36">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>

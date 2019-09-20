@@ -21,7 +21,7 @@
 		</Style>
 	</Window.Resources>
 	<Grid>
-		<DataGrid Name="BranchInfoGrid" Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
+		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
 					<Border BorderThickness="1" BorderBrush="DarkBlue" Background="#FFD5DCE2" Padding="8" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
@@ -85,17 +85,17 @@
 							<WrapPanel>
 								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="检出版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
 									<Button.Content>
-										<Image Source="/VMS;component/Images/Checkout.png"/>
+										<Image Source="/Images/Checkout.png"/>
 									</Button.Content>
 								</Button>
 								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="导出版本,保存为归档文件" Focusable="False" Command="{Binding Path=DataContext.ArchiveCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
 									<Button.Content>
-										<Image Source="/VMS;component/Images/Archive.png"/>
+										<Image Source="/Images/Archive.png"/>
 									</Button.Content>
 								</Button>
 								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="基于此版本新建分支" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
 									<Button.Content>
-										<Image Source="/VMS;component/Images/Branch.png"/>
+										<Image Source="/Images/Branch.png"/>
 									</Button.Content>
 								</Button>
 							</WrapPanel>

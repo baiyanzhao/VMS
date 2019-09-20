@@ -1,12 +1,12 @@
-﻿using LibGit2Sharp;
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
+using LibGit2Sharp;
 
 namespace VMS
 {
 	public static class Operate
-    {
+	{
 		/// <summary>
 		/// 更新并签出指定版本的工程
 		/// </summary>
@@ -18,7 +18,7 @@ namespace VMS
 			var entries = repo.RetrieveStatus();
 			if(entries.IsDirty)
 			{
-				if(MessageBox.Show("目录中有文件尚未上传,切换分支将导致所有更改被还原.", "是否继续!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+				if(MessageBox.Show("目录中有文件尚未上传,切换分支将撤销所有更改.", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
 					return false;
 			}
 
@@ -29,7 +29,7 @@ namespace VMS
 				committishOrBranchSpec = mark;
 				try
 				{
-					Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, null, null);
+					repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
 				}
 				catch(Exception x)
 				{
@@ -49,7 +49,7 @@ namespace VMS
 
 			try
 			{
-				Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
+				repo.Checkout(committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
 				if(type == GitType.Branch && !repo.Head.IsTracking)
 				{
 					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
