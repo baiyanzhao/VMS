@@ -28,23 +28,22 @@
     <UpdatePeriodically>true</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://192.168.1.49/VMS/</InstallUrl>
-    <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
-    <SupportUrl>http://192.168.1.49/VMS/DotNetFX461</SupportUrl>
+    <InstallUrl>http://bay-packages.gitee.io/vms/</InstallUrl>
+    <UpdateUrl>http://bay-packages.gitee.io/vms/</UpdateUrl>
+    <SupportUrl>http://bay-packages.gitee.io/vms/</SupportUrl>
     <ProductName>版本管理</ProductName>
-    <PublisherName>Ainuo</PublisherName>
+    <PublisherName>BaY</PublisherName>
     <SuiteName>VMS</SuiteName>
     <MinimumRequiredVersion>1.1.0.0</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>index.htm</WebPage>
+    <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>3</ApplicationRevision>
+    <ApplicationRevision>5</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <BootstrapperComponentsLocation>Absolute</BootstrapperComponentsLocation>
     <BootstrapperComponentsUrl>http://192.168.1.49/VMS/DotNetFX461</BootstrapperComponentsUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -246,9 +245,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 和 x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 和 x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
