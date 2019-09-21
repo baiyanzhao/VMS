@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace VMS.View
 {
@@ -23,6 +25,11 @@ namespace VMS.View
 					}
 				}
 			};
+		}
+
+		private void Hyperlink_Click(object sender, RoutedEventArgs e)
+		{
+			Process.Start(Global.DEPLOY_URL);
 		}
 	}
 }
