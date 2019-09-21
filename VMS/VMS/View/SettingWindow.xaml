@@ -34,6 +34,7 @@
 			<RowDefinition/>
 			<RowDefinition/>
 			<RowDefinition/>
+			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<TextBlock Text="用户名" Grid.Row="0" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="工程目录" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -46,5 +47,8 @@
 		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding RepoUrl}" Foreground="Gray" Grid.Row="4" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
+		<TextBlock Grid.Row="5" Grid.Column="1" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+			<Hyperlink Click="Hyperlink_Click">下载最新版本</Hyperlink> 
+		</TextBlock>
 	</Grid>
 </Window>
