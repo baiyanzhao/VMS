@@ -26,11 +26,9 @@ namespace VMS
 	{
 		const string FILE_VERSION_INFO = "Version.json";        //定制信息
 		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
-		const string DEPLOY_URL_LOCAL = "http://bay-packages.gitee.io/vms/";  //部署URL
 
 		public static Setting Setting;
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
-		public static readonly string DEPLOY_URL = ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.ActivationUri.OriginalString : DEPLOY_URL_LOCAL;
 
 		static Global()
 		{

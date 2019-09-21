@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>VMS</RootNamespace>
     <AssemblyName>TSVNCache</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -30,7 +30,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://192.168.1.49/VMS/</InstallUrl>
     <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
-    <SupportUrl>http://192.168.1.49/VMS/DotNetFX461</SupportUrl>
+    <SupportUrl>http://192.168.1.49/Packages/</SupportUrl>
     <ProductName>版本管理</ProductName>
     <PublisherName>Ainuo</PublisherName>
     <SuiteName>VMS</SuiteName>
@@ -38,14 +38,14 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.htm</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>3</ApplicationRevision>
+    <ApplicationRevision>12</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <BootstrapperComponentsLocation>Absolute</BootstrapperComponentsLocation>
-    <BootstrapperComponentsUrl>http://192.168.1.49/VMS/DotNetFX461</BootstrapperComponentsUrl>
+    <BootstrapperComponentsUrl>http://192.168.1.49/Packages/</BootstrapperComponentsUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
