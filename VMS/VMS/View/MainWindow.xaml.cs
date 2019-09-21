@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Deployment.Application;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace VMS.View
 		public MainWindow()
 		{
 			InitializeComponent();
-			Title = "源程序版本管理系统 v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+			Title = "源程序版本管理系统 v" + (ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString() : System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
 		}
 
 		~MainWindow()

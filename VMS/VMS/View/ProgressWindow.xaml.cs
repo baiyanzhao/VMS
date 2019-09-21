@@ -28,7 +28,6 @@ namespace VMS.View
 			var dlg = new ProgressWindow() { Owner = owner };
 			sInit = new BackgroundWorker() { WorkerReportsProgress = false };
 
-			
 			sInit.DoWork += delegate
 			{
 				try
