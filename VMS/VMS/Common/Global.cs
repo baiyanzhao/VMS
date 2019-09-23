@@ -281,7 +281,7 @@ namespace VMS
 			/// </summary>
 			/// <param name="repo">仓库</param>
 			/// <param name="message">信息</param>
-			public static void Commit(Repository repo, string message)
+			public static void Commit(Repository repo, string message, Action<string> onProgress)
 			{
 				repo.Stage("*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
@@ -294,6 +294,7 @@ namespace VMS
 					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{
+						onProgress(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
 						return true;
 					},
 					OnNegotiationCompletedBeforePush = (updates) =>
@@ -302,11 +303,12 @@ namespace VMS
 					},
 					OnPackBuilderProgress = (stage, current, total) =>
 					{
+						onProgress(string.Format("{0} {1}/{2}", stage, current, total));
 						return true;
 					},
-					OnPushStatusError = (updates) =>
+					OnPushStatusError = (err) =>
 					{
-						return;
+						throw new Exception(err.Message);
 					}
 				});
 			}

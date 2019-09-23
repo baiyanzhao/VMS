@@ -23,10 +23,15 @@ namespace VMS.View
 			e.Handled = true;	//屏蔽所有按键
 		}
 
+		public static void Update(string msg)
+		{
+			sInit?.ReportProgress(0, msg);
+		}
+
 		public static void Show(Window owner, Action work, Action completed = null)
 		{
 			var dlg = new ProgressWindow() { Owner = owner };
-			sInit = new BackgroundWorker() { WorkerReportsProgress = false };
+			sInit = new BackgroundWorker() { WorkerReportsProgress = true };
 
 			sInit.DoWork += delegate
 			{
@@ -39,6 +44,11 @@ namespace VMS.View
 				{
 					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.Message + "\n" + x.StackTrace, "后台线程异常!"); });
 				}
+			};
+
+			sInit.ProgressChanged += (s, e) =>
+			{
+				dlg.MessageText.Text = e.UserState as string;
 			};
 
 			sInit.RunWorkerCompleted += delegate

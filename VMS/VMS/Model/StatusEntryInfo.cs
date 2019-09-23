@@ -15,6 +15,14 @@ namespace VMS.Model
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
 		public string State { get => FileStatus.ToString(); }
+		public int FileSize
+		{
+			get
+			{
+				var info = new FileInfo(Global.Setting.LoaclRepoPath + FilePath);
+				return info.Exists ? Convert.ToInt32(Math.Ceiling(info.Length / 1024.0)) : 0;
+			}
+		}
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
 			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
