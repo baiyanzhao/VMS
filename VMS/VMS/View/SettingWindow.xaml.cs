@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace VMS.View
 {
@@ -15,6 +14,7 @@ namespace VMS.View
 		public SettingWindow()
 		{
 			InitializeComponent();
+			Title = "源程序版本管理软件 v" + (ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString() : System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
 			Closing += (s, e) =>
 			{
 				foreach(var item in TopPannel.Children.OfType<TextBox>())
