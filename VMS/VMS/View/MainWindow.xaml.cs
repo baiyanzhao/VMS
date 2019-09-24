@@ -335,5 +335,26 @@ namespace VMS.View
 		{
 			ShowSetWindow();
 		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			{
+				if(repo.RetrieveStatus().IsDirty)
+				{
+					switch(MessageBox.Show("当前版本中存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", "尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
+					{
+					case MessageBoxResult.Yes:
+						Commit(repo);
+						break;
+					case MessageBoxResult.Cancel:
+						e.Cancel = true;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
 	}
 }
