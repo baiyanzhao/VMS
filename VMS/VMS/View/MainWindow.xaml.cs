@@ -199,7 +199,7 @@ namespace VMS.View
 			{
 				try
 				{
-					Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText);
+					Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText, (msg) => { ProgressWindow.Update(msg); });
 				}
 				catch(Exception x)
 				{
