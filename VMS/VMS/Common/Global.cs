@@ -269,6 +269,14 @@ namespace VMS
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
 					repo.Network.Fetch(repo.Network.Remotes.First());
+
+					//同步当前分支
+					if(repo.Head.TrackingDetails.BehindBy > 0)
+					{
+						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+					}
+
+					//推送未上传的提交
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
 						repo.Network.Push(repo.Head);

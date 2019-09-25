@@ -137,6 +137,15 @@ namespace VMS.View
 				return false;
 			}
 
+			//先同步再提交
+			repo.Network.Fetch(repo.Network.Remotes.First());
+			if(repo.Head.TrackingDetails.BehindBy > 0)
+			{
+				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+			}
+
+			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }); 
+
 			//读取文件状态
 			var assemblyList = Global.GetAssemblyInfo();
 			var status = new Collection<StatusEntryInfo>();
@@ -177,6 +186,7 @@ namespace VMS.View
 					break;
 				}
 			}
+
 			var commitText = CommitWindow.ShowWindow(instance, status, versionInfo);
 			if(commitText == null)
 				return false;
