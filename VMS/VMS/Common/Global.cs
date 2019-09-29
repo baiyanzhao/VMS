@@ -261,16 +261,17 @@ namespace VMS
 					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
 					using(var repo = new Repository(Setting.LoaclRepoPath))
 					{
-						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });
+						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });	//取消master的上流分支,禁止用户提交此分支
 					}
 				}
 
 				//同步仓库,并推送当前分支
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
+					//同步仓库
 					repo.Network.Fetch(repo.Network.Remotes.First());
 
-					//同步当前分支
+					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)
 					{
 						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());

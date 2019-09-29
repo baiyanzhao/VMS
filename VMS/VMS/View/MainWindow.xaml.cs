@@ -129,7 +129,7 @@ namespace VMS.View
 
 			if(!repo.Head.IsTracking)
 			{
-				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", "提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName + " 提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
 				{
 					repo.Reset(ResetMode.Hard);
 					return true;
@@ -192,7 +192,7 @@ namespace VMS.View
 				return false;
 
 			//更新版本信息
-			System.Version.TryParse(repo.Head.FriendlyName, out System.Version branchVersion);
+			System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
 
 			versionInfo.VersionList = new List<VersionInfo.StringPair>();
@@ -277,8 +277,7 @@ namespace VMS.View
 			{
 				if(Commit(repo) == null)
 				{
-					_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
-					MessageBox.Show("当前版本无任何更改!", _branchInfos.HeadName);
+					MessageBox.Show("当前版本无任何更改!", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName?? repo.Head.FriendlyName);
 				}
 			}
 		}
