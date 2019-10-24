@@ -231,15 +231,20 @@ namespace VMS
 		/// </summary>
 		public static VersionInfo ReadVersionInfo(Commit commit)
 		{
+			VersionInfo version = null;
 			try
 			{
 				var obj = commit.Tree["Version.json"]?.Target as Blob;
-				return obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+				version = obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+				if(version != null)
+				{
+					version.Message = commit.Message;
+				}
 			}
 			catch
 			{ }
 
-			return null;
+			return version;
 		}
 
 		/// <summary>
