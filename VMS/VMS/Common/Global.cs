@@ -275,12 +275,12 @@ namespace VMS
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
 					//同步仓库
-					repo.Network.Fetch(repo.Network.Remotes.First());
+					Commands.Fetch(repo, "origin", new string[0], null, null);
 
 					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)
 					{
-						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+						Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 					}
 
 					//推送未上传的提交
@@ -298,7 +298,7 @@ namespace VMS
 			/// <param name="message">信息</param>
 			public static void Commit(Repository repo, string message, Action<string> onProgress)
 			{
-				repo.Stage("*");
+				Commands.Stage(repo, "*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
 				repo.Commit(message, sign, sign);
 				repo.Network.Push(repo.Head, new PushOptions()

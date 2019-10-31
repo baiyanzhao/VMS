@@ -138,13 +138,13 @@ namespace VMS.View
 			}
 
 			//先同步再提交
-			repo.Network.Fetch(repo.Network.Remotes.First());
+			Commands.Fetch(repo, "origin", new string[0], null, null);
 			if(repo.Head.TrackingDetails.BehindBy > 0)
 			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 			}
 
-			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }); 
+			Commands.Fetch(repo, "origin", new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }, null, null); 
 
 			//读取文件状态
 			var assemblyList = Global.GetAssemblyInfo();
