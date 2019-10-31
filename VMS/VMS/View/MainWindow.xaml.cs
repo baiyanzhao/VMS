@@ -302,7 +302,7 @@ namespace VMS.View
 				{
 					Process.Start(new ProcessStartInfo
 					{
-						FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
+						FileName = Global.Setting.MSBuildPath,
 						Arguments = "/t:publish /p:Configuration=Release /noconsolelogger \"" + item + "\"",
 						UseShellExecute = false,
 						CreateNoWindow = true,
