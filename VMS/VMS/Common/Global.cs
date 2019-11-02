@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -22,10 +21,10 @@ namespace VMS
 		Tag,
 	}
 
-	static class Global
+	internal static class Global
 	{
-		const string FILE_VERSION_INFO = "Version.json";        //定制信息
-		const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
+		private const string FILE_VERSION_INFO = "Version.json";        //定制信息
+		private const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
 		public static Setting Setting;
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
@@ -40,12 +39,12 @@ namespace VMS
 			catch(Exception)
 			{ }
 
-			Setting = Setting ?? new Setting();
-			Setting.PackageFolder = Setting.PackageFolder ?? Path.GetTempPath() + @"Package\";
-			Setting.RepoUrl = Setting.RepoUrl ?? @"http://admin:admin@192.168.1.49:2507/r/xxx.git";
-			Setting.CompareToolPath = Setting.CompareToolPath ?? @"D:\Program Files\Beyond Compare 4\BCompare.exe";
-			Setting.LoaclRepoPath = Setting.LoaclRepoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
-			Setting.MSBuildPath = Setting.MSBuildPath ?? @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
+			Setting ??= new Setting();
+			Setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
+			Setting.RepoUrl ??= @"http://admin:admin@192.168.1.49:2507/r/MT.git";
+			Setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
+			Setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
+			Setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
 		}
 
 		public static string MakeText<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
@@ -94,16 +93,16 @@ namespace VMS
 				var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
 
 				var lines = File.ReadAllLines(FilePath, Encoding.UTF8);
-				for(int i = 0; i < lines.Length; i++)
+				for(var i = 0; i < lines.Length; i++)
 				{
 					if(lines[i].IndexOf(verKey) == 0)
 					{
 						var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
-						if(System.Version.TryParse(strVersion, out System.Version version))
+						if(System.Version.TryParse(strVersion, out var version))
 						{
 							if(IsModified)
 							{
-								int revision = version.Build == versionBuild ? version.Revision + 1 : 0;
+								var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
 								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
 								lines[i] = lines[i].Replace(strVersion, Version.ToString());
 								File.WriteAllLines(FilePath, lines, Encoding.UTF8);
@@ -164,7 +163,7 @@ namespace VMS
 		/// <summary>
 		/// 序列化
 		/// </summary>
-		static bool WriteObject<T>(string path, T val) where T : class
+		private static bool WriteObject<T>(string path, T val) where T : class
 		{
 			try
 			{
@@ -183,7 +182,7 @@ namespace VMS
 		/// <summary>
 		/// 反序列化
 		/// </summary>
-		static T ReadObject<T>(string path) where T : class
+		private static T ReadObject<T>(string path) where T : class
 		{
 			T val = default;
 			if(!File.Exists(path))
@@ -191,10 +190,8 @@ namespace VMS
 
 			try
 			{
-				using(Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-				{
-					val = new DataContractJsonSerializer(typeof(T)).ReadObject(stream) as T;
-				}
+				using Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+				val = new DataContractJsonSerializer(typeof(T)).ReadObject(stream) as T;
 			}
 			catch(Exception e)
 			{
@@ -207,7 +204,10 @@ namespace VMS
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO));
+		public static VersionInfo ReadVersionInfo()
+		{
+			return ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO));
+		}
 
 		/// <summary>
 		/// 工程版本信息
@@ -216,10 +216,8 @@ namespace VMS
 		{
 			try
 			{
-				using(var repo = new Repository(Setting.LoaclRepoPath))
-				{
-					return ReadVersionInfo(repo.Lookup<Commit>(sha));
-				}
+				using var repo = new Repository(Setting.LoaclRepoPath);
+				return ReadVersionInfo(repo.Lookup<Commit>(sha));
 			}
 			catch
 			{ }
@@ -252,7 +250,10 @@ namespace VMS
 		/// 更新版本,并写入文件
 		/// </summary>
 		/// <param name="info"></param>
-		public static void WriteVersionInfo(VersionInfo info) => WriteObject(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO), info);
+		public static void WriteVersionInfo(VersionInfo info)
+		{
+			WriteObject(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO), info);
+		}
 
 		public static class Git
 		{
@@ -265,10 +266,8 @@ namespace VMS
 				if(Repository.Discover(Setting.LoaclRepoPath) == null)
 				{
 					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
-					using(var repo = new Repository(Setting.LoaclRepoPath))
-					{
-						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });	//取消master的上流分支,禁止用户提交此分支
-					}
+					using var repo = new Repository(Setting.LoaclRepoPath);
+					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });    //取消master的上流分支,禁止用户提交此分支
 				}
 
 				//同步仓库,并推送当前分支

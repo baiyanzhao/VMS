@@ -16,5 +16,13 @@ namespace VMS
 				Environment.Exit(0);
 			};
 		}
+
+
+		//系统关机拦截
+		void App_SessionEnding(object sender, SessionEndingCancelEventArgs e)
+		{
+			e.Cancel = true;
+			MainWindow?.Close();
+		}
 	}
 }
