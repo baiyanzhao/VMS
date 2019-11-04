@@ -18,11 +18,18 @@ namespace VMS.View
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		/*private static readonly*/ BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
+		private readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
 
 		public MainWindow()
 		{
 			InitializeComponent();
+			StateChanged += delegate
+			{
+				if(WindowState == WindowState.Minimized)
+				{
+					Hide();
+				}
+			};
 		}
 
 		~MainWindow()
