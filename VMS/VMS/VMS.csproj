@@ -135,6 +135,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Common\DelegateCommand.cs" />
+    <Compile Include="Common\EncodingType.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Common\Global.cs" />
     <Compile Include="Model\StatusEntryInfo.cs" />

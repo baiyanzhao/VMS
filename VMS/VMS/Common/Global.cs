@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Deployment.Application;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -91,8 +92,8 @@ namespace VMS
 				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
 				//C工程版本格式为: static const char VERSION[] = "1.0.0.0";
 				var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
-
-				var lines = File.ReadAllLines(FilePath, Encoding.UTF8);
+				var encoding = FileEncoding.EncodingType.GetType(FilePath);
+				var lines = File.ReadAllLines(FilePath, encoding);
 				for(var i = 0; i < lines.Length; i++)
 				{
 					if(lines[i].IndexOf(verKey) == 0)
@@ -105,7 +106,7 @@ namespace VMS
 								var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
 								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
 								lines[i] = lines[i].Replace(strVersion, Version.ToString());
-								File.WriteAllLines(FilePath, lines, Encoding.UTF8);
+								File.WriteAllLines(FilePath, lines, encoding);
 							}
 							else
 							{
