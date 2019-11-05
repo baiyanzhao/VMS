@@ -27,11 +27,12 @@
 					<Border BorderThickness="1" BorderBrush="DarkBlue" Background="#FFD5DCE2" Padding="8" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
 						<Grid>
 							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="Auto"/>
 								<ColumnDefinition/>
-								<ColumnDefinition/>
-								<ColumnDefinition/>
+								<ColumnDefinition Width="Auto"/>
 							</Grid.ColumnDefinitions>
-							<StackPanel Orientation="Vertical">
+							<StackPanel Orientation="Vertical" Margin="5,0">
 								<StackPanel Orientation="Horizontal">
 									<TextBlock FontSize="12" Text="基础版本: " Foreground="Black" VerticalAlignment="Center" />
 									<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionBase}" VerticalAlignment="Center" />
@@ -49,7 +50,7 @@
 									<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
 								</StackPanel>
 							</StackPanel>
-							<DataGrid Grid.Column="1" HorizontalAlignment="Center" ItemsSource="{Binding VersionList}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
+							<DataGrid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" ItemsSource="{Binding VersionList}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
 								<DataGrid.RowStyle>
 									<Style TargetType="{x:Type DataGridRow}">
 										<Setter Property="Background" Value="{x:Null}"/>
@@ -71,6 +72,7 @@
 									</Style>
 								</DataGrid.RowStyle>
 							</DataGrid>
+							<TextBlock Grid.Column="3" FontSize="16" Foreground="Black" Text="{Binding Message}"/>
 						</Grid>
 					</Border>
 				</DataTemplate>

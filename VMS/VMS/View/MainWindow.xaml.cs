@@ -18,11 +18,18 @@ namespace VMS.View
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private static readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
+		private readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
 
 		public MainWindow()
 		{
 			InitializeComponent();
+			StateChanged += delegate
+			{
+				if(WindowState == WindowState.Minimized)
+				{
+					Hide();
+				}
+			};
 		}
 
 		~MainWindow()
@@ -45,34 +52,32 @@ namespace VMS.View
 		/// </summary>
 		private void UpdateBranchInfo()
 		{
-			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			//更新分支列表
+			_branchInfos.Clear();
+			foreach(var tag in repo.Tags)
 			{
-				//更新分支列表
-				_branchInfos.Clear();
-				foreach(var tag in repo.Tags)
-				{
-					if(!(tag.Target is Commit commit))
-						continue;
+				if(!(tag.Target is Commit commit))
+					continue;
 
-					var name = tag.FriendlyName;
-					if(!System.Version.TryParse(name, out var version))
-						continue;
+				var name = tag.FriendlyName;
+				if(!System.Version.TryParse(name, out var version))
+					continue;
 
-					_branchInfos.Add(new BranchInfo { Type = GitType.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
-				}
-
-				foreach(var branch in repo.Branches.Where(p => p.IsRemote))
-				{
-					var commit = branch.Tip;
-					var name = branch.FriendlyName.Split('/').Last();
-					if(commit == null || !System.Version.TryParse(name, out var version))
-						continue;
-
-					_branchInfos.Add(new BranchInfo { Type = GitType.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
-				}
-
-				_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
+				_branchInfos.Add(new BranchInfo { Type = GitType.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
 			}
+
+			foreach(var branch in repo.Branches.Where(p => p.IsRemote))
+			{
+				var commit = branch.Tip;
+				var name = branch.FriendlyName.Split('/').Last();
+				if(commit == null || !System.Version.TryParse(name, out var version))
+					continue;
+
+				_branchInfos.Add(new BranchInfo { Type = GitType.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+			}
+
+			_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
 
 			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
 			BranchInfoGrid.DataContext = _branchInfos;  //设定上下文
@@ -89,6 +94,7 @@ namespace VMS.View
 			var window = new SettingWindow() { Owner = this };
 			window.TopPannel.DataContext = Global.Setting;
 			window.ShowDialog();
+			Global.Setting.PackageFolder = Global.Setting.PackageFolder.Last() == '\\' ? Global.Setting.PackageFolder : Global.Setting.PackageFolder + "\\";
 			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
 			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
 		}
@@ -173,16 +179,15 @@ namespace VMS.View
 			}
 
 			//填写提交信息
-			var versionInfo = Global.ReadVersionInfo();
-			versionInfo = versionInfo ?? new VersionInfo();
-			versionInfo.KeyWords = versionInfo.KeyWords ?? new ObservableCollection<VersionInfo.StringProperty>();
+			var versionInfo = Global.ReadVersionInfo()?? new VersionInfo();
+			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
-			Window instance = null;
+			MainWindow instance = null;
 			foreach(Window item in Application.Current.Windows)
 			{
 				if(item.IsActive)
 				{
-					instance = item;
+					instance = item as MainWindow;
 					break;
 				}
 			}
@@ -226,14 +231,14 @@ namespace VMS.View
 
 			var commit = repo.Head.Tip;
 			var name = repo.Head.FriendlyName;
-			var info = _branchInfos.FirstOrDefault(p => p.Name.Equals(name));
+			var info = instance._branchInfos.FirstOrDefault(p => p.Name.Equals(name));
 			if(info == null)
 			{
 				if(!System.Version.TryParse(name, out var version))
 					return true; //如果上传非版本分支,如master, 界面不更新
 
 				info = new BranchInfo { Type = GitType.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
-				_branchInfos.Add(info);
+				instance._branchInfos.Add(info);
 			}
 			else
 			{
@@ -273,12 +278,10 @@ namespace VMS.View
 
 		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
-			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			if(Commit(repo) == null)
 			{
-				if(Commit(repo) == null)
-				{
-					MessageBox.Show("当前版本无任何更改!", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName?? repo.Head.FriendlyName);
-				}
+				MessageBox.Show("当前版本无任何更改!", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName ?? repo.Head.FriendlyName);
 			}
 		}
 
@@ -302,7 +305,7 @@ namespace VMS.View
 				{
 					Process.Start(new ProcessStartInfo
 					{
-						FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
+						FileName = Global.Setting.MSBuildPath,
 						Arguments = "/t:publish /p:Configuration=Release /noconsolelogger \"" + item + "\"",
 						UseShellExecute = false,
 						CreateNoWindow = true,
@@ -347,21 +350,19 @@ namespace VMS.View
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			if(repo.RetrieveStatus().IsDirty)
 			{
-				if(repo.RetrieveStatus().IsDirty)
+				switch(MessageBox.Show(Application.Current.MainWindow, "当前版本中存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", "尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
 				{
-					switch(MessageBox.Show("当前版本中存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", "尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
-					{
-					case MessageBoxResult.Yes:
-						Commit(repo);
-						break;
-					case MessageBoxResult.Cancel:
-						e.Cancel = true;
-						break;
-					default:
-						break;
-					}
+				case MessageBoxResult.Yes:
+					Commit(repo);
+					break;
+				case MessageBoxResult.Cancel:
+					e.Cancel = true;
+					break;
+				default:
+					break;
 				}
 			}
 		}

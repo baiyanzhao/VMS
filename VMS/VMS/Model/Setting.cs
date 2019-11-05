@@ -28,6 +28,7 @@ namespace VMS.Model
 		public string LoaclRepoPath { get; set; }
 		public string PackageFolder { get; set; }
 		public string CompareToolPath { get; set; }
+		public string MSBuildPath { get; set; }
 	}
 
 	/// <summary>
