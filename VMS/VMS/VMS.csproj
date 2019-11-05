@@ -36,9 +36,9 @@
     <SuiteName>VMS</SuiteName>
     <MinimumRequiredVersion>1.1.0.0</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>index.htm</WebPage>
+    <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationRevision>16</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -100,9 +100,13 @@
     <Reference Include="$(DevEnvDir)CommonExtensions\Microsoft\TeamFoundation\Team Explorer\LibGit2Sharp.dll">
       <HintPath>$(DevEnvDir)CommonExtensions\Microsoft\TeamFoundation\Team Explorer\LibGit2Sharp.dll</HintPath>
     </Reference>
+    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
@@ -124,12 +128,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Common\DelegateCommand.cs" />
+    <Compile Include="Common\EncodingType.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Common\Global.cs" />
     <Compile Include="Model\StatusEntryInfo.cs" />
     <Compile Include="Common\Converter.cs" />
     <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\VersionInfo.cs" />
+    <Compile Include="SingleInstance.cs" />
     <Compile Include="ViewModel\BranchInfoView.cs" />
     <Compile Include="View\LogWindow.xaml.cs">
       <DependentUpon>LogWindow.xaml</DependentUpon>
@@ -220,6 +226,7 @@
     <Content Include="Package\sfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
