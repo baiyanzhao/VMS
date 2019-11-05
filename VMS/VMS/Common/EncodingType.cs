@@ -40,7 +40,7 @@ namespace FileEncoding
 			if(fs.Length < 3)
 				return reVal;
 
-			var bytes = reader.ReadBytes(3);
+			var bytes = reader.ReadBytes((int)fs.Length);
 			if(IsUTF8Bytes(bytes) || (bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF))
 			{
 				reVal = Encoding.UTF8;
