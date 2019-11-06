@@ -20,7 +20,7 @@ namespace VMS.View
 
 		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			e.Handled = true;	//屏蔽所有按键
+			e.Handled = true;   //屏蔽所有按键
 		}
 
 		public static void Update(string msg)
@@ -35,15 +35,8 @@ namespace VMS.View
 
 			sInit.DoWork += delegate
 			{
-				try
-				{
-					owner.Dispatcher.InvokeAsync(() => { dlg.ShowDialog(); });
-					work?.Invoke();
-				}
-				catch(Exception x)
-				{
-					owner.Dispatcher.Invoke(delegate { MessageBox.Show(owner, x.Message + "\n" + x.StackTrace, "后台线程异常!"); });
-				}
+				work?.Invoke();
+				Thread.Sleep(10);
 			};
 
 			sInit.ProgressChanged += (s, e) =>
@@ -51,23 +44,28 @@ namespace VMS.View
 				dlg.MessageText.Text = e.UserState as string;
 			};
 
-			sInit.RunWorkerCompleted += delegate
+			sInit.RunWorkerCompleted += (s, e) =>
 			{
 				try
 				{
 					completed?.Invoke();
+					if(e.Error != null)
+					{
+						throw e.Error;
+					}
 				}
 				catch(Exception x)
 				{
-					MessageBox.Show(owner, x.StackTrace, x.Message);
+					MessageBox.Show(x.Message + "\n" + x.StackTrace, "后台线程异常!");
 				}
 				finally
 				{
 					dlg.Close();
-					sInit.Dispose();
 				}
 			};
 			sInit.RunWorkerAsync();
+			dlg.ShowDialog();
+			sInit.Dispose();
 		}
 	}
 }

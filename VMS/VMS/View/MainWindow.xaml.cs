@@ -30,6 +30,14 @@ namespace VMS.View
 					Hide();
 				}
 			};
+
+			if(Global.Setting.User == null)
+			{
+				ShowSetWindow();
+			}
+
+			Directory.CreateDirectory(Global.Setting.PackageFolder);
+			ProgressWindow.Show(null, Global.Git.Sync, UpdateBranchInfo);
 		}
 
 		~MainWindow()
@@ -79,12 +87,7 @@ namespace VMS.View
 
 			_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
 			Application.Current.MainWindow.Title = "版本管理 分支:" + _branchInfos.HeadName + " " + repo.Head.Tip.Author.Name;
-
-			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
-			BranchInfoGrid.DataContext = _branchInfos;  //设定上下文
-			BranchInfoGrid.UpdateLayout();  //分组显示前,先更新布局,防止分组折叠后,部分列显示不完整.
-			BranchInfoGrid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
-			BranchInfoGrid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
+			BranchInfoGrid.DataContext = _branchInfos;  //在界面显示前,设定上下文
 		}
 
 		/// <summary>
@@ -92,7 +95,7 @@ namespace VMS.View
 		/// </summary>
 		private void ShowSetWindow()
 		{
-			var window = new SettingWindow() { Owner = this };
+			var window = new SettingWindow() { Owner = IsLoaded ? this : null };
 			window.TopPannel.DataContext = Global.Setting;
 			window.ShowDialog();
 			Global.Setting.PackageFolder = Global.Setting.PackageFolder.Last() == '\\' ? Global.Setting.PackageFolder : Global.Setting.PackageFolder + "\\";
@@ -254,13 +257,10 @@ namespace VMS.View
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			if(Global.Setting.User == null)
-			{
-				ShowSetWindow();
-			}
-
-			Directory.CreateDirectory(Global.Setting.PackageFolder);
-			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
+			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
+			BranchInfoGrid.UpdateLayout();  //分组显示前,先更新布局,防止分组折叠后,部分列显示不完整.
+			BranchInfoGrid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
+			BranchInfoGrid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 		}
 
 		private void Open_Click(object sender, RoutedEventArgs e)
