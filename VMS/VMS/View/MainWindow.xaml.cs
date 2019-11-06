@@ -78,6 +78,7 @@ namespace VMS.View
 			}
 
 			_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
+			Application.Current.MainWindow.Title = "版本管理 分支:" + _branchInfos.HeadName + " " + repo.Head.Tip.Author.Name;
 
 			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
 			BranchInfoGrid.DataContext = _branchInfos;  //设定上下文

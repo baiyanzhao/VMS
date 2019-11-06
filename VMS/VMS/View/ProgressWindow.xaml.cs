@@ -37,12 +37,12 @@ namespace VMS.View
 			{
 				try
 				{
+					owner.Dispatcher.InvokeAsync(() => { dlg.ShowDialog(); });
 					work?.Invoke();
-					Thread.Sleep(10);
 				}
 				catch(Exception x)
 				{
-					dlg.Dispatcher.Invoke(delegate { MessageBox.Show(dlg, x.Message + "\n" + x.StackTrace, "后台线程异常!"); });
+					owner.Dispatcher.Invoke(delegate { MessageBox.Show(owner, x.Message + "\n" + x.StackTrace, "后台线程异常!"); });
 				}
 			};
 
@@ -64,11 +64,10 @@ namespace VMS.View
 				finally
 				{
 					dlg.Close();
+					sInit.Dispose();
 				}
 			};
 			sInit.RunWorkerAsync();
-			dlg.ShowDialog();
-			sInit.Dispose();
 		}
 	}
 }
