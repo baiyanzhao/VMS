@@ -37,7 +37,7 @@ namespace VMS.ViewModel
 
 				try
 				{
-					repo.Network.Fetch(repo.Network.Remotes.First());
+					Commands.Fetch(repo, repo.Network.Remotes.First().Name, new string[0], null, null);
 				}
 				catch
 				{
@@ -56,23 +56,23 @@ namespace VMS.ViewModel
 				var name = version.ToString();
 				if(repo.Branches[name] != null)
 				{
-					repo.Checkout(info.Sha);
+					Commands.Checkout(repo, info.Sha);
 				}
 
 				var branch = repo.Branches.Add(name, info.Sha, true);
-				repo.Checkout(branch);
+				Commands.Checkout(repo, branch);
 				repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
 
 				//更新版本信息
 				var versionInfo = Global.ReadVersionInfo(info.Sha);
-				versionInfo = versionInfo ?? new VersionInfo();
+				versionInfo ??= new VersionInfo();
 				versionInfo.VersionBase = versionInfo.VersionNow;
 				versionInfo.VersionNow = version;
 				Global.WriteVersionInfo(versionInfo);
 
 				if(MainWindow.Commit(repo) != true) //提交新分支,提交失败则删除新分支
 				{
-					repo.Checkout(info.Sha);
+					Commands.Checkout(repo, info.Sha);
 					repo.Branches.Remove(branch);
 				}
 			}

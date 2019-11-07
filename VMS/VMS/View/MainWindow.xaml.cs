@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Data;
 using LibGit2Sharp;
@@ -100,7 +100,7 @@ namespace VMS.View
 			window.ShowDialog();
 			Global.Setting.PackageFolder = Global.Setting.PackageFolder.Last() == '\\' ? Global.Setting.PackageFolder : Global.Setting.PackageFolder + "\\";
 			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
-			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
+			File.WriteAllText(Global.FILE_SETTING, JsonSerializer.Serialize(Global.Setting));
 		}
 
 		public static void ShowLogWindow(string name, System.Version version, string sha)
@@ -148,13 +148,13 @@ namespace VMS.View
 			}
 
 			//先同步再提交
-			repo.Network.Fetch(repo.Network.Remotes.First());
+			Commands.Fetch(repo, repo.Network.Remotes.First().Name, new string[0], null, null);
 			if(repo.Head.TrackingDetails.BehindBy > 0)
 			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 			}
 
-			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }); 
+			repo.Network.Fetch(repo.Network.Remotes.First().Name, new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }); 
 
 			//读取文件状态
 			var assemblyList = Global.GetAssemblyInfo();

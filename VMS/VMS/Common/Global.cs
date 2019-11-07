@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Deployment.Application;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 using LibGit2Sharp;
 using VMS.Model;
 
@@ -25,17 +23,17 @@ namespace VMS
 	internal static class Global
 	{
 		private const string FILE_VERSION_INFO = "Version.json";        //定制信息
-		private const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
+		private const string FILE_SETTING_LOCAL = "Setting.json";  //设置
 
 		public static Setting Setting;
-		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
+		public static readonly string FILE_SETTING = /*ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : */FILE_SETTING_LOCAL;
 
 		static Global()
 		{
 			//配置文件
 			try
 			{
-				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
+				Setting = JsonSerializer.Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
 			}
 			catch(Exception)
 			{ }
@@ -275,12 +273,12 @@ namespace VMS
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
 					//同步仓库
-					repo.Network.Fetch(repo.Network.Remotes.First());
+					Commands.Fetch(repo, repo.Network.Remotes.First().Name, new string[0], null, null);
 
 					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)
 					{
-						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+						Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 					}
 
 					//推送未上传的提交
@@ -298,7 +296,7 @@ namespace VMS
 			/// <param name="message">信息</param>
 			public static void Commit(Repository repo, string message, Action<string> onProgress)
 			{
-				repo.Stage("*");
+				Commands.Stage(repo, "*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
 				repo.Commit(message, sign, sign);
 				repo.Network.Push(repo.Head, new PushOptions()

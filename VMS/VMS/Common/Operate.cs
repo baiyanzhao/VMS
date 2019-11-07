@@ -29,7 +29,7 @@ namespace VMS
 				committishOrBranchSpec = mark;
 				try
 				{
-					repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
+					repo.Network.Fetch(repo.Network.Remotes.First().Name, new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
 				}
 				catch(Exception x)
 				{
@@ -49,7 +49,7 @@ namespace VMS
 
 			try
 			{
-				repo.Checkout(committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
+				Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
 				if(type == GitType.Branch && !repo.Head.IsTracking)
 				{
 					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
@@ -71,10 +71,8 @@ namespace VMS
 		/// <param name="type">签出类型</param>
 		public static bool Checkout(string repoPath, string mark, GitType type)
 		{
-			using(var repo = new Repository(repoPath))
-			{
-				return Checkout(repo, mark, type);
-			}
+			using var repo = new Repository(repoPath);
+			return Checkout(repo, mark, type);
 		}
 	}
 }

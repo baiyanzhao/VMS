@@ -1,281 +1,84 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F3451163-61D4-40EB-BF97-349855859BDF}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>VMS</RootNamespace>
-    <AssemblyName>TSVNCache</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetFrameworkProfile />
-    <PublishUrl>ftp://192.168.1.49:8330/</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Web</InstallFrom>
-    <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Background</UpdateMode>
-    <UpdateInterval>1</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>true</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://192.168.1.49/VMS/</InstallUrl>
-    <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
-    <SupportUrl>http://192.168.1.49/Packages/</SupportUrl>
-    <ProductName>版本管理</ProductName>
-    <PublisherName>Ainuo</PublisherName>
-    <SuiteName>VMS</SuiteName>
-    <MinimumRequiredVersion>1.1.0.0</MinimumRequiredVersion>
-    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>index.html</WebPage>
-    <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>16</ApplicationRevision>
-    <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <CreateDesktopShortcut>true</CreateDesktopShortcut>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <BootstrapperComponentsLocation>Absolute</BootstrapperComponentsLocation>
-    <BootstrapperComponentsUrl>http://192.168.1.49/Packages/</BootstrapperComponentsUrl>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>default</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>8B8011C10612D72B2F1B439268B12754A47744E9</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>
-    </ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetZone>LocalIntranet</TargetZone>
-  </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup>
-    <SignManifests>false</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+		<UseWPF>true</UseWPF>
     <ApplicationIcon>VMS.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup />
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="$(DevEnvDir)CommonExtensions\Microsoft\TeamFoundation\Team Explorer\LibGit2Sharp.dll">
-      <HintPath>$(DevEnvDir)CommonExtensions\Microsoft\TeamFoundation\Team Explorer\LibGit2Sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
+    <None Remove="Images\Account.png" />
+    <None Remove="Images\Add.png" />
+    <None Remove="Images\Archive.png" />
+    <None Remove="Images\Branch.png" />
+    <None Remove="Images\Calculator.png" />
+    <None Remove="Images\Checked.png" />
+    <None Remove="Images\Checkout.png" />
+    <None Remove="Images\Clear.png" />
+    <None Remove="Images\Close.png" />
+    <None Remove="Images\Del.png" />
+    <None Remove="Images\Donut.png" />
+    <None Remove="Images\Edit.png" />
+    <None Remove="Images\Excel.png" />
+    <None Remove="Images\Exchange.png" />
+    <None Remove="Images\Explorer.png" />
+    <None Remove="Images\Folder.png" />
+    <None Remove="Images\Log.png" />
+    <None Remove="Images\Maintain.png" />
+    <None Remove="Images\Offset.png" />
+    <None Remove="Images\Package.png" />
+    <None Remove="Images\Preset.png" />
+    <None Remove="Images\Report.png" />
+    <None Remove="Images\Return.png" />
+    <None Remove="Images\Save.png" />
+    <None Remove="Images\SaveAs.png" />
+    <None Remove="Images\Search.png" />
+    <None Remove="Images\Set.png" />
+    <None Remove="Images\Smart.png" />
+    <None Remove="Images\Stop.png" />
+    <None Remove="Images\Upload.png" />
+    <None Remove="Images\VisualStudio.png" />
+    <None Remove="Images\Word.png" />
+    <None Remove="VMS.ico" />
   </ItemGroup>
+
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="Common\DelegateCommand.cs" />
-    <Compile Include="Common\EncodingType.cs" />
-    <Compile Include="Model\BranchInfo.cs" />
-    <Compile Include="Common\Global.cs" />
-    <Compile Include="Model\StatusEntryInfo.cs" />
-    <Compile Include="Common\Converter.cs" />
-    <Compile Include="Model\Setting.cs" />
-    <Compile Include="Model\VersionInfo.cs" />
-    <Compile Include="SingleInstance.cs" />
-    <Compile Include="ViewModel\BranchInfoView.cs" />
-    <Compile Include="View\LogWindow.xaml.cs">
-      <DependentUpon>LogWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\CommitWindow.xaml.cs">
-      <DependentUpon>CommitWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\ProgressWindow.xaml.cs">
-      <DependentUpon>ProgressWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\SettingWindow.xaml.cs">
-      <DependentUpon>SettingWindow.xaml</DependentUpon>
-    </Compile>
-    <Page Include="View\LogWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Common\Operate.cs" />
-    <Compile Include="View\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Style\ButtonStyle.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Style\Shared.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Style\TabControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\CommitWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\ProgressWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\SettingWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <PackageReference Include="LibGit2Sharp" Version="0.26.1" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Resource Include="LibGit2Sharp.xml" />
-    <Resource Include="VMS.ico" />
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <Resource Include="Images\Checked.png" />
-    <Resource Include="Images\Folder.png" />
-    <Resource Include="Images\Explorer.png" />
+    <Resource Include="Images\Account.png" />
+    <Resource Include="Images\Add.png" />
     <Resource Include="Images\Archive.png" />
     <Resource Include="Images\Branch.png" />
-    <Resource Include="Images\Log.png" />
-    <Content Include="git2-msvstfs.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Package\Default.SFX">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Package\sfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="packages.config" />
-    <None Include="Properties\app.manifest" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
+    <Resource Include="Images\Calculator.png" />
+    <Resource Include="Images\Checked.png" />
     <Resource Include="Images\Checkout.png" />
+    <Resource Include="Images\Clear.png" />
+    <Resource Include="Images\Close.png" />
+    <Resource Include="Images\Del.png" />
+    <Resource Include="Images\Donut.png" />
+    <Resource Include="Images\Edit.png" />
+    <Resource Include="Images\Excel.png" />
+    <Resource Include="Images\Exchange.png" />
+    <Resource Include="Images\Explorer.png" />
+    <Resource Include="Images\Folder.png" />
+    <Resource Include="Images\Log.png" />
+    <Resource Include="Images\Maintain.png" />
+    <Resource Include="Images\Offset.png" />
     <Resource Include="Images\Package.png" />
+    <Resource Include="Images\Preset.png" />
+    <Resource Include="Images\Report.png" />
+    <Resource Include="Images\Return.png" />
+    <Resource Include="Images\Save.png" />
+    <Resource Include="Images\SaveAs.png" />
+    <Resource Include="Images\Search.png" />
     <Resource Include="Images\Set.png" />
-    <Resource Include="Images\Add.png" />
+    <Resource Include="Images\Smart.png" />
+    <Resource Include="Images\Stop.png" />
     <Resource Include="Images\Upload.png" />
     <Resource Include="Images\VisualStudio.png" />
-    <Resource Include="Images\Edit.png" />
-    <Content Include="Package\msi.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Package\WinRAR.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Config\Preset.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Config\Setting.json" />
+    <Resource Include="Images\Word.png" />
+    <Resource Include="VMS.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 和 x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <PublishFile Include="Config\Setting.json">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>DataFile</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>File</FileType>
-    </PublishFile>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

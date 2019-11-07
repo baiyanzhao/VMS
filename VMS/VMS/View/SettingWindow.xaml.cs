@@ -1,4 +1,4 @@
-﻿using System.Deployment.Application;
+﻿//using System.Deployment.Application;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -14,7 +14,7 @@ namespace VMS.View
 		public SettingWindow()
 		{
 			InitializeComponent();
-			Title = "源程序版本管理软件 v" + (ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString() : System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+			Title = "源程序版本管理软件 v" + /*ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString() :*/ System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 			Closing += (s, e) =>
 			{
 				foreach(var item in TopPannel.Children.OfType<TextBox>())
@@ -30,7 +30,7 @@ namespace VMS.View
 
 		private void Hyperlink_Click(object sender, RoutedEventArgs e)
 		{
-			Process.Start(ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.UpdateLocation.OriginalString : System.Reflection.Assembly.GetExecutingAssembly().Location);
+			//Process.Start(ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.UpdateLocation.OriginalString : System.Reflection.Assembly.GetExecutingAssembly().Location);
 			System.Environment.Exit(0);
 		}
 	}
