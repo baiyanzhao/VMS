@@ -137,25 +137,7 @@ namespace VMS.View
 			if(!entries.IsDirty)
 				return null;
 
-			if(!repo.Head.IsTracking)
-			{
-				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName + " 提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-				{
-					repo.Reset(ResetMode.Hard);
-					return true;
-				}
-				return false;
-			}
-
-			//先同步再提交
-			repo.Network.Fetch(repo.Network.Remotes.First());
-			if(repo.Head.TrackingDetails.BehindBy > 0)
-			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
-			}
-
-			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }); 
-
+			#region 打开提交对话框
 			//读取文件状态
 			var assemblyList = Global.GetAssemblyInfo();
 			var status = new Collection<StatusEntryInfo>();
@@ -199,8 +181,30 @@ namespace VMS.View
 			var commitText = CommitWindow.ShowWindow(instance, status, versionInfo);
 			if(commitText == null)
 				return false;
+			#endregion
 
-			//更新版本信息
+			#region 先同步上游分支
+			if(!repo.Head.IsTracking)
+			{
+				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName + " 提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+				{
+					repo.Reset(ResetMode.Hard);
+					return true;
+				}
+				return false;
+			}
+
+			//以Sys名称拉取上游分支
+			repo.Network.Fetch(repo.Network.Remotes.First());
+			if(repo.Head.TrackingDetails.BehindBy > 0)
+			{
+				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+			}
+
+			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+			#endregion
+
+			#region 更新版本信息
 			System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
 
@@ -211,8 +215,9 @@ namespace VMS.View
 				versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
 			}
 			Global.WriteVersionInfo(versionInfo);
+			#endregion
 
-			//提交
+			#region 提交
 			bool err = false;
 			ProgressWindow.Show(instance, delegate
 			{
@@ -251,6 +256,7 @@ namespace VMS.View
 				info.When = commit.Author.When;
 				info.Message = commit.MessageShort;
 			}
+			#endregion
 
 			return true;
 		}
