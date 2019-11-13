@@ -27,30 +27,28 @@ namespace VMS
 		private const string FILE_VERSION_INFO = "Version.json";        //定制信息
 		private const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
 
-		public static Setting Setting;
+		public static Setting Setting = GetSetting();
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 
-		static Global()
+		static Setting GetSetting()
 		{
+			Setting setting = null;
+
 			//配置文件
 			try
 			{
-				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
+				setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
 			}
 			catch(Exception)
 			{ }
 
-			Setting ??= new Setting();
-			Setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
-			Setting.RepoUrl ??= @"http://admin:admin@192.168.1.49:2507/r/MT.git";
-			Setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
-			Setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
-			Setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
-		}
-
-		public static string MakeText<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
-		{
-			return (e.Body as MemberExpression)?.Member.Name;
+			setting ??= new Setting();
+			setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
+			setting.RepoUrl ??= @"http://admin:admin@192.168.1.49:2507/r/MT.git";
+			setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
+			setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
+			setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
+			return setting;
 		}
 
 		/// <summary>

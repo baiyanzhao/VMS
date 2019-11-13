@@ -24,7 +24,7 @@ namespace VMS.View
 			var commitWindow = new CommitWindow() { Owner = owner };
 			commitWindow.Status.DataContext = status;
 			commitWindow.Version.DataContext = version;
-			commitWindow.Info.Text = status.Count.ToString();
+			commitWindow.Info.Text = status?.Count.ToString();
 			if(commitWindow.ShowDialog() != true)
 				return null;
 

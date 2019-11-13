@@ -256,10 +256,10 @@ namespace Microsoft.Shell
         /// <summary>
         /// Gets list of command line arguments for the application.
         /// </summary>
-        public static IList<string> CommandLineArgs
-        {
-            get { return commandLineArgs; }
-        }
+        //public static IList<string> CommandLineArgs
+        //{
+        //    get { return commandLineArgs; }
+        //}
 
         #endregion
 
@@ -358,7 +358,7 @@ namespace Microsoft.Shell
 
             if (args == null)
             {
-                args = new string[] { };
+                args = Array.Empty<string>();
             }
 
             return new List<string>(args);

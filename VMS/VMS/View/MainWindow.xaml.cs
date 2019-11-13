@@ -129,6 +129,9 @@ namespace VMS.View
 		/// <returns>工程未更改, null; 提交成功, true: 否则,false</returns>
 		public static bool? Commit(Repository repo)
 		{
+			if(repo == null)
+				return null;
+
 			var entries = repo.RetrieveStatus();
 			if(!entries.IsDirty)
 				return null;
@@ -197,7 +200,7 @@ namespace VMS.View
 				return false;
 
 			//更新版本信息
-			System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
+			_ = System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
 
 			versionInfo.VersionList = new List<VersionInfo.StringPair>();
@@ -231,7 +234,7 @@ namespace VMS.View
 
 			var commit = repo.Head.Tip;
 			var name = repo.Head.FriendlyName;
-			var info = instance._branchInfos.FirstOrDefault(p => p.Name.Equals(name));
+			var info = instance._branchInfos.FirstOrDefault(p => p.Name.Equals(name, StringComparison.Ordinal));
 			if(info == null)
 			{
 				if(!System.Version.TryParse(name, out var version))
@@ -351,7 +354,7 @@ namespace VMS.View
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			using var repo = new Repository(Global.Setting.LoaclRepoPath);
-			if(repo.RetrieveStatus().IsDirty)
+			if(repo != null && repo.RetrieveStatus().IsDirty)
 			{
 				switch(MessageBox.Show(Application.Current.MainWindow, "当前版本中存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", "尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
 				{
