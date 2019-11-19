@@ -305,7 +305,8 @@ namespace VMS.View
 
 			ProgressWindow.Show(this, delegate
 			{
-				var version = Global.ReadVersionInfo()?.VersionNow?.ToString();
+				var folder = Path.Combine(Global.Setting.PackageFolder, Global.ReadVersionInfo()?.VersionNow?.ToString() + "\\");
+				Directory.CreateDirectory(folder);
 
 				//生成解决方案
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
@@ -324,15 +325,15 @@ namespace VMS.View
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
-					var app = Directory.GetFiles(dir, "*.application");
-					if(app.Length <= 0)
+					var app = Directory.GetFiles(dir, "*.application").FirstOrDefault();
+					if(string.IsNullOrEmpty(app))
 						continue;
 
 					var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]) + " v" + version)),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, Path.GetFileNameWithoutExtension(app))),
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
@@ -343,9 +344,14 @@ namespace VMS.View
 				//复制hex文件
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
 				{
-					File.Copy(item, Path.Combine(Global.Setting.PackageFolder, Path.GetFileName(item)), true);
+					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
 				}
 
+				//复制bin文件
+				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.bin", SearchOption.AllDirectories))
+				{
+					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
+				}
 				Process.Start(Global.Setting.PackageFolder);
 			});
 		}
