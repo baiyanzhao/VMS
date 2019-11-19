@@ -86,7 +86,7 @@ namespace VMS.View
 			}
 
 			_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
-			Application.Current.MainWindow.Title = "版本管理 分支:" + _branchInfos.HeadName + " " + repo.Head.Tip.Author.Name;
+			Application.Current.MainWindow.Title = "版本管理 分支:" + _branchInfos.HeadName + " " + repo.Head.Tip?.Author.Name;
 			BranchInfoGrid.DataContext = _branchInfos;  //在界面显示前,设定上下文
 		}
 
@@ -305,7 +305,8 @@ namespace VMS.View
 
 			ProgressWindow.Show(this, delegate
 			{
-				var folder = Path.Combine(Global.Setting.PackageFolder, Global.ReadVersionInfo()?.VersionNow?.ToString() + "\\");
+				var version = Global.ReadVersionInfo()?.VersionNow?.ToString();
+				var folder = Path.Combine(Global.Setting.PackageFolder, version + "\\");
 				Directory.CreateDirectory(folder);
 
 				//生成解决方案
@@ -333,7 +334,7 @@ namespace VMS.View
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, Path.GetFileNameWithoutExtension(app))),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, Path.GetFileNameWithoutExtension(app) + " v" + version)),
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
