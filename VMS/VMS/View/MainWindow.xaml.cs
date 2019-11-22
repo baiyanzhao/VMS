@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Data;
+using Hardcodet.Wpf.TaskbarNotification;
 using LibGit2Sharp;
 using VMS.Model;
 using VMS.ViewModel;
@@ -19,15 +20,29 @@ namespace VMS.View
 	public partial class MainWindow : Window
 	{
 		private readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
+		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden };	//通知区图标
 
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			_taskbar.IconSource = Icon;
+			_taskbar.LeftClickCommand = new DelegateCommand((parameter) =>
+			{
+				Visibility = Visibility.Visible;
+				WindowState = WindowState.Maximized;
+				_taskbar.Visibility = Visibility.Hidden;
+				Activate();
+			});
+
 			StateChanged += delegate
 			{
 				if(WindowState == WindowState.Minimized)
 				{
 					Hide();
+					_taskbar.ToolTipText = Title;
+					_taskbar.Visibility = Visibility.Visible;
+					_taskbar.ShowBalloonTip("程序将在后台运行", Title, BalloonIcon.None);
 				}
 			};
 
