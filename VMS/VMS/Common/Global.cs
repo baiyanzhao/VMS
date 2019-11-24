@@ -26,9 +26,8 @@ namespace VMS
 	{
 		private const string FILE_VERSION_INFO = "Version.json";        //定制信息
 		private const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
-
-		public static Setting Setting = GetSetting();
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
+		public static Setting Setting = GetSetting();
 
 		static Setting GetSetting()
 		{
