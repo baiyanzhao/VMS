@@ -43,8 +43,8 @@ namespace VMS
 			{ }
 
 			setting ??= new Setting();
+			setting.RepoPathList ??= new List<string>();
 			setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
-			setting.RepoUrl ??= @"http://admin:admin@192.168.1.49:2507/r/MT.git";
 			setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
 			setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";

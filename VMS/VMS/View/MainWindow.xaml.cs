@@ -17,7 +17,7 @@ namespace VMS.View
 	/// <summary>
 	/// MainWindow.xaml 的交互逻辑
 	/// </summary>
-	public partial class MainWindow : Window
+	public sealed partial class MainWindow : Window, IDisposable
 	{
 		private readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
 		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden }; //通知区图标
@@ -57,6 +57,8 @@ namespace VMS.View
 
 		~MainWindow()
 		{
+			Dispose();
+
 			//清理临时文件
 			foreach(var item in Directory.GetFiles(Path.GetTempPath(), "*.tmp", SearchOption.TopDirectoryOnly))
 			{
@@ -110,7 +112,7 @@ namespace VMS.View
 		/// </summary>
 		private void ShowSetWindow()
 		{
-			var window = new SettingWindow() { Owner = IsLoaded ? this : null };
+			var window = new SettingWindow() { Owner = IsLoaded ? this : null, ShowInTaskbar = !IsLoaded };
 			window.TopPannel.DataContext = Global.Setting;
 			window.ShowDialog();
 
@@ -228,7 +230,7 @@ namespace VMS.View
 			#endregion
 
 			#region 更新版本信息
-			System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
+			_ = System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
 
 			versionInfo.VersionList = new List<VersionInfo.StringPair>();
@@ -403,6 +405,12 @@ namespace VMS.View
 					break;
 				}
 			}
+		}
+
+		public void Dispose()
+		{
+			_taskbar.Dispose();
+			GC.SuppressFinalize(this);
 		}
 	}
 }
