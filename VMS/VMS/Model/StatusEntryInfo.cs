@@ -27,7 +27,7 @@ namespace VMS.Model
 		{
 			using var repo = new Repository(Global.Setting.LoaclRepoPath);
 			var info = parameter as StatusEntryInfo;
-			var blob = repo.Head.Tip.Tree?[info.FilePath]?.Target as Blob;
+			var blob = repo.Head.Tip?.Tree?[info.FilePath]?.Target as Blob;
 			if(info == null || blob == null)
 				return;
 

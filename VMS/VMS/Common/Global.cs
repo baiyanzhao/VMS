@@ -5,10 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
-using System.Text;
 using System.Web.Script.Serialization;
+using System.Windows;
 using LibGit2Sharp;
 using VMS.Model;
+using VMS.View;
 
 namespace VMS
 {
@@ -263,9 +264,21 @@ namespace VMS
 				//创建仓库
 				if(Repository.Discover(Setting.LoaclRepoPath) == null)
 				{
-					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
+					string url = null;
+					Application.Current.Dispatcher.Invoke(delegate
+					{
+						var window = new InputWindow
+						{
+							Title = "请输入仓库URL"
+						};
+						window.InputBox.Text = @"http://admin:admin@192.168.1.49:2507/r/MT.git";
+						window.ShowDialog();
+						url = window.InputBox.Text;
+					});
+
+					Repository.Clone(url, Setting.LoaclRepoPath);
 					using var repo = new Repository(Setting.LoaclRepoPath);
-					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });    //取消master的上流分支,禁止用户提交此分支
+					repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上流分支,禁止用户提交此分支
 				}
 
 				//同步仓库,并推送当前分支

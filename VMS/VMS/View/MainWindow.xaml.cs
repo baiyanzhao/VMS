@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Data;
+using Hardcodet.Wpf.TaskbarNotification;
 using LibGit2Sharp;
 using VMS.Model;
 using VMS.ViewModel;
@@ -19,17 +20,39 @@ namespace VMS.View
 	public partial class MainWindow : Window
 	{
 		private readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
+		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden }; //通知区图标
 
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			_taskbar.IconSource = Icon;
+			_taskbar.LeftClickCommand = new DelegateCommand((parameter) =>
+			{
+				Visibility = Visibility.Visible;
+				WindowState = WindowState.Maximized;
+				_taskbar.Visibility = Visibility.Hidden;
+				Activate();
+			});
+
 			StateChanged += delegate
 			{
 				if(WindowState == WindowState.Minimized)
 				{
 					Hide();
+					_taskbar.ToolTipText = Title;
+					_taskbar.Visibility = Visibility.Visible;
+					_taskbar.ShowBalloonTip("程序将在后台运行", Title, BalloonIcon.None);
 				}
 			};
+
+			if(Global.Setting.User == null)
+			{
+				ShowSetWindow();
+			}
+
+			Directory.CreateDirectory(Global.Setting.PackageFolder);
+			ProgressWindow.Show(null, Global.Git.Sync, UpdateBranchInfo);
 		}
 
 		~MainWindow()
@@ -78,12 +101,8 @@ namespace VMS.View
 			}
 
 			_branchInfos.HeadName = (repo.Head.IsTracking) ? repo.Head.FriendlyName : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName;   //Head为分支则显示分支名称,否则显示Tag名称
-
-			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
-			BranchInfoGrid.DataContext = _branchInfos;  //设定上下文
-			BranchInfoGrid.UpdateLayout();  //分组显示前,先更新布局,防止分组折叠后,部分列显示不完整.
-			BranchInfoGrid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
-			BranchInfoGrid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
+			Application.Current.MainWindow.Title = "版本管理 分支:" + _branchInfos.HeadName + " " + repo.Head.Tip?.Author.Name;
+			BranchInfoGrid.DataContext = _branchInfos;  //在界面显示前,设定上下文
 		}
 
 		/// <summary>
@@ -91,11 +110,16 @@ namespace VMS.View
 		/// </summary>
 		private void ShowSetWindow()
 		{
-			var window = new SettingWindow() { Owner = this };
+			var window = new SettingWindow() { Owner = IsLoaded ? this : null };
 			window.TopPannel.DataContext = Global.Setting;
 			window.ShowDialog();
+
 			Global.Setting.PackageFolder = Global.Setting.PackageFolder.Last() == '\\' ? Global.Setting.PackageFolder : Global.Setting.PackageFolder + "\\";
 			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
+			if(!Global.Setting.RepoPathList.Contains(Global.Setting.LoaclRepoPath))
+			{
+				Global.Setting.RepoPathList.Add(Global.Setting.LoaclRepoPath);
+			}
 			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
 		}
 
@@ -136,25 +160,7 @@ namespace VMS.View
 			if(!entries.IsDirty)
 				return null;
 
-			if(!repo.Head.IsTracking)
-			{
-				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName + " 提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-				{
-					repo.Reset(ResetMode.Hard);
-					return true;
-				}
-				return false;
-			}
-
-			//先同步再提交
-			repo.Network.Fetch(repo.Network.Remotes.First());
-			if(repo.Head.TrackingDetails.BehindBy > 0)
-			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
-			}
-
-			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }); 
-
+			#region 打开提交对话框
 			//读取文件状态
 			var assemblyList = Global.GetAssemblyInfo();
 			var status = new Collection<StatusEntryInfo>();
@@ -182,7 +188,7 @@ namespace VMS.View
 			}
 
 			//填写提交信息
-			var versionInfo = Global.ReadVersionInfo()?? new VersionInfo();
+			var versionInfo = Global.ReadVersionInfo() ?? new VersionInfo();
 			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
 			MainWindow instance = null;
@@ -198,9 +204,31 @@ namespace VMS.View
 			var commitText = CommitWindow.ShowWindow(instance, status, versionInfo);
 			if(commitText == null)
 				return false;
+			#endregion
 
-			//更新版本信息
-			_ = System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
+			#region 先同步上游分支
+			if(!repo.Head.IsTracking)
+			{
+				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName + " 提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+				{
+					repo.Reset(ResetMode.Hard);
+					return true;
+				}
+				return false;
+			}
+
+			//以Sys名称拉取上游分支
+			repo.Network.Fetch(repo.Network.Remotes.First());
+			if(repo.Head.TrackingDetails.BehindBy > 0)
+			{
+				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+			}
+
+			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+			#endregion
+
+			#region 更新版本信息
+			System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
 
 			versionInfo.VersionList = new List<VersionInfo.StringPair>();
@@ -210,9 +238,10 @@ namespace VMS.View
 				versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
 			}
 			Global.WriteVersionInfo(versionInfo);
+			#endregion
 
-			//提交
-			bool err = false;
+			#region 提交
+			var err = false;
 			ProgressWindow.Show(instance, delegate
 			{
 				try
@@ -250,19 +279,17 @@ namespace VMS.View
 				info.When = commit.Author.When;
 				info.Message = commit.MessageShort;
 			}
+			#endregion
 
 			return true;
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			if(Global.Setting.User == null)
-			{
-				ShowSetWindow();
-			}
-
-			Directory.CreateDirectory(Global.Setting.PackageFolder);
-			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
+			//分组和排序显示, GetDefaultView概率为null,改为直接操作Items
+			BranchInfoGrid.UpdateLayout();  //分组显示前,先更新布局,防止分组折叠后,部分列显示不完整.
+			BranchInfoGrid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionConverter()));
+			BranchInfoGrid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 		}
 
 		private void Open_Click(object sender, RoutedEventArgs e)
@@ -302,6 +329,8 @@ namespace VMS.View
 			ProgressWindow.Show(this, delegate
 			{
 				var version = Global.ReadVersionInfo()?.VersionNow?.ToString();
+				var folder = Path.Combine(Global.Setting.PackageFolder, version + "\\");
+				Directory.CreateDirectory(folder);
 
 				//生成解决方案
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
@@ -320,15 +349,15 @@ namespace VMS.View
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
-					var app = Directory.GetFiles(dir, "*.application");
-					if(app.Length <= 0)
+					var app = Directory.GetFiles(dir, "*.application").FirstOrDefault();
+					if(string.IsNullOrEmpty(app))
 						continue;
 
 					var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(Global.Setting.PackageFolder, Path.GetFileNameWithoutExtension(app[0]) + " v" + version)),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, Path.GetFileNameWithoutExtension(app) + " v" + version)),
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
@@ -339,9 +368,14 @@ namespace VMS.View
 				//复制hex文件
 				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
 				{
-					File.Copy(item, Path.Combine(Global.Setting.PackageFolder, Path.GetFileName(item)), true);
+					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
 				}
 
+				//复制bin文件
+				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.bin", SearchOption.AllDirectories))
+				{
+					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
+				}
 				Process.Start(Global.Setting.PackageFolder);
 			});
 		}
@@ -349,6 +383,7 @@ namespace VMS.View
 		private void Set_Click(object sender, RoutedEventArgs e)
 		{
 			ShowSetWindow();
+			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

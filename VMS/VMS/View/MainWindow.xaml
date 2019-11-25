@@ -4,7 +4,7 @@
  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
  xmlns:local="clr-namespace:VMS.ViewModel"
- mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded" Title="版本管理" Closing="Window_Closing">
+ mc:Ignorable="d" Height="720" Width="1280" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Loaded="Window_Loaded" Title="版本管理" Closing="Window_Closing" Icon="/TSVNCache;component/VMS.ico">
 	<Window.Resources>
 		<Style TargetType="DataGridCell">
 			<Setter Property="Focusable" Value="True"/>
@@ -27,7 +27,7 @@
 			<ColumnDefinition Width="72"/>
 		</Grid.ColumnDefinitions>
 
-		<DataGrid Name="BranchInfoGrid" Margin="2" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
+		<DataGrid Name="BranchInfoGrid" Margin="2" ItemsSource="{Binding}" FontSize="24" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="True" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.GroupStyle>
 				<!-- Style for groups at top level. -->
 				<GroupStyle>
@@ -117,11 +117,11 @@
 				</DataTemplate>
 			</DataGrid.RowDetailsTemplate>
 			<DataGrid.Columns>
-				<DataGridTextColumn Width="Auto" MinWidth="72" Binding="{Binding Version}" Foreground="DarkBlue"/>
-				<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="16" />
+				<DataGridTextColumn Width="Auto" CanUserResize="False" MinWidth="72" Binding="{Binding Version}" Foreground="DarkBlue"/>
+				<DataGridTextColumn Width="*" MinWidth="120" Binding="{Binding Message}" FontSize="16" />
 				<DataGridTextColumn Width="Auto" MinWidth="64" Binding="{Binding Author}" Foreground="DarkSlateGray" FontSize="16"/>
-				<DataGridTextColumn Width="Auto" MinWidth="150" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Foreground="DarkSlateGray" FontSize="16"/>
-				<DataGridTemplateColumn Width="Auto" MinWidth="200">
+				<DataGridTextColumn Width="Auto" CanUserResize="False" MinWidth="150" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Foreground="DarkSlateGray" FontSize="16"/>
+				<DataGridTemplateColumn Width="Auto" CanUserResize="False" MinWidth="200">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
 							<WrapPanel>

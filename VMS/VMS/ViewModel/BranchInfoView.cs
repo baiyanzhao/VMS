@@ -121,6 +121,7 @@ namespace VMS.ViewModel
 					info.Author = commit.Author.Name;
 					info.When = commit.Author.When;
 					info.Message = commit.MessageShort;
+					Application.Current.MainWindow.Title = "版本管理 分支:" + info.Name + " " + info.Author;
 					MessageBox.Show(info.Author + "\r" + info.Message + "\r" + info.When, "检出版本: " + info.Name);
 				}
 			}

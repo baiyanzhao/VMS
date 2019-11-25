@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
-using Hardcodet.Wpf.TaskbarNotification;
 using Microsoft.Shell;
 
 namespace VMS
@@ -11,7 +10,6 @@ namespace VMS
 	/// </summary>
 	public partial class App : Application, ISingleInstanceApp
 	{
-		private TaskbarIcon _taskbar;
 		private const string Unique = "VMS_Unique_Application_String";
 		public App()
 		{
@@ -44,13 +42,6 @@ namespace VMS
 				window.WindowState = WindowState.Maximized;
 				window.Activate();
 			}
-		}
-
-		protected override void OnStartup(StartupEventArgs e)
-		{
-			_taskbar = FindResource("Taskbar") as TaskbarIcon;
-			_taskbar.LeftClickCommand = new DelegateCommand((parameter) => { ShowMainWindow(); });
-			base.OnStartup(e);
 		}
 
 		public bool SignalExternalCommandLineArgs(IList<string> args)
