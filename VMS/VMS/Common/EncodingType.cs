@@ -10,7 +10,7 @@ namespace FileEncoding
 	/// <summary> 
 	/// 获取文件的编码格式 
 	/// </summary> 
-	public class EncodingType
+	public static class EncodingType
 	{
 		/// <summary> 
 		/// 给定文件的路径，读取文件的二进制数据，判断文件的编码类型 
@@ -19,10 +19,8 @@ namespace FileEncoding
 		/// <returns>文件的编码类型</returns> 
 		public static System.Text.Encoding GetType(string file)
 		{
-			var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
-			var r = GetType(fs);
-			fs.Close();
-			return r;
+			using var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+			return GetType(fs);
 		}
 
 		/// <summary> 
@@ -37,7 +35,7 @@ namespace FileEncoding
 			//var UTF8 = new byte[] { 0xEF, 0xBB, 0xBF }; //带BOM 
 			var reVal = Encoding.Default;
 			using var reader = new BinaryReader(fs, Encoding.Default);
-			if(fs.Length < 3)
+			if(fs == null || fs.Length < 3)
 				return reVal;
 
 			var bytes = reader.ReadBytes((int)fs.Length);
@@ -53,7 +51,6 @@ namespace FileEncoding
 			{
 				reVal = Encoding.Unicode;
 			}
-			reader.Close();
 			return reVal;
 		}
 

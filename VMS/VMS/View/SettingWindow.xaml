@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
-        Title="设置" Height="240" Width="600" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" FontSize="14" ShowInTaskbar="False">
+        Title="设置" Height="240" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" FontSize="14" ShowInTaskbar="False">
 	<Window.Resources>
 		<Style TargetType="TextBox">
 			<Style.Triggers>
