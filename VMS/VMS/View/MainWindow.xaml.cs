@@ -20,7 +20,7 @@ namespace VMS.View
 	public partial class MainWindow : Window
 	{
 		private readonly BranchInfoView _branchInfos = new BranchInfoView(); //分支信息
-		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden };	//通知区图标
+		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden }; //通知区图标
 
 		public MainWindow()
 		{
@@ -113,8 +113,13 @@ namespace VMS.View
 			var window = new SettingWindow() { Owner = IsLoaded ? this : null };
 			window.TopPannel.DataContext = Global.Setting;
 			window.ShowDialog();
+
 			Global.Setting.PackageFolder = Global.Setting.PackageFolder.Last() == '\\' ? Global.Setting.PackageFolder : Global.Setting.PackageFolder + "\\";
 			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
+			if(!Global.Setting.RepoPathList.Contains(Global.Setting.LoaclRepoPath))
+			{
+				Global.Setting.RepoPathList.Add(Global.Setting.LoaclRepoPath);
+			}
 			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
 		}
 
@@ -180,7 +185,7 @@ namespace VMS.View
 			}
 
 			//填写提交信息
-			var versionInfo = Global.ReadVersionInfo()?? new VersionInfo();
+			var versionInfo = Global.ReadVersionInfo() ?? new VersionInfo();
 			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
 			MainWindow instance = null;
@@ -233,7 +238,7 @@ namespace VMS.View
 			#endregion
 
 			#region 提交
-			bool err = false;
+			var err = false;
 			ProgressWindow.Show(instance, delegate
 			{
 				try
@@ -375,6 +380,7 @@ namespace VMS.View
 		private void Set_Click(object sender, RoutedEventArgs e)
 		{
 			ShowSetWindow();
+			ProgressWindow.Show(this, Global.Git.Sync, UpdateBranchInfo);
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
