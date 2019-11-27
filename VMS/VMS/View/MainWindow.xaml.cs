@@ -31,18 +31,26 @@ namespace VMS.View
 			{
 				Visibility = Visibility.Visible;
 				WindowState = WindowState.Maximized;
-				_taskbar.Visibility = Visibility.Hidden;
 				Activate();
 			});
 
 			StateChanged += delegate
 			{
-				if(WindowState == WindowState.Minimized)
+				switch(WindowState)
 				{
+				case WindowState.Normal:
+					break;
+				case WindowState.Minimized:
 					Hide();
 					_taskbar.ToolTipText = Title;
 					_taskbar.Visibility = Visibility.Visible;
 					_taskbar.ShowBalloonTip("程序将在后台运行", Title, BalloonIcon.None);
+					break;
+				case WindowState.Maximized:
+					_taskbar.Visibility = Visibility.Hidden;
+					break;
+				default:
+					break;
 				}
 			};
 
@@ -165,7 +173,7 @@ namespace VMS.View
 			#region 打开提交对话框
 			//读取文件状态
 			var assemblyList = Global.GetAssemblyInfo();
-			var status = new Collection<StatusEntryInfo>();
+			var status = new Collection<CommitInfoView>();
 			foreach(var item in entries)
 			{
 				switch(item.State)
@@ -175,7 +183,7 @@ namespace VMS.View
 				case FileStatus.TypeChangeInWorkdir:
 				case FileStatus.RenamedInWorkdir:
 				case FileStatus.DeletedFromWorkdir:
-					status.Add(new StatusEntryInfo() { FilePath = item.FilePath, FileStatus = item.State });
+					status.Add(new CommitInfoView() { FilePath = item.FilePath, FileStatus = item.State });
 					foreach(var assembly in assemblyList)
 					{
 						if(item.FilePath.Contains(assembly.ProjectPath))
@@ -230,51 +238,47 @@ namespace VMS.View
 			#endregion
 
 			#region 更新版本信息
-			_ = System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
-			versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
-
-			versionInfo.VersionList = new List<VersionInfo.StringPair>();
-			foreach(var assembly in assemblyList)
+			if(string.Equals(repo.Head.FriendlyName, "master")) //maser分支更新次版本号
 			{
-				assembly.HitVersion(branchVersion == null ? 0 : branchVersion.Build);
-				versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
+				versionInfo.VersionNow = versionInfo.VersionNow == null ? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor + 1, 0, 0);
+			}
+			else //其它分支更新修订号
+			{
+				_ = System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
+				versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
+
+				versionInfo.VersionList = new List<VersionInfo.StringPair>();
+				foreach(var assembly in assemblyList)
+				{
+					assembly.HitVersion(branchVersion == null ? 0 : branchVersion.Build);
+					versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
+				}
 			}
 			Global.WriteVersionInfo(versionInfo);
 			#endregion
 
 			#region 提交
-			var err = false;
-			ProgressWindow.Show(instance, delegate
-			{
-				try
-				{
-					Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText, (msg) => { ProgressWindow.Update(msg); });
-				}
-				catch(Exception x)
-				{
-					err = true;
-					instance.Dispatcher.Invoke(delegate
-					{
-						MessageBox.Show(instance, x.Message, "连接服务器失败,请检查网络连接或重启软件后重试!", MessageBoxButton.OK, MessageBoxImage.Error);
-					});
-				}
-			});
-
-			if(err)
+			if(!ProgressWindow.Show(instance, () => Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText, msg => ProgressWindow.Update(msg))))
 				return false;
 
+			//更新界面显示
 			var commit = repo.Head.Tip;
 			var name = repo.Head.FriendlyName;
 			var info = instance._branchInfos.FirstOrDefault(p => p.Name.Equals(name, StringComparison.Ordinal));
-			if(info == null)
+			if(info == null) //界面列表不存在此项,则新增一行
 			{
-				if(!System.Version.TryParse(name, out var version))
-					return true; //如果上传非版本分支,如master, 界面不更新
-
-				info = new BranchInfo { Type = GitType.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
-				instance._branchInfos.Add(info);
+				if(string.Equals(name, "master")) //master分支上传Tag
+				{
+					var tag = repo.ApplyTag(versionInfo.VersionNow.ToString(3));
+					repo.Network.Push(repo.Network.Remotes.First(), tag.ToString());
+				}
+				else if(System.Version.TryParse(name, out var version)) //版本分支在界面新增一行; 非版本分支界面不更新
+				{
+					info = new BranchInfo { Type = GitType.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
+					instance._branchInfos.Add(info);
+				}
 			}
-			else
+			else //界面列表存在此项,则更新显示
 			{
 				info.Sha = commit.Sha;
 				info.Author = commit.Author.Name;

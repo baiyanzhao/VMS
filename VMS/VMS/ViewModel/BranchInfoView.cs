@@ -62,10 +62,11 @@ namespace VMS.ViewModel
 				var branch = repo.Branches.Add(name, info.Sha, true);
 				repo.Checkout(branch);
 				repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
+				repo.Network.Push(branch);	//创建分支后,立即推送
 
 				//更新版本信息
 				var versionInfo = Global.ReadVersionInfo(info.Sha);
-				versionInfo = versionInfo ?? new VersionInfo();
+				versionInfo ??= new VersionInfo();
 				versionInfo.VersionBase = versionInfo.VersionNow;
 				versionInfo.VersionNow = version;
 				Global.WriteVersionInfo(versionInfo);

@@ -271,7 +271,7 @@ namespace VMS
 						{
 							Title = "请输入仓库URL"
 						};
-						window.InputBox.Text = @"http://admin:admin@192.168.1.49:2507/r/MT.git";
+						window.InputBox.Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git";
 						window.ShowDialog();
 						url = window.InputBox.Text;
 					});
@@ -313,10 +313,6 @@ namespace VMS
 				repo.Commit(message, sign, sign);
 				repo.Network.Push(repo.Head, new PushOptions()
 				{
-					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
-					{
-						return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
-					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{
 						onProgress(string.Format("Push{0}/{1},{2}byte", current, total, bytes));

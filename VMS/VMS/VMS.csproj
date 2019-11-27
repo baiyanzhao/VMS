@@ -38,7 +38,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>19</ApplicationRevision>
+    <ApplicationRevision>20</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -132,7 +132,7 @@
     <Compile Include="Common\EncodingType.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Common\Global.cs" />
-    <Compile Include="Model\StatusEntryInfo.cs" />
+    <Compile Include="ViewModel\CommitInfoView.cs" />
     <Compile Include="Common\Converter.cs" />
     <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\VersionInfo.cs" />

@@ -36,12 +36,9 @@ namespace VMS
 			if(window == null)
 				return;
 
-			if(window.Visibility == Visibility.Hidden)
-			{
-				window.Visibility = Visibility.Visible;
-				window.WindowState = WindowState.Maximized;
-				window.Activate();
-			}
+			window.Visibility = Visibility.Visible;
+			window.WindowState = WindowState.Maximized;
+			window.Activate();
 		}
 
 		public bool SignalExternalCommandLineArgs(IList<string> args)
