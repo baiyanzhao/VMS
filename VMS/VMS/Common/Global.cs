@@ -84,7 +84,7 @@ namespace VMS
 			/// <summary>
 			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 			/// </summary>
-			/// <param name="versionBuild">版本定制号</param>
+			/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
 			public void HitVersion(int versionBuild)
 			{
 				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
@@ -99,7 +99,7 @@ namespace VMS
 						var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
 						if(System.Version.TryParse(strVersion, out var version))
 						{
-							if(IsModified)
+							if(IsModified && versionBuild >= 0)
 							{
 								var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
 								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));

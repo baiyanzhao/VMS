@@ -241,6 +241,13 @@ namespace VMS.View
 			if(string.Equals(repo.Head.FriendlyName, "master")) //maser分支更新次版本号
 			{
 				versionInfo.VersionNow = versionInfo.VersionNow == null ? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor + 1, 0, 0);
+
+				versionInfo.VersionList = new List<VersionInfo.StringPair>();
+				foreach(var assembly in assemblyList)
+				{
+					assembly.HitVersion(-1);
+					versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
+				}
 			}
 			else //其它分支更新修订号
 			{
@@ -269,8 +276,10 @@ namespace VMS.View
 			{
 				if(string.Equals(name, "master")) //master分支上传Tag
 				{
-					var tag = repo.ApplyTag(versionInfo.VersionNow.ToString(3));
-					repo.Network.Push(repo.Network.Remotes.First(), tag.ToString());
+					name = versionInfo.VersionNow.ToString(3);
+					repo.Network.Push(repo.Network.Remotes.First(), repo.ApplyTag(name).ToString());
+					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
+					instance._branchInfos.Add(info);
 				}
 				else if(System.Version.TryParse(name, out var version)) //版本分支在界面新增一行; 非版本分支界面不更新
 				{

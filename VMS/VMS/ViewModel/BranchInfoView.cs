@@ -100,8 +100,7 @@ namespace VMS.ViewModel
 				using var repo = new Repository(Global.Setting.LoaclRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
 				var version = Global.ReadVersionInfo(cmt)?.VersionNow?.ToString();
-				version = version == null ? info.Name : version + " " + info.Author;
-				var name = Global.Setting.PackageFolder + (version ?? info.Name) + ".tar";
+				var name = Global.Setting.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
 				repo.ObjectDatabase.Archive(cmt, name);
 				Process.Start("explorer", "/select,\"" + name + "\"");
 			}
