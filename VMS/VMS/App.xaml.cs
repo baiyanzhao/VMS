@@ -16,6 +16,7 @@ namespace VMS
 			DispatcherUnhandledException += (s, e) =>
 			{
 				MessageBox.Show(e.Exception.Message + Environment.NewLine + e.Exception, "Exception");
+				(Current.MainWindow as IDisposable)?.Dispose();
 				Environment.Exit(0);
 			};
 

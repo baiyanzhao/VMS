@@ -65,8 +65,6 @@ namespace VMS.View
 
 		~MainWindow()
 		{
-			Dispose();
-
 			//清理临时文件
 			foreach(var item in Directory.GetFiles(Path.GetTempPath(), "*.tmp", SearchOption.TopDirectoryOnly))
 			{
