@@ -70,7 +70,6 @@ namespace VMS.View
 			{
 				try
 				{
-					File.SetAttributes(item, FileAttributes.Normal);
 					File.Delete(item);
 				}
 				catch
@@ -199,22 +198,13 @@ namespace VMS.View
 			var versionInfo = Global.ReadVersionInfo() ?? new VersionInfo();
 			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
-			MainWindow instance = null;
-			foreach(Window item in Application.Current.Windows)
-			{
-				if(item.IsActive)
-				{
-					instance = item as MainWindow;
-					break;
-				}
-			}
-
+			var instance = Application.Current.MainWindow as MainWindow;
 			var commitText = CommitWindow.ShowWindow(instance, status, versionInfo);
 			if(commitText == null)
 				return false;
 			#endregion
 
-			#region 先同步上游分支
+			#region 同步上游分支
 			if(!repo.Head.IsTracking)
 			{
 				if(MessageBox.Show("当前为只读版本,是否撤销全部更改?", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName + " 提交失败", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
@@ -295,6 +285,76 @@ namespace VMS.View
 			#endregion
 
 			return true;
+		}
+
+		public static void CreateBranch(BranchInfo info)
+		{
+			#region 确认状态
+			if(info == null)
+				return;
+
+			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			var entries = repo.RetrieveStatus();
+			if(entries.IsDirty)
+			{
+				MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
+				return;
+			}
+
+			//填写提交信息
+			var versionInfo = Global.ReadVersionInfo(info.Sha) ?? new VersionInfo();
+			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
+			versionInfo.VersionBase = versionInfo.VersionNow;
+			versionInfo.VersionNow = null;
+
+			var instance = Application.Current.MainWindow as MainWindow;
+			var commitText = CommitWindow.ShowWindow(instance, null, versionInfo);
+			if(commitText == null)
+				return;
+
+			try
+			{
+				repo.Network.Fetch(repo.Network.Remotes["origin"]);
+			}
+			catch
+			{
+				MessageBox.Show("连接服务器失败,请检查网络连接或重启软件后重试!", "同步失败");
+				return;
+			}
+			#endregion
+
+			#region 更新版本信息
+			var build = repo.Branches.Max((o) =>
+			{
+				if(o.IsRemote && System.Version.TryParse(o.FriendlyName.Split('/').Last(), out var ver) && ver.Major == info.Version.Major && ver.Minor == info.Version.Minor)
+					return ver.Build;
+				return 0;
+			}) + 1; //计算当前版本定制号
+			var version = new System.Version(info.Version.Major, info.Version.Minor, build, 0);
+			var name = version.ToString(3);
+			if(repo.Branches[name] != null)
+			{
+				repo.Checkout(info.Sha);
+			}
+
+			//创建新分支
+			var branch = repo.Branches.Add(name, info.Sha, true);
+			repo.Checkout(branch);
+			repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
+
+			//更新版本信息
+			versionInfo.VersionNow = version;
+			Global.WriteVersionInfo(versionInfo);
+			#endregion
+
+			#region 提交
+			if(!ProgressWindow.Show(instance, () => Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText, msg => ProgressWindow.Update(msg))))
+			{
+				repo.Checkout(info.Sha);
+				repo.Branches.Remove(branch);
+			}
+			instance?.UpdateBranchInfo();
+			#endregion
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)

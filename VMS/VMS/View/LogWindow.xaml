@@ -24,15 +24,12 @@
 		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
-					<Border BorderThickness="1" BorderBrush="LightBlue">
-						<StackPanel Orientation="Vertical" >
-							<Expander IsExpanded="False" Background="#3278A080" BorderThickness="0" Foreground="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrushKey}}">
-								<Expander.Header>
-									<DockPanel>
-										<TextBlock FontWeight="Bold" FontSize="18" Text="信息" Margin="5,0,0,0"/>
-									</DockPanel>
-								</Expander.Header>
-								<Grid Background="#50A0A0A0" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
+					<TabControl Margin="24,0,0,0">
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock FontSize="14" Foreground="DarkSlateBlue" Text="信息" />
+							</TabItem.Header>
+							<Grid Background="#3278A080" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto"/>
 										<ColumnDefinition Width="Auto"/>
@@ -81,44 +78,42 @@
 									</DataGrid>
 									<TextBlock Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" Text="{Binding Message}"/>
 								</Grid>
-							</Expander>
-							<Expander IsExpanded="False" Background="#3278A080" BorderThickness="0" Foreground="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrushKey}}">
-								<Expander.Header>
-									<DockPanel>
-										<TextBlock FontWeight="Bold" FontSize="18" Text="更改" Margin="5,0,0,0"/>
-									</DockPanel>
-								</Expander.Header>
-								<DataGrid DataContext="{Binding Path=Sha, Converter={StaticResource CommitDiffConverter}}" ItemsSource="{Binding}" Background="{x:Null}" MaxHeight="240" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
-									<DataGrid.CellStyle>
-										<Style TargetType="{x:Type DataGridCell}">
-											<Setter Property="Focusable" Value="False"/>
-											<Setter Property="Background" Value="{x:Null}"/>
-											<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-											<Setter Property="Template">
-												<Setter.Value>
-													<ControlTemplate TargetType="{x:Type DataGridCell}">
-														<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-													</ControlTemplate>
-												</Setter.Value>
-											</Setter>
-										</Style>
-									</DataGrid.CellStyle>
-									<DataGrid.Columns>
-										<DataGridTextColumn Header="文件" Width="*" Binding="{Binding FilePath}"/>
-										<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
-										<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
-										<DataGridTemplateColumn Width="36">
-											<DataGridTemplateColumn.CellTemplate>
-												<DataTemplate>
-													<Button Content="对比" ToolTip="比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
-												</DataTemplate>
-											</DataGridTemplateColumn.CellTemplate>
-										</DataGridTemplateColumn>
-									</DataGrid.Columns>
-								</DataGrid>
-							</Expander>
-						</StackPanel>
-					</Border>
+						</TabItem>
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock FontSize="14" Foreground="DarkSlateBlue" Text="更改"/>
+							</TabItem.Header>
+
+							<DataGrid BorderThickness="0" DataContext="{Binding Path=Sha, Converter={StaticResource CommitDiffConverter}}" ItemsSource="{Binding}" Background="{x:Null}" MaxHeight="240" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
+								<DataGrid.CellStyle>
+									<Style TargetType="{x:Type DataGridCell}">
+										<Setter Property="Focusable" Value="False"/>
+										<Setter Property="Background" Value="{x:Null}"/>
+										<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+										<Setter Property="Template">
+											<Setter.Value>
+												<ControlTemplate TargetType="{x:Type DataGridCell}">
+													<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+												</ControlTemplate>
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</DataGrid.CellStyle>
+								<DataGrid.Columns>
+									<DataGridTextColumn Header="文件" Width="*" Binding="{Binding FilePath}"/>
+									<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
+									<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
+									<DataGridTemplateColumn Width="36">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<Button Content="对比" ToolTip="比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+								</DataGrid.Columns>
+							</DataGrid>
+						</TabItem>
+					</TabControl>
 				</DataTemplate>
 			</DataGrid.RowDetailsTemplate>
 			<DataGrid.Columns>

@@ -63,7 +63,7 @@
 			</DataGrid.GroupStyle>
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
-					<Border BorderThickness="1" BorderBrush="DarkBlue" Background="#FFD5DCE2" Padding="12,2" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
+					<Border Margin="24,0,0,0" BorderThickness="1" BorderBrush="DarkBlue" Background="#FFD5DCE2" Padding="2,2" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
 						<Grid>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto"/>

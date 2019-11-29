@@ -36,16 +36,16 @@ namespace VMS.Model
 				stream.Read(bytes, 0, bytes.Length);
 				File.WriteAllBytes(filePath, bytes);
 			}
-			File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
 			return filePath;
 		}
+
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
 			var info = parameter as CommitDiffInfo;
 
 			try
 			{
-				Process.Start(Global.Setting.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid) + "\" \"" + CreateFile(info.Tree.Oid) + "\"");
+				Process.Start(Global.Setting.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid) + "\" \"" + CreateFile(info.Tree.Oid) + "\"" + " /ro");
 			}
 			catch(Exception x)
 			{

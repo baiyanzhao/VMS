@@ -7,7 +7,7 @@ namespace VMS.Model
 	/// <summary>
 	/// Git 分支信息
 	/// </summary>
-	class BranchInfo : INotifyPropertyChanged
+	public class BranchInfo : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 		void OnPropertyChanged<TProperty>(Expression<Func<INotifyPropertyChanged, TProperty>> exp)

@@ -42,8 +42,7 @@ namespace VMS.ViewModel
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);
 				}
-				File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
-				Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
+				Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"" + " /lro");
 			}
 			catch(Exception x)
 			{
