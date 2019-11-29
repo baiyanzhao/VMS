@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -37,7 +36,7 @@ namespace VMS.ViewModel
 
 				try
 				{
-					repo.Network.Fetch(repo.Network.Remotes.First());
+					repo.Network.Fetch(repo.Network.Remotes["origin"]);
 				}
 				catch
 				{

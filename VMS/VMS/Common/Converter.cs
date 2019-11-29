@@ -61,13 +61,29 @@ namespace VMS
 	}
 
 	/// <summary>
-	/// 字符串匹配
+	/// 根据Sha,获取版本信息
 	/// </summary>
 	public class BranchDetailConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			return Global.ReadVersionInfo(value as string);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// 根据Sha,获取当前提交的更改列表
+	/// </summary>
+	public class CommitDiffConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return Global.GetDiff(value as string);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

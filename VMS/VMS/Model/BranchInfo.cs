@@ -35,7 +35,8 @@ namespace VMS.Model
 		/// </summary>
 		public string Sha
 		{
-			get => _sha; set
+			get => _sha;
+			set
 			{
 				_sha = value;
 				OnPropertyChanged(p => Sha);

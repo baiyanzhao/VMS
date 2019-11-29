@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Deployment.Application;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
 using System.Web.Script.Serialization;
 using System.Windows;
@@ -25,8 +25,8 @@ namespace VMS
 
 	internal static class Global
 	{
-		private const string FILE_VERSION_INFO = "Version.json";        //定制信息
-		private const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
+		private const string FILE_VERSION_INFO = "Version.json"; //定制信息
+		private const string FILE_SETTING_LOCAL = "Setting.json"; //设置
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 		public static Setting Setting = GetSetting();
 
@@ -46,7 +46,7 @@ namespace VMS
 			setting.RepoPathList ??= new List<string>();
 			setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
 			setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
-			setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
+			setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\VMS\MT\";
 			setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
 			return setting;
 		}
@@ -254,6 +254,24 @@ namespace VMS
 			WriteObject(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO), info);
 		}
 
+		public static IEnumerable<CommitDiffInfo> GetDiff(string sha)
+		{
+			var diffInfo = new ObservableCollection<CommitDiffInfo>();
+			try
+			{
+				using var repo = new Repository(Setting.LoaclRepoPath);
+				var commit = repo.Lookup<Commit>(sha);
+				foreach(var item in repo.Diff.Compare<TreeChanges>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree))
+				{
+					diffInfo.Add(new CommitDiffInfo(item));
+				}
+			}
+			catch
+			{ }
+
+			return diffInfo;
+		}
+
 		public static class Git
 		{
 			/// <summary>
@@ -285,7 +303,7 @@ namespace VMS
 				using(var repo = new Repository(Setting.LoaclRepoPath))
 				{
 					//同步仓库
-					repo.Network.Fetch(repo.Network.Remotes.First());
+					repo.Network.Fetch(repo.Network.Remotes["origin"]);
 
 					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)

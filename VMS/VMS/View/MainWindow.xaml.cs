@@ -226,13 +226,13 @@ namespace VMS.View
 			}
 
 			//以Sys名称拉取上游分支
-			repo.Network.Fetch(repo.Network.Remotes.First());
+			repo.Network.Fetch(repo.Network.Remotes["origin"]);
 			if(repo.Head.TrackingDetails.BehindBy > 0)
 			{
 				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 			}
 
-			repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+			repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
 			#endregion
 
 			#region 更新版本信息
@@ -275,7 +275,7 @@ namespace VMS.View
 				if(string.Equals(name, "master")) //master分支上传Tag
 				{
 					name = versionInfo.VersionNow.ToString(3);
-					repo.Network.Push(repo.Network.Remotes.First(), repo.ApplyTag(name).ToString());
+					repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString());
 					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
