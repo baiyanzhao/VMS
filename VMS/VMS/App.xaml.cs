@@ -16,6 +16,7 @@ namespace VMS
 			DispatcherUnhandledException += (s, e) =>
 			{
 				MessageBox.Show(e.Exception.Message + Environment.NewLine + e.Exception, "Exception");
+				(Current.MainWindow as IDisposable)?.Dispose();
 				Environment.Exit(0);
 			};
 
@@ -36,12 +37,9 @@ namespace VMS
 			if(window == null)
 				return;
 
-			if(window.Visibility == Visibility.Hidden)
-			{
-				window.Visibility = Visibility.Visible;
-				window.WindowState = WindowState.Maximized;
-				window.Activate();
-			}
+			window.Visibility = Visibility.Visible;
+			window.WindowState = WindowState.Maximized;
+			window.Activate();
 		}
 
 		public bool SignalExternalCommandLineArgs(IList<string> args)

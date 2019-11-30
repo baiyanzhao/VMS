@@ -60,6 +60,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>8.0</LangVersion>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -69,6 +70,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>true</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -136,7 +138,8 @@
     <Compile Include="Common\EncodingType.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Common\Global.cs" />
-    <Compile Include="Model\StatusEntryInfo.cs" />
+    <Compile Include="Model\CommitDiffInfo.cs" />
+    <Compile Include="ViewModel\CommitInfoView.cs" />
     <Compile Include="Common\Converter.cs" />
     <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\VersionInfo.cs" />
@@ -259,9 +262,7 @@
     <Content Include="Package\WinRAR.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Config\Setting.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Setting.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -279,7 +280,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <PublishFile Include="Config\Setting.json">
+    <PublishFile Include="Setting.json">
       <Visible>False</Visible>
       <Group>
       </Group>

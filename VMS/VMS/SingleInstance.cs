@@ -251,18 +251,6 @@ namespace Microsoft.Shell
 
         #endregion
 
-        #region Public Properties
-
-        /// <summary>
-        /// Gets list of command line arguments for the application.
-        /// </summary>
-        //public static IList<string> CommandLineArgs
-        //{
-        //    get { return commandLineArgs; }
-        //}
-
-        #endregion
-
         #region Public Methods
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace VMS
 				committishOrBranchSpec = mark;
 				try
 				{
-					repo.Network.Fetch(repo.Network.Remotes.First(), new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
+					repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
 				}
 				catch(Exception x)
 				{
