@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Web.Script.Serialization;
 using System.Windows;
+using System.Windows.Controls;
 using LibGit2Sharp;
 using VMS.Model;
 using VMS.View;
@@ -289,9 +290,11 @@ namespace VMS
 						{
 							Title = "请输入仓库URL"
 						};
-						window.InputBox.Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git";
+
+						var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
+						window.InputGrid.Children.Add(box);
 						window.ShowDialog();
-						url = window.InputBox.Text;
+						url = box.Text;
 					});
 
 					Repository.Clone(url, Setting.LoaclRepoPath);
@@ -331,6 +334,26 @@ namespace VMS
 				repo.Commit(message, sign, sign);
 				repo.Network.Push(repo.Head, new PushOptions()
 				{
+					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
+					{
+						string user = null, password = null;
+						Application.Current.Dispatcher.Invoke(delegate
+						{
+							var window = new InputWindow
+							{
+								Title = "请输入仓库账号和密码:" + url
+							};
+
+							var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
+							var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
+							window.InputGrid.Children.Add(userBox);
+							window.InputGrid.Children.Add(passwordBox);
+							window.ShowDialog();
+							user = userBox.Text;
+							password = passwordBox.Password;
+						});
+						return new UsernamePasswordCredentials() { Username = user, Password = password };
+					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{
 						onProgress(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
