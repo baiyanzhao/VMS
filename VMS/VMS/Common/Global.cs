@@ -31,7 +31,7 @@ namespace VMS
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 		public static Setting Setting = GetSetting();
 
-		static Setting GetSetting()
+		private static Setting GetSetting()
 		{
 			Setting setting = null;
 
@@ -317,7 +317,7 @@ namespace VMS
 					//推送未上传的提交
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
-						Push(repo, null);
+						repo.Network.Push(repo.Head, GetPushOptions());
 					}
 				}
 			}
@@ -327,41 +327,56 @@ namespace VMS
 			/// </summary>
 			/// <param name="repo">仓库</param>
 			/// <param name="message">信息</param>
-			public static void Commit(Repository repo, string message, Action<string> onProgress)
+			public static bool Commit(Window owner, Repository repo, string message)
 			{
-				repo.Stage("*");
-				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
-				repo.Commit(message, sign, sign);
-				Push(repo, onProgress);
+				return ProgressWindow.Show(owner, delegate
+				{
+					repo.Stage("*");
+					var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
+					repo.Commit(message, sign, sign);
+					repo.Network.Push(repo.Head, GetPushOptions());
+				});
 			}
 
-			static void Push(Repository repo, Action<string> onProgress)
+			public static PushOptions GetPushOptions()
 			{
-				repo.Network.Push(repo.Head, new PushOptions()
+				return new PushOptions
 				{
 					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
 					{
 						string user = null, password = null;
-						Application.Current.Dispatcher.Invoke(delegate
+						if(Setting.CredentialPairs.ContainsKey((url, usernameFromUrl)))
 						{
-							var window = new InputWindow
+							var (User, Password) = Setting.CredentialPairs[(url, usernameFromUrl)];
+							user = User;
+							password = Password;
+						}
+						else
+						{
+							Application.Current.Dispatcher.Invoke(delegate
 							{
-								Title = "请输入仓库账号和密码:" + url
-							};
+								var window = new InputWindow
+								{
+									Title = "请输入仓库账号和密码:" + url
+								};
 
-							var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
-							var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
-							window.InputGrid.Children.Add(userBox);
-							window.InputGrid.Children.Add(passwordBox);
-							window.ShowDialog();
-							user = userBox.Text;
-							password = passwordBox.Password;
-						});
+								var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
+								var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
+								window.InputGrid.Children.Add(userBox);
+								window.InputGrid.Children.Add(passwordBox);
+								window.ShowDialog();
+								user = userBox.Text;
+								password = passwordBox.Password;
+							});
+
+							Setting.CredentialPairs.Add((url, usernameFromUrl), (user, password));
+							File.WriteAllText(FILE_SETTING, new JavaScriptSerializer().Serialize(Setting));
+						}
 						return new UsernamePasswordCredentials() { Username = user, Password = password };
 					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{
-						onProgress?.Invoke(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
+						ProgressWindow.Update(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
 						return true;
 					},
 					OnNegotiationCompletedBeforePush = (updates) =>
@@ -370,14 +385,14 @@ namespace VMS
 					},
 					OnPackBuilderProgress = (stage, current, total) =>
 					{
-						onProgress?.Invoke(string.Format("{0} {1}/{2}", stage, current, total));
+						ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
 						return true;
 					},
 					OnPushStatusError = (err) =>
 					{
 						throw new Exception(err.Message);
 					}
-				});
+				};
 			}
 		}
 	}
