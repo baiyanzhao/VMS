@@ -26,7 +26,7 @@ namespace VMS.Model
 		/// <returns></returns>
 		static string CreateFile(ObjectId id)
 		{
-			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			using var repo = new Repository(Global.Settings.LoaclRepoPath);
 			var blob = repo.Lookup<Blob>(id);
 			var filePath = Path.GetTempFileName();
 			if(blob != null)
@@ -45,7 +45,7 @@ namespace VMS.Model
 
 			try
 			{
-				Process.Start(Global.Setting.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid) + "\" \"" + CreateFile(info.Tree.Oid) + "\"" + " /ro");
+				Process.Start(Global.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid) + "\" \"" + CreateFile(info.Tree.Oid) + "\"" + " /ro");
 			}
 			catch(Exception x)
 			{
