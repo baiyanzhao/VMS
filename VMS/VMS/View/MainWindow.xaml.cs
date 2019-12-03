@@ -253,7 +253,7 @@ namespace VMS.View
 			#endregion
 
 			#region 提交
-			if(!ProgressWindow.Show(instance, () => Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText, msg => ProgressWindow.Update(msg))))
+			if(!Global.Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
 				return false;
 
 			//更新界面显示
@@ -265,7 +265,7 @@ namespace VMS.View
 				if(string.Equals(name, "master")) //master分支上传Tag
 				{
 					name = versionInfo.VersionNow.ToString(3);
-					repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString());
+					repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GetPushOptions());
 					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
@@ -348,7 +348,7 @@ namespace VMS.View
 			#endregion
 
 			#region 提交
-			if(!ProgressWindow.Show(instance, () => Global.Git.Commit(repo, versionInfo.VersionNow.ToString() + " " + commitText, msg => ProgressWindow.Update(msg))))
+			if(!Global.Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
 			{
 				repo.Checkout(info.Sha);
 				repo.Branches.Remove(branch);
