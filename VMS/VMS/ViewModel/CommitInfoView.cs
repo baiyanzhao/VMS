@@ -5,12 +5,12 @@ using System.Windows;
 using System.Windows.Input;
 using LibGit2Sharp;
 
-namespace VMS.Model
+namespace VMS.ViewModel
 {
 	/// <summary>
 	/// Git版本差异信息
 	/// </summary>
-	public class StatusEntryInfo
+	public class CommitInfoView
 	{
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
@@ -19,15 +19,17 @@ namespace VMS.Model
 		{
 			get
 			{
-				var info = new FileInfo(Global.Setting.LoaclRepoPath + FilePath);
+				var info = new FileInfo(Global.Settings.LoaclRepoPath + FilePath);
 				return info.Exists ? Convert.ToInt32(Math.Ceiling(info.Length / 1024.0)) : 0;
 			}
 		}
+		public string Ext => Path.GetExtension(FilePath);
+
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			using var repo = new Repository(Global.Setting.LoaclRepoPath);
-			var info = parameter as StatusEntryInfo;
-			var blob = repo.Head.Tip.Tree?[info.FilePath]?.Target as Blob;
+			using var repo = new Repository(Global.Settings.LoaclRepoPath);
+			var info = parameter as CommitInfoView;
+			var blob = repo.Head.Tip?.Tree?[info.FilePath]?.Target as Blob;
 			if(info == null || blob == null)
 				return;
 
@@ -40,8 +42,7 @@ namespace VMS.Model
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);
 				}
-				File.SetAttributes(filePath, FileAttributes.ReadOnly | FileAttributes.Temporary);
-				Process.Start(Global.Setting.CompareToolPath, " \"" + filePath + "\" \"" + Global.Setting.LoaclRepoPath + info.FilePath + "\"");
+				Process.Start(Global.Settings.CompareToolPath, " \"" + filePath + "\" \"" + Global.Settings.LoaclRepoPath + info.FilePath + "\"" + " /lro");
 			}
 			catch(Exception x)
 			{

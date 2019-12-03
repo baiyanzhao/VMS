@@ -78,7 +78,7 @@
 		</Grid>
 
 		<GridSplitter Grid.Row="1" Margin="2" Height="2" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
-		<DataGrid Name="Status" Margin="5" Grid.Row="1"  ItemsSource="{Binding}" Background="{x:Null}" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
+		<DataGrid Name="FileGrid" Margin="5" Grid.Row="1" ItemsSource="{Binding}" Background="{x:Null}" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
 			<DataGrid.CellStyle>
 				<Style TargetType="{x:Type DataGridCell}">
 					<Setter Property="Focusable" Value="False"/>
@@ -95,6 +95,7 @@
 			</DataGrid.CellStyle>
 			<DataGrid.Columns>
 				<DataGridTextColumn Header="文件" Width="*" Binding="{Binding FilePath}"/>
+				<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
 				<DataGridTextColumn Header="大小(KB)" Width="Auto" Binding="{Binding FileSize}" Foreground="DarkBlue"/>
 				<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
 				<DataGridTemplateColumn Width="36">

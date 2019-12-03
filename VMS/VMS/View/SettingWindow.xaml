@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VMS"
         mc:Ignorable="d"
-        Title="设置" Height="300" Width="600" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" FontSize="14" ShowInTaskbar="False">
+        Title="设置" Height="240" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" FontSize="14" ShowInTaskbar="False">
 	<Window.Resources>
 		<Style TargetType="TextBox">
 			<Style.Triggers>
@@ -35,22 +35,19 @@
 			<RowDefinition/>
 			<RowDefinition/>
 			<RowDefinition/>
-			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<TextBlock Text="用户名" Grid.Row="0" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="工程目录" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="安装包目录" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="差异查看器" Grid.Row="3" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="MSBuild" Grid.Row="4" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-		<TextBlock Text="仓库URL" Grid.Row="5" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 
 		<TextBox Text="{Binding User}" Foreground="DarkBlue" Grid.Row="0" Grid.Column="1" MaxLength="16" Margin="5,0" VerticalAlignment="Center"/>
-		<TextBox Text="{Binding LoaclRepoPath}" Foreground="Black" Grid.Row="1" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
+		<ComboBox Text="{Binding LoaclRepoPath}" ItemsSource="{Binding RepoPathList}" Foreground="Black" Grid.Row="1" Grid.Column="1" Margin="5,0" VerticalAlignment="Center" IsEditable="True"/>
 		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding MSBuildPath}" Foreground="Gray" Grid.Row="4" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
-		<TextBox Text="{Binding RepoUrl}" Foreground="Gray" Grid.Row="5" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
-		<TextBlock Grid.Row="6" Grid.Column="1" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+		<TextBlock Grid.Row="5" Grid.Column="1" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center">
 			<Hyperlink Click="Hyperlink_Click">下载最新版本</Hyperlink> 
 		</TextBlock>
 	</Grid>

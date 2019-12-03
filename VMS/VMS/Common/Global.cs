@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Deployment.Application;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Web.Script.Serialization;
+using System.Windows;
+using System.Windows.Controls;
 using LibGit2Sharp;
 using VMS.Model;
+using VMS.View;
 
 namespace VMS
 {
@@ -24,33 +25,31 @@ namespace VMS
 
 	internal static class Global
 	{
-		private const string FILE_VERSION_INFO = "Version.json";        //定制信息
-		private const string FILE_SETTING_LOCAL = "Config\\Setting.json";  //设置
-
-		public static Setting Setting;
+		private const string FILE_VERSION_INFO = "Version.json"; //定制信息
+		private const string FILE_SETTING_LOCAL = "Setting.json"; //设置
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
+		public static Setting Settings = GetSetting();
 
-		static Global()
+		private static Setting GetSetting()
 		{
+			Setting set = null;
+
 			//配置文件
 			try
 			{
-				Setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
+				set = ReadObject<Setting>(FILE_SETTING);
 			}
 			catch(Exception)
 			{ }
 
-			Setting ??= new Setting();
-			Setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
-			Setting.RepoUrl ??= @"http://admin:admin@192.168.1.49:2507/r/MT.git";
-			Setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
-			Setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\VMS\";
-			Setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
-		}
-
-		public static string MakeText<T, TProperty>(this T p, Expression<Func<T, TProperty>> e)
-		{
-			return (e.Body as MemberExpression)?.Member.Name;
+			set ??= new Setting();
+			set.RepoPathList ??= new List<string>();
+			set.PackageFolder ??= Path.GetTempPath() + @"Package\";
+			set.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
+			set.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\VMS\MT\";
+			set.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
+			set.CredentialPairs ??= new Dictionary<(string Url, string UsernameFromUrl), (string User, string Password)>();
+			return set;
 		}
 
 		/// <summary>
@@ -86,7 +85,7 @@ namespace VMS
 			/// <summary>
 			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 			/// </summary>
-			/// <param name="versionBuild">版本定制号</param>
+			/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
 			public void HitVersion(int versionBuild)
 			{
 				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
@@ -101,7 +100,7 @@ namespace VMS
 						var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
 						if(System.Version.TryParse(strVersion, out var version))
 						{
-							if(IsModified)
+							if(IsModified && versionBuild >= 0)
 							{
 								var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
 								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
@@ -129,7 +128,7 @@ namespace VMS
 			var list = new List<AssemblyInfo>();
 
 			//检索C#工程版本配置
-			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories))
+			foreach(var item in Directory.GetDirectories(Settings.LoaclRepoPath, "Properties", SearchOption.AllDirectories))
 			{
 				var file = Path.Combine(item, "AssemblyInfo.cs");
 				if(!File.Exists(file))
@@ -139,12 +138,12 @@ namespace VMS
 				{
 					FilePath = file,
 					Type = AssemblyInfo.ProjectType.CSharp,
-					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
+					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
 			}
 
 			//检索C工程版本
-			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Inc", SearchOption.AllDirectories))
+			foreach(var item in Directory.GetDirectories(Settings.LoaclRepoPath, "Inc", SearchOption.AllDirectories))
 			{
 				var file = Path.Combine(item, "Version.h");
 				if(!File.Exists(file))
@@ -154,7 +153,7 @@ namespace VMS
 				{
 					FilePath = file,
 					Type = AssemblyInfo.ProjectType.C,
-					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
+					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
 			}
 
@@ -164,7 +163,7 @@ namespace VMS
 		/// <summary>
 		/// 序列化
 		/// </summary>
-		private static bool WriteObject<T>(string path, T val) where T : class
+		public static bool WriteObject<T>(string path, T val) where T : class
 		{
 			try
 			{
@@ -207,7 +206,7 @@ namespace VMS
 		/// </summary>
 		public static VersionInfo ReadVersionInfo()
 		{
-			return ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO));
+			return ReadObject<VersionInfo>(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO));
 		}
 
 		/// <summary>
@@ -217,7 +216,7 @@ namespace VMS
 		{
 			try
 			{
-				using var repo = new Repository(Setting.LoaclRepoPath);
+				using var repo = new Repository(Settings.LoaclRepoPath);
 				return ReadVersionInfo(repo.Lookup<Commit>(sha));
 			}
 			catch
@@ -253,7 +252,25 @@ namespace VMS
 		/// <param name="info"></param>
 		public static void WriteVersionInfo(VersionInfo info)
 		{
-			WriteObject(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO), info);
+			WriteObject(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO), info);
+		}
+
+		public static IEnumerable<CommitDiffInfo> GetDiff(string sha)
+		{
+			var diffInfo = new ObservableCollection<CommitDiffInfo>();
+			try
+			{
+				using var repo = new Repository(Settings.LoaclRepoPath);
+				var commit = repo.Lookup<Commit>(sha);
+				foreach(var item in repo.Diff.Compare<TreeChanges>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree))
+				{
+					diffInfo.Add(new CommitDiffInfo(item));
+				}
+			}
+			catch
+			{ }
+
+			return diffInfo;
 		}
 
 		public static class Git
@@ -264,18 +281,32 @@ namespace VMS
 			public static void Sync()
 			{
 				//创建仓库
-				if(Repository.Discover(Setting.LoaclRepoPath) == null)
+				if(Repository.Discover(Settings.LoaclRepoPath) == null)
 				{
-					Repository.Clone(Setting.RepoUrl, Setting.LoaclRepoPath);
-					using var repo = new Repository(Setting.LoaclRepoPath);
-					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = null; });    //取消master的上流分支,禁止用户提交此分支
+					string url = null;
+					Application.Current.Dispatcher.Invoke(delegate
+					{
+						var window = new InputWindow
+						{
+							Title = "请输入仓库URL"
+						};
+
+						var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
+						window.InputGrid.Children.Add(box);
+						window.ShowDialog();
+						url = box.Text;
+					});
+
+					Repository.Clone(url, Settings.LoaclRepoPath);
+					using var repo = new Repository(Settings.LoaclRepoPath);
+					repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上流分支,禁止用户提交此分支
 				}
 
 				//同步仓库,并推送当前分支
-				using(var repo = new Repository(Setting.LoaclRepoPath))
+				using(var repo = new Repository(Settings.LoaclRepoPath))
 				{
 					//同步仓库
-					Commands.Fetch(repo, "origin", new string[0], null, null);
+					Commands.Fetch(repo, "origin", Array.Empty<string>(), null, null);
 
 					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)
@@ -286,7 +317,7 @@ namespace VMS
 					//推送未上传的提交
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
-						repo.Network.Push(repo.Head);
+						repo.Network.Push(repo.Head, GetPushOptions());
 					}
 				}
 			}
@@ -296,20 +327,56 @@ namespace VMS
 			/// </summary>
 			/// <param name="repo">仓库</param>
 			/// <param name="message">信息</param>
-			public static void Commit(Repository repo, string message, Action<string> onProgress)
+			public static bool Commit(Window owner, Repository repo, string message)
 			{
-				Commands.Stage(repo, "*");
-				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
-				repo.Commit(message, sign, sign);
-				repo.Network.Push(repo.Head, new PushOptions()
+				return ProgressWindow.Show(owner, delegate
+				{
+					Commands.Stage(repo, "*");
+					var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
+					repo.Commit(message, sign, sign);
+					repo.Network.Push(repo.Head, GetPushOptions());
+				});
+			}
+
+			public static PushOptions GetPushOptions()
+			{
+				return new PushOptions
 				{
 					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
 					{
-						return new UsernamePasswordCredentials() { Username = "admin", Password = "admin" };
+						string user = null, password = null;
+						if(Settings.CredentialPairs.ContainsKey((url, usernameFromUrl)))
+						{
+							var (User, Password) = Settings.CredentialPairs[(url, usernameFromUrl)];
+							user = User;
+							password = Password;
+						}
+						else
+						{
+							Application.Current.Dispatcher.Invoke(delegate
+							{
+								var window = new InputWindow
+								{
+									Title = "请输入仓库账号和密码:" + url
+								};
+
+								var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
+								var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
+								window.InputGrid.Children.Add(userBox);
+								window.InputGrid.Children.Add(passwordBox);
+								window.ShowDialog();
+								user = userBox.Text;
+								password = passwordBox.Password;
+							});
+
+							Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
+							WriteObject(FILE_SETTING, Settings);
+						}
+						return new UsernamePasswordCredentials() { Username = user, Password = password };
 					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{
-						onProgress(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
+						ProgressWindow.Update(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
 						return true;
 					},
 					OnNegotiationCompletedBeforePush = (updates) =>
@@ -318,14 +385,14 @@ namespace VMS
 					},
 					OnPackBuilderProgress = (stage, current, total) =>
 					{
-						onProgress(string.Format("{0} {1}/{2}", stage, current, total));
+						ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
 						return true;
 					},
 					OnPushStatusError = (err) =>
 					{
 						throw new Exception(err.Message);
 					}
-				});
+				};
 			}
 		}
 	}

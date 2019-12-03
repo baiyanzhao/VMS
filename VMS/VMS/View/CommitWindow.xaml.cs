@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using VMS.Model;
+using VMS.ViewModel;
 
 namespace VMS.View
 {
@@ -19,12 +20,12 @@ namespace VMS.View
 			DialogResult = true;
 		}
 
-		public static string ShowWindow(Window owner, ICollection<StatusEntryInfo> status, VersionInfo version)
+		public static string ShowWindow(Window owner, ICollection<CommitInfoView> status, VersionInfo version)
 		{
 			var commitWindow = new CommitWindow() { Owner = owner };
-			commitWindow.Status.DataContext = status;
+			commitWindow.FileGrid.DataContext = status;
 			commitWindow.Version.DataContext = version;
-			commitWindow.Info.Text = status.Count.ToString();
+			commitWindow.Info.Text = status?.Count.ToString();
 			if(commitWindow.ShowDialog() != true)
 				return null;
 

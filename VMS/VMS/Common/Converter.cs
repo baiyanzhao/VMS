@@ -27,13 +27,11 @@ namespace VMS
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			switch(value)
+			return value switch
 			{
-			case Version version:
-				return version.ToString(2);
-			default:
-				return value;
-			}
+				Version version => version.ToString(2),
+				_ => value,
+			};
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -45,11 +43,11 @@ namespace VMS
 	/// <summary>
 	/// 字符串匹配
 	/// </summary>
-	class StringMatchConverter : IMultiValueConverter
+	public class StringMatchConverter : IMultiValueConverter
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			if(values.Length >= 2 && values[0] is string full && values[1] is string head)
+			if(values != null && values.Length >= 2 && values[0] is string full && values[1] is string head)
 			{
 				return full.StartsWith(head);
 			}
@@ -63,13 +61,29 @@ namespace VMS
 	}
 
 	/// <summary>
-	/// 字符串匹配
+	/// 根据Sha,获取版本信息
 	/// </summary>
-	class BranchDetailConverter : IValueConverter
+	public class BranchDetailConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			return Global.ReadVersionInfo(value as string);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// 根据Sha,获取当前提交的更改列表
+	/// </summary>
+	public class CommitDiffConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return Global.GetDiff(value as string);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

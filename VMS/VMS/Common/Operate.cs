@@ -15,6 +15,9 @@ namespace VMS
 		/// <param name="type">签出类型</param>
 		public static bool Checkout(Repository repo, string mark, GitType type)
 		{
+			if(repo == null)
+				return false;
+
 			var entries = repo.RetrieveStatus();
 			if(entries.IsDirty)
 			{
@@ -71,10 +74,8 @@ namespace VMS
 		/// <param name="type">签出类型</param>
 		public static bool Checkout(string repoPath, string mark, GitType type)
 		{
-			using(var repo = new Repository(repoPath))
-			{
-				return Checkout(repo, mark, type);
-			}
+			using var repo = new Repository(repoPath);
+			return Checkout(repo, mark, type);
 		}
 	}
 }

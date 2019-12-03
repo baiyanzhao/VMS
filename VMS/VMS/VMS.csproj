@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>VMS</RootNamespace>
     <AssemblyName>TSVNCache</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -19,7 +19,7 @@
     </NuGetPackageImportStamp>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <TargetFrameworkProfile />
-    <PublishUrl>ftp://192.168.1.49:8330/</PublishUrl>
+    <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -29,23 +29,22 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://192.168.1.49/VMS/</InstallUrl>
-    <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
-    <SupportUrl>http://192.168.1.49/Packages/</SupportUrl>
+    <InstallUrl>http://bay-packages.gitee.io/vms/</InstallUrl>
+    <UpdateUrl>http://bay-packages.gitee.io/vms/</UpdateUrl>
+    <SupportUrl>http://bay-packages.gitee.io/vms/</SupportUrl>
     <ProductName>版本管理</ProductName>
-    <PublisherName>Ainuo</PublisherName>
+    <PublisherName>BaY</PublisherName>
     <SuiteName>VMS</SuiteName>
     <MinimumRequiredVersion>1.1.0.0</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>index.htm</WebPage>
-    <ApplicationRevision>16</ApplicationRevision>
-    <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
+    <WebPage>index.html</WebPage>
+    <TrustUrlParameters>true</TrustUrlParameters>
+    <ApplicationRevision>14</ApplicationRevision>
+    <ApplicationVersion>2.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <BootstrapperComponentsLocation>Absolute</BootstrapperComponentsLocation>
-    <BootstrapperComponentsUrl>http://192.168.1.49/Packages/</BootstrapperComponentsUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -56,7 +55,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>default</LangVersion>
+    <LangVersion>8.0</LangVersion>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -66,6 +66,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>true</Prefer32Bit>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>8B8011C10612D72B2F1B439268B12754A47744E9</ManifestCertificateThumbprint>
@@ -96,12 +98,6 @@
     <AssemblyOriginatorKeyFile>
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup />
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
@@ -112,9 +108,9 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -137,12 +133,16 @@
     <Compile Include="Common\EncodingType.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Common\Global.cs" />
-    <Compile Include="Model\StatusEntryInfo.cs" />
+    <Compile Include="Model\CommitDiffInfo.cs" />
+    <Compile Include="ViewModel\CommitInfoView.cs" />
     <Compile Include="Common\Converter.cs" />
     <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\VersionInfo.cs" />
     <Compile Include="SingleInstance.cs" />
     <Compile Include="ViewModel\BranchInfoView.cs" />
+    <Compile Include="View\InputWindow.xaml.cs">
+      <DependentUpon>InputWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\LogWindow.xaml.cs">
       <DependentUpon>LogWindow.xaml</DependentUpon>
     </Compile>
@@ -155,6 +155,10 @@
     <Compile Include="View\SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\InputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\LogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -222,6 +226,7 @@
     <Resource Include="Images\Archive.png" />
     <Resource Include="Images\Branch.png" />
     <Resource Include="Images\Log.png" />
+    <Resource Include="Images\Background.png" />
     <Content Include="Package\Default.SFX">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -247,18 +252,15 @@
     <Content Include="Package\WinRAR.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Config\Preset.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Config\Setting.json" />
+    <Content Include="Setting.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 和 x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 和 x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -268,7 +270,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <PublishFile Include="Config\Setting.json">
+    <PublishFile Include="Setting.json">
       <Visible>False</Visible>
       <Group>
       </Group>

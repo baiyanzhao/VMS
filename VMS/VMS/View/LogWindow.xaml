@@ -24,57 +24,96 @@
 		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
-					<Border BorderThickness="1" BorderBrush="DarkBlue" Background="#FFD5DCE2" Padding="8" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
-							<StackPanel Orientation="Vertical" Margin="5,0">
-								<StackPanel Orientation="Horizontal">
-									<TextBlock FontSize="12" Text="基础版本: " Foreground="Black" VerticalAlignment="Center" />
-									<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionBase}" VerticalAlignment="Center" />
-								</StackPanel>
-								<StackPanel Orientation="Horizontal">
-									<TextBlock FontSize="12" Text="当前版本: " Foreground="Black" VerticalAlignment="Center" />
-									<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionNow}" VerticalAlignment="Center" />
-								</StackPanel>
-								<StackPanel Orientation="Horizontal">
-									<TextBlock FontSize="12" Text="客户名称: " Foreground="Black" VerticalAlignment="Center" />
-									<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
-								</StackPanel>
-								<StackPanel Orientation="Horizontal">
-									<TextBlock FontSize="12" Text="订单编号: " Foreground="Black" VerticalAlignment="Center" />
-									<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
-								</StackPanel>
-							</StackPanel>
-							<DataGrid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" ItemsSource="{Binding VersionList}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
-								<DataGrid.RowStyle>
-									<Style TargetType="{x:Type DataGridRow}">
+					<TabControl Margin="24,0,0,0">
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock FontSize="14" Foreground="DarkSlateBlue" Text="信息" />
+							</TabItem.Header>
+							<Grid Background="#3278A080" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+									<StackPanel Orientation="Vertical" Margin="5,0">
+										<StackPanel Orientation="Horizontal">
+											<TextBlock FontSize="12" Text="基础版本: " Foreground="Black" VerticalAlignment="Center" />
+											<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionBase}" VerticalAlignment="Center" />
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock FontSize="12" Text="当前版本: " Foreground="Black" VerticalAlignment="Center" />
+											<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionNow}" VerticalAlignment="Center" />
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock FontSize="12" Text="客户名称: " Foreground="Black" VerticalAlignment="Center" />
+											<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock FontSize="12" Text="订单编号: " Foreground="Black" VerticalAlignment="Center" />
+											<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
+										</StackPanel>
+									</StackPanel>
+									<DataGrid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" ItemsSource="{Binding VersionList}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
+										<DataGrid.RowStyle>
+											<Style TargetType="{x:Type DataGridRow}">
+												<Setter Property="Background" Value="{x:Null}"/>
+												<Setter Property="IsHitTestVisible" Value="False"/>
+												<Setter Property="VerticalAlignment" Value="Center"/>
+											</Style>
+										</DataGrid.RowStyle>
+										<DataGrid.Columns>
+											<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Label}" />
+											<DataGridTextColumn Foreground="DarkBlue" FontSize="14" Binding="{Binding Value}" />
+										</DataGrid.Columns>
+									</DataGrid>
+									<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
+										<DataGrid.RowStyle>
+											<Style TargetType="{x:Type DataGridRow}">
+												<Setter Property="Background" Value="{x:Null}"/>
+												<Setter Property="IsHitTestVisible" Value="False"/>
+												<Setter Property="VerticalAlignment" Value="Center"/>
+											</Style>
+										</DataGrid.RowStyle>
+									</DataGrid>
+									<TextBlock Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" Text="{Binding Message}"/>
+								</Grid>
+						</TabItem>
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock FontSize="14" Foreground="DarkSlateBlue" Text="更改"/>
+							</TabItem.Header>
+
+							<DataGrid BorderThickness="0" DataContext="{Binding Path=Sha, Converter={StaticResource CommitDiffConverter}}" ItemsSource="{Binding}" Background="{x:Null}" MaxHeight="240" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
+								<DataGrid.CellStyle>
+									<Style TargetType="{x:Type DataGridCell}">
+										<Setter Property="Focusable" Value="False"/>
 										<Setter Property="Background" Value="{x:Null}"/>
-										<Setter Property="IsHitTestVisible" Value="False"/>
-										<Setter Property="VerticalAlignment" Value="Center"/>
+										<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+										<Setter Property="Template">
+											<Setter.Value>
+												<ControlTemplate TargetType="{x:Type DataGridCell}">
+													<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+												</ControlTemplate>
+											</Setter.Value>
+										</Setter>
 									</Style>
-								</DataGrid.RowStyle>
+								</DataGrid.CellStyle>
 								<DataGrid.Columns>
-									<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Label}" />
-									<DataGridTextColumn Foreground="DarkBlue" FontSize="16" Binding="{Binding Value}" />
+									<DataGridTextColumn Header="文件" Width="*" Binding="{Binding FilePath}"/>
+									<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
+									<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
+									<DataGridTemplateColumn Width="36">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<Button Content="对比" ToolTip="比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
 								</DataGrid.Columns>
 							</DataGrid>
-							<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
-								<DataGrid.RowStyle>
-									<Style TargetType="{x:Type DataGridRow}">
-										<Setter Property="Background" Value="{x:Null}"/>
-										<Setter Property="IsHitTestVisible" Value="False"/>
-										<Setter Property="VerticalAlignment" Value="Center"/>
-									</Style>
-								</DataGrid.RowStyle>
-							</DataGrid>
-							<TextBlock Grid.Column="3" FontSize="16" Foreground="Black" Text="{Binding Message}"/>
-						</Grid>
-					</Border>
+						</TabItem>
+					</TabControl>
 				</DataTemplate>
 			</DataGrid.RowDetailsTemplate>
 			<DataGrid.Columns>
