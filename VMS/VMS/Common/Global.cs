@@ -317,7 +317,7 @@ namespace VMS
 					//推送未上传的提交
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
-						repo.Network.Push(repo.Head);
+						Push(repo, null);
 					}
 				}
 			}
@@ -332,6 +332,11 @@ namespace VMS
 				repo.Stage("*");
 				var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
 				repo.Commit(message, sign, sign);
+				Push(repo, onProgress);
+			}
+
+			static void Push(Repository repo, Action<string> onProgress)
+			{
 				repo.Network.Push(repo.Head, new PushOptions()
 				{
 					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
@@ -356,7 +361,7 @@ namespace VMS
 					},
 					OnPushTransferProgress = (int current, int total, long bytes) =>
 					{
-						onProgress(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
+						onProgress?.Invoke(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
 						return true;
 					},
 					OnNegotiationCompletedBeforePush = (updates) =>
@@ -365,7 +370,7 @@ namespace VMS
 					},
 					OnPackBuilderProgress = (stage, current, total) =>
 					{
-						onProgress(string.Format("{0} {1}/{2}", stage, current, total));
+						onProgress?.Invoke(string.Format("{0} {1}/{2}", stage, current, total));
 						return true;
 					},
 					OnPushStatusError = (err) =>
