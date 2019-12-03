@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Data;
 using Hardcodet.Wpf.TaskbarNotification;
@@ -54,12 +53,12 @@ namespace VMS.View
 				}
 			};
 
-			if(Global.Setting.User == null)
+			if(Global.Settings.User == null)
 			{
 				ShowSetWindow();
 			}
 
-			Directory.CreateDirectory(Global.Setting.PackageFolder);
+			Directory.CreateDirectory(Global.Settings.PackageFolder);
 			ProgressWindow.Show(null, Global.Git.Sync, UpdateBranchInfo);
 		}
 
@@ -82,7 +81,7 @@ namespace VMS.View
 		/// </summary>
 		private void UpdateBranchInfo()
 		{
-			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			using var repo = new Repository(Global.Settings.LoaclRepoPath);
 			//更新分支列表
 			_branchInfos.Clear();
 			foreach(var tag in repo.Tags)
@@ -118,22 +117,22 @@ namespace VMS.View
 		private void ShowSetWindow()
 		{
 			var window = new SettingWindow() { Owner = IsLoaded ? this : null, ShowInTaskbar = !IsLoaded };
-			window.TopPannel.DataContext = Global.Setting;
+			window.TopPannel.DataContext = Global.Settings;
 			window.ShowDialog();
 
-			Global.Setting.PackageFolder = Global.Setting.PackageFolder.Last() == '\\' ? Global.Setting.PackageFolder : Global.Setting.PackageFolder + "\\";
-			Global.Setting.LoaclRepoPath = Global.Setting.LoaclRepoPath.Last() == '\\' ? Global.Setting.LoaclRepoPath : Global.Setting.LoaclRepoPath + "\\";
-			if(!Global.Setting.RepoPathList.Contains(Global.Setting.LoaclRepoPath))
+			Global.Settings.PackageFolder = Global.Settings.PackageFolder.Last() == '\\' ? Global.Settings.PackageFolder : Global.Settings.PackageFolder + "\\";
+			Global.Settings.LoaclRepoPath = Global.Settings.LoaclRepoPath.Last() == '\\' ? Global.Settings.LoaclRepoPath : Global.Settings.LoaclRepoPath + "\\";
+			if(!Global.Settings.RepoPathList.Contains(Global.Settings.LoaclRepoPath))
 			{
-				Global.Setting.RepoPathList.Add(Global.Setting.LoaclRepoPath);
+				Global.Settings.RepoPathList.Add(Global.Settings.LoaclRepoPath);
 			}
-			File.WriteAllText(Global.FILE_SETTING, new JavaScriptSerializer().Serialize(Global.Setting));
+			Global.WriteObject(Global.FILE_SETTING, Global.Settings);
 		}
 
 		public static void ShowLogWindow(string name, System.Version version, string sha)
 		{
 			var infos = new BranchInfoView();
-			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using(var repo = new Repository(Global.Settings.LoaclRepoPath))
 			{
 				var commit = repo.Lookup<Commit>(sha);
 				if(commit == null)
@@ -293,7 +292,7 @@ namespace VMS.View
 			if(info == null)
 				return;
 
-			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			using var repo = new Repository(Global.Settings.LoaclRepoPath);
 			var entries = repo.RetrieveStatus();
 			if(entries.IsDirty)
 			{
@@ -367,7 +366,7 @@ namespace VMS.View
 
 		private void Open_Click(object sender, RoutedEventArgs e)
 		{
-			var prj = Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories);
+			var prj = Directory.GetFiles(Global.Settings.LoaclRepoPath, "*.sln", SearchOption.AllDirectories);
 			if(prj.Length > 0)
 			{
 				Process.Start(prj[0]);
@@ -376,12 +375,12 @@ namespace VMS.View
 
 		private void Explorer_Click(object sender, RoutedEventArgs e)
 		{
-			Process.Start(Global.Setting.LoaclRepoPath);
+			Process.Start(Global.Settings.LoaclRepoPath);
 		}
 
 		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
-			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			using var repo = new Repository(Global.Settings.LoaclRepoPath);
 			if(Commit(repo) == null)
 			{
 				MessageBox.Show("当前版本无任何更改!", repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName ?? repo.Head.FriendlyName);
@@ -393,7 +392,7 @@ namespace VMS.View
 		/// </summary>
 		private void Package_Click(object sender, RoutedEventArgs e)
 		{
-			using(var repo = new Repository(Global.Setting.LoaclRepoPath))
+			using(var repo = new Repository(Global.Settings.LoaclRepoPath))
 			{
 				if(Commit(repo) == false)
 					return;
@@ -402,15 +401,15 @@ namespace VMS.View
 			ProgressWindow.Show(this, delegate
 			{
 				var version = Global.ReadVersionInfo()?.VersionNow?.ToString();
-				var folder = Path.Combine(Global.Setting.PackageFolder, version + "\\");
+				var folder = Path.Combine(Global.Settings.PackageFolder, version + "\\");
 				Directory.CreateDirectory(folder);
 
 				//生成解决方案
-				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(Global.Settings.LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
 					Process.Start(new ProcessStartInfo
 					{
-						FileName = Global.Setting.MSBuildPath,
+						FileName = Global.Settings.MSBuildPath,
 						Arguments = "/t:publish /p:Configuration=Release /noconsolelogger \"" + item + "\"",
 						UseShellExecute = false,
 						CreateNoWindow = true,
@@ -419,7 +418,7 @@ namespace VMS.View
 				}
 
 				//生成自解压安装包
-				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(Global.Settings.LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
 					var app = Directory.GetFiles(dir, "*.application").FirstOrDefault();
@@ -439,17 +438,17 @@ namespace VMS.View
 				}
 
 				//复制hex文件
-				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(Global.Settings.LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
 				{
 					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
 				}
 
 				//复制bin文件
-				foreach(var item in Directory.GetFiles(Global.Setting.LoaclRepoPath, "*.bin", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(Global.Settings.LoaclRepoPath, "*.bin", SearchOption.AllDirectories))
 				{
 					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
 				}
-				Process.Start(Global.Setting.PackageFolder);
+				Process.Start(Global.Settings.PackageFolder);
 			});
 		}
 
@@ -461,7 +460,7 @@ namespace VMS.View
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			using var repo = new Repository(Global.Setting.LoaclRepoPath);
+			using var repo = new Repository(Global.Settings.LoaclRepoPath);
 			if(repo != null && repo.RetrieveStatus().IsDirty)
 			{
 				switch(MessageBox.Show(Application.Current.MainWindow, "当前版本中存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", "尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))

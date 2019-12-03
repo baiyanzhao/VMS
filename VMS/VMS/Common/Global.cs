@@ -5,7 +5,6 @@ using System.Deployment.Application;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
-using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using LibGit2Sharp;
@@ -29,27 +28,28 @@ namespace VMS
 		private const string FILE_VERSION_INFO = "Version.json"; //定制信息
 		private const string FILE_SETTING_LOCAL = "Setting.json"; //设置
 		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
-		public static Setting Setting = GetSetting();
+		public static Setting Settings = GetSetting();
 
 		private static Setting GetSetting()
 		{
-			Setting setting = null;
+			Setting set = null;
 
 			//配置文件
 			try
 			{
-				setting = new JavaScriptSerializer().Deserialize<Setting>(File.ReadAllText(FILE_SETTING));
+				set = ReadObject<Setting>(FILE_SETTING);
 			}
 			catch(Exception)
 			{ }
 
-			setting ??= new Setting();
-			setting.RepoPathList ??= new List<string>();
-			setting.PackageFolder ??= Path.GetTempPath() + @"Package\";
-			setting.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
-			setting.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\VMS\MT\";
-			setting.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
-			return setting;
+			set ??= new Setting();
+			set.RepoPathList ??= new List<string>();
+			set.PackageFolder ??= Path.GetTempPath() + @"Package\";
+			set.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
+			set.LoaclRepoPath ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\VMS\MT\";
+			set.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
+			set.CredentialPairs ??= new Dictionary<(string Url, string UsernameFromUrl), (string User, string Password)>();
+			return set;
 		}
 
 		/// <summary>
@@ -128,7 +128,7 @@ namespace VMS
 			var list = new List<AssemblyInfo>();
 
 			//检索C#工程版本配置
-			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Properties", SearchOption.AllDirectories))
+			foreach(var item in Directory.GetDirectories(Settings.LoaclRepoPath, "Properties", SearchOption.AllDirectories))
 			{
 				var file = Path.Combine(item, "AssemblyInfo.cs");
 				if(!File.Exists(file))
@@ -138,12 +138,12 @@ namespace VMS
 				{
 					FilePath = file,
 					Type = AssemblyInfo.ProjectType.CSharp,
-					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
+					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
 			}
 
 			//检索C工程版本
-			foreach(var item in Directory.GetDirectories(Setting.LoaclRepoPath, "Inc", SearchOption.AllDirectories))
+			foreach(var item in Directory.GetDirectories(Settings.LoaclRepoPath, "Inc", SearchOption.AllDirectories))
 			{
 				var file = Path.Combine(item, "Version.h");
 				if(!File.Exists(file))
@@ -153,7 +153,7 @@ namespace VMS
 				{
 					FilePath = file,
 					Type = AssemblyInfo.ProjectType.C,
-					ProjectPath = Path.GetDirectoryName(item).Substring(Setting.LoaclRepoPath.Length).Replace('\\', '/')
+					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
 			}
 
@@ -163,7 +163,7 @@ namespace VMS
 		/// <summary>
 		/// 序列化
 		/// </summary>
-		private static bool WriteObject<T>(string path, T val) where T : class
+		public static bool WriteObject<T>(string path, T val) where T : class
 		{
 			try
 			{
@@ -206,7 +206,7 @@ namespace VMS
 		/// </summary>
 		public static VersionInfo ReadVersionInfo()
 		{
-			return ReadObject<VersionInfo>(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO));
+			return ReadObject<VersionInfo>(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO));
 		}
 
 		/// <summary>
@@ -216,7 +216,7 @@ namespace VMS
 		{
 			try
 			{
-				using var repo = new Repository(Setting.LoaclRepoPath);
+				using var repo = new Repository(Settings.LoaclRepoPath);
 				return ReadVersionInfo(repo.Lookup<Commit>(sha));
 			}
 			catch
@@ -252,7 +252,7 @@ namespace VMS
 		/// <param name="info"></param>
 		public static void WriteVersionInfo(VersionInfo info)
 		{
-			WriteObject(Path.Combine(Setting.LoaclRepoPath, FILE_VERSION_INFO), info);
+			WriteObject(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO), info);
 		}
 
 		public static IEnumerable<CommitDiffInfo> GetDiff(string sha)
@@ -260,7 +260,7 @@ namespace VMS
 			var diffInfo = new ObservableCollection<CommitDiffInfo>();
 			try
 			{
-				using var repo = new Repository(Setting.LoaclRepoPath);
+				using var repo = new Repository(Settings.LoaclRepoPath);
 				var commit = repo.Lookup<Commit>(sha);
 				foreach(var item in repo.Diff.Compare<TreeChanges>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree))
 				{
@@ -281,7 +281,7 @@ namespace VMS
 			public static void Sync()
 			{
 				//创建仓库
-				if(Repository.Discover(Setting.LoaclRepoPath) == null)
+				if(Repository.Discover(Settings.LoaclRepoPath) == null)
 				{
 					string url = null;
 					Application.Current.Dispatcher.Invoke(delegate
@@ -297,13 +297,13 @@ namespace VMS
 						url = box.Text;
 					});
 
-					Repository.Clone(url, Setting.LoaclRepoPath);
-					using var repo = new Repository(Setting.LoaclRepoPath);
+					Repository.Clone(url, Settings.LoaclRepoPath);
+					using var repo = new Repository(Settings.LoaclRepoPath);
 					repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上流分支,禁止用户提交此分支
 				}
 
 				//同步仓库,并推送当前分支
-				using(var repo = new Repository(Setting.LoaclRepoPath))
+				using(var repo = new Repository(Settings.LoaclRepoPath))
 				{
 					//同步仓库
 					repo.Network.Fetch(repo.Network.Remotes["origin"]);
@@ -332,7 +332,7 @@ namespace VMS
 				return ProgressWindow.Show(owner, delegate
 				{
 					repo.Stage("*");
-					var sign = new Signature(Setting.User, Environment.MachineName, DateTime.Now);
+					var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
 					repo.Commit(message, sign, sign);
 					repo.Network.Push(repo.Head, GetPushOptions());
 				});
@@ -345,9 +345,9 @@ namespace VMS
 					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
 					{
 						string user = null, password = null;
-						if(Setting.CredentialPairs.ContainsKey((url, usernameFromUrl)))
+						if(Settings.CredentialPairs.ContainsKey((url, usernameFromUrl)))
 						{
-							var (User, Password) = Setting.CredentialPairs[(url, usernameFromUrl)];
+							var (User, Password) = Settings.CredentialPairs[(url, usernameFromUrl)];
 							user = User;
 							password = Password;
 						}
@@ -369,8 +369,8 @@ namespace VMS
 								password = passwordBox.Password;
 							});
 
-							Setting.CredentialPairs.Add((url, usernameFromUrl), (user, password));
-							File.WriteAllText(FILE_SETTING, new JavaScriptSerializer().Serialize(Setting));
+							Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
+							WriteObject(FILE_SETTING, Settings);
 						}
 						return new UsernamePasswordCredentials() { Username = user, Password = password };
 					},

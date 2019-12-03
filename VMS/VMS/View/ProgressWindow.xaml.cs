@@ -75,6 +75,7 @@ namespace VMS.View
 			sInit.RunWorkerAsync();
 			dlg.ShowDialog();
 			sInit.Dispose();
+			sInit = null;
 			return isCompleted;
 		}
 	}

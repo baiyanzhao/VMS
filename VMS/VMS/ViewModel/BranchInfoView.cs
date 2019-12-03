@@ -45,10 +45,10 @@ namespace VMS.ViewModel
 		{
 			if(parameter is BranchInfo info)
 			{
-				using var repo = new Repository(Global.Setting.LoaclRepoPath);
+				using var repo = new Repository(Global.Settings.LoaclRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
 				var version = Global.ReadVersionInfo(cmt)?.VersionNow?.ToString();
-				var name = Global.Setting.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
+				var name = Global.Settings.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
 				repo.ObjectDatabase.Archive(cmt, name);
 				Process.Start("explorer", "/select,\"" + name + "\"");
 			}
@@ -61,9 +61,9 @@ namespace VMS.ViewModel
 		{
 			if(parameter is BranchInfo info)
 			{
-				if(Operate.Checkout(Global.Setting.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
+				if(Operate.Checkout(Global.Settings.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
 				{
-					using var repo = new Repository(Global.Setting.LoaclRepoPath);
+					using var repo = new Repository(Global.Settings.LoaclRepoPath);
 					var commit = repo.Head.Tip;
 					info.Sha = commit.Sha;
 					info.Author = commit.Author.Name;
