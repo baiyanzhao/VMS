@@ -129,28 +129,31 @@ namespace VMS.View
 			Global.WriteObject(Global.FILE_SETTING, Global.Settings);
 		}
 
+		private static void LookupCommit(string name, System.Version version, Commit commit, BranchInfoView infos)
+		{
+			if(commit == null)
+				return;
+
+			if(!infos.Any(info => info.Sha == commit.Sha))
+			{
+				infos.Add(new BranchInfo { Name = name, Version = version, Type = GitType.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+			}
+
+			foreach(var item in commit.Parents)
+			{
+				LookupCommit(name, version, item, infos);
+			}
+		}
+
 		public static void ShowLogWindow(string name, System.Version version, string sha)
 		{
 			var infos = new BranchInfoView();
 			using(var repo = new Repository(Global.Settings.LoaclRepoPath))
 			{
-				var commit = repo.Lookup<Commit>(sha);
-				if(commit == null)
-					return;
-
-				while(true)
-				{
-					infos.Add(new BranchInfo { Name = name, Version = version, Type = GitType.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
-					commit = commit.Parents.FirstOrDefault();
-					if(commit == null)
-						break;
-				}
+				LookupCommit(name, version, repo.Lookup<Commit>(sha), infos);
 			}
 
-			var window = new LogWindow() { Owner = Application.Current.MainWindow };
-			window.Title = name;
-			window.DataContext = infos;
-			window.ShowDialog();
+			new LogWindow { Owner = Application.Current.MainWindow, Title = name, DataContext = infos.OrderByDescending(info => info.When) }.ShowDialog();
 		}
 
 		/// <summary>
