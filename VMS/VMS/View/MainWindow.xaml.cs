@@ -26,12 +26,8 @@ namespace VMS.View
 			InitializeComponent();
 
 			_taskbar.IconSource = Icon;
-			_taskbar.LeftClickCommand = new DelegateCommand((parameter) =>
-			{
-				Visibility = Visibility.Visible;
-				WindowState = WindowState.Maximized;
-				Activate();
-			});
+			_taskbar.LeftClickCommand = TaskbarCmd();
+			_taskbar.DoubleClickCommand = TaskbarCmd();
 
 			StateChanged += delegate
 			{
@@ -74,6 +70,16 @@ namespace VMS.View
 				catch
 				{ }
 			}
+		}
+
+		private DelegateCommand TaskbarCmd()
+		{
+			return new DelegateCommand((parameter) =>
+			{
+				Visibility = Visibility.Visible;
+				WindowState = WindowState.Maximized;
+				Activate();
+			});
 		}
 
 		/// <summary>
@@ -215,13 +221,13 @@ namespace VMS.View
 			}
 
 			//以Sys名称拉取上游分支
-			repo.Network.Fetch(repo.Network.Remotes["origin"]);
+			Commands.Fetch(repo, "origin", Array.Empty<string>(), null, null);
 			if(repo.Head.TrackingDetails.BehindBy > 0)
 			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 			}
 
-			repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+			Commands.Fetch(repo, "origin", new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }, null, null); 
 			#endregion
 
 			#region 更新版本信息
@@ -264,7 +270,7 @@ namespace VMS.View
 				if(string.Equals(name, "master")) //master分支上传Tag
 				{
 					name = versionInfo.VersionNow.ToString(3);
-					repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GetPushOptions());
+					ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GetPushOptions()));
 					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
@@ -313,7 +319,7 @@ namespace VMS.View
 
 			try
 			{
-				repo.Network.Fetch(repo.Network.Remotes["origin"]);
+				Commands.Fetch(repo, "origin", Array.Empty<string>(), null, null);
 			}
 			catch
 			{
@@ -333,12 +339,12 @@ namespace VMS.View
 			var name = version.ToString(3);
 			if(repo.Branches[name] != null)
 			{
-				repo.Checkout(info.Sha);
+				Commands.Checkout(repo, info.Sha);
 			}
 
 			//创建新分支
 			var branch = repo.Branches.Add(name, info.Sha, true);
-			repo.Checkout(branch);
+			Commands.Checkout(repo, branch);
 			repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
 
 			//更新版本信息
@@ -349,7 +355,7 @@ namespace VMS.View
 			#region 提交
 			if(!Global.Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
 			{
-				repo.Checkout(info.Sha);
+				Commands.Checkout(repo, info.Sha);
 				repo.Branches.Remove(branch);
 			}
 			instance?.UpdateBranchInfo();

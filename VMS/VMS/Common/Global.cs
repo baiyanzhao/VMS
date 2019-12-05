@@ -306,12 +306,12 @@ namespace VMS
 				using(var repo = new Repository(Settings.LoaclRepoPath))
 				{
 					//同步仓库
-					repo.Network.Fetch(repo.Network.Remotes["origin"]);
+					Commands.Fetch(repo, "origin", Array.Empty<string>(), null, null);
 
 					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)
 					{
-						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+						Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
 					}
 
 					//推送未上传的提交
@@ -331,7 +331,7 @@ namespace VMS
 			{
 				return ProgressWindow.Show(owner, delegate
 				{
-					repo.Stage("*");
+					Commands.Stage(repo, "*");
 					var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
 					repo.Commit(message, sign, sign);
 					repo.Network.Push(repo.Head, GetPushOptions());
@@ -369,8 +369,11 @@ namespace VMS
 								password = passwordBox.Password;
 							});
 
-							Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
-							WriteObject(FILE_SETTING, Settings);
+							if(!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(password))
+							{
+								Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
+								WriteObject(FILE_SETTING, Settings);
+							}
 						}
 						return new UsernamePasswordCredentials() { Username = user, Password = password };
 					},
