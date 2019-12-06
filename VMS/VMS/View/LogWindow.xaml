@@ -21,7 +21,7 @@
 		</Style>
 	</Window.Resources>
 	<Grid>
-		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="None" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
+		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="True" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
 					<TabControl Margin="24,0,0,0">
@@ -123,7 +123,7 @@
 				<DataGridTemplateColumn Width="Auto">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<WrapPanel>
+							<StackPanel Orientation="Horizontal">
 								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="检出版本" Focusable="False" Command="{Binding CheckoutCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Checkout.png"/>
@@ -139,7 +139,7 @@
 										<Image Source="/Images/Branch.png"/>
 									</Button.Content>
 								</Button>
-							</WrapPanel>
+							</StackPanel>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>

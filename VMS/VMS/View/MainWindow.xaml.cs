@@ -27,12 +27,8 @@ namespace VMS.View
 			InitializeComponent();
 
 			_taskbar.IconSource = Icon;
-			_taskbar.LeftClickCommand = new DelegateCommand((parameter) =>
-			{
-				Visibility = Visibility.Visible;
-				WindowState = WindowState.Maximized;
-				Activate();
-			});
+			_taskbar.LeftClickCommand = TaskbarCmd();
+			_taskbar.DoubleClickCommand = TaskbarCmd();
 
 			StateChanged += delegate
 			{
@@ -211,7 +207,7 @@ namespace VMS.View
 				if(string.Equals(name, "master")) //master分支上传Tag
 				{
 					name = versionInfo.VersionNow.ToString(3);
-					repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GetPushOptions());
+					ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GetPushOptions()));
 					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
@@ -318,6 +314,16 @@ namespace VMS.View
 		#endregion
 
 		#region 私有方法
+		private DelegateCommand TaskbarCmd()
+		{
+			return new DelegateCommand((parameter) =>
+			{
+				Visibility = Visibility.Visible;
+				WindowState = WindowState.Maximized;
+				Activate();
+			});
+		}
+
 		/// <summary>
 		/// 列举与提交关联的所有记录
 		/// </summary>

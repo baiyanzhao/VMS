@@ -369,8 +369,11 @@ namespace VMS
 								password = passwordBox.Password;
 							});
 
-							Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
-							WriteObject(FILE_SETTING, Settings);
+							if(!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(password))
+							{
+								Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
+								WriteObject(FILE_SETTING, Settings);
+							}
 						}
 						return new UsernamePasswordCredentials() { Username = user, Password = password };
 					},
