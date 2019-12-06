@@ -8,13 +8,14 @@ using LibGit2Sharp;
 namespace VMS.ViewModel
 {
 	/// <summary>
-	/// Git版本差异信息
+	/// 当前文件状态
 	/// </summary>
-	public class CommitInfoView
+	public class CommitFileStatus
 	{
+		#region 属性
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
-		public string State { get => FileStatus.ToString(); }
+		public string State => FileStatus.ToString();
 		public int FileSize
 		{
 			get
@@ -24,11 +25,13 @@ namespace VMS.ViewModel
 			}
 		}
 		public string Ext => Path.GetExtension(FilePath);
+		#endregion
 
+		#region 命令
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
 			using var repo = new Repository(Global.Settings.LoaclRepoPath);
-			var info = parameter as CommitInfoView;
+			var info = parameter as CommitFileStatus;
 			var blob = repo.Head.Tip?.Tree?[info.FilePath]?.Target as Blob;
 			if(info == null || blob == null)
 				return;
@@ -49,5 +52,6 @@ namespace VMS.ViewModel
 				MessageBox.Show(x.Message);
 			}
 		});
+		#endregion
 	}
 }

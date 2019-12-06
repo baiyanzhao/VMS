@@ -124,17 +124,17 @@
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal">
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="检出版本" Focusable="False" Command="{Binding Path=DataContext.CheckoutCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="检出版本" Focusable="False" Command="{Binding CheckoutCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Checkout.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="导出版本,保存为归档文件" Focusable="False" Command="{Binding Path=DataContext.ArchiveCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="导出版本,保存为归档文件" Focusable="False" Command="{Binding ArchiveCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Archive.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="基于此版本新建分支" Focusable="False" Command="{Binding Path=DataContext.AddCmd,RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="基于此版本新建分支" Focusable="False" Command="{Binding AddCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Branch.png"/>
 									</Button.Content>
