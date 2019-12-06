@@ -41,26 +41,6 @@ namespace VMS
 	}
 
 	/// <summary>
-	/// 字符串匹配
-	/// </summary>
-	public class StringMatchConverter : IMultiValueConverter
-	{
-		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-		{
-			if(values != null && values.Length >= 2 && values[0] is string full && values[1] is string head)
-			{
-				return full.StartsWith(head);
-			}
-			return false;
-		}
-
-		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-		{
-			return null;
-		}
-	}
-
-	/// <summary>
 	/// 根据Sha,获取版本信息
 	/// </summary>
 	public class BranchDetailConverter : IValueConverter

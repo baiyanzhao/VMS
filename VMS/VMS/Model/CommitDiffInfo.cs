@@ -10,13 +10,9 @@ namespace VMS.Model
 	/// <summary>
 	/// 已提交版本的更改信息
 	/// </summary>
-	class CommitDiffInfo
+	internal class CommitDiffInfo
 	{
-		TreeEntryChanges Tree { get; set; }
-		public string FilePath => Tree.Path;
-		public string State { get => Tree.Status.ToString(); }
-		public string Ext => Path.GetExtension(FilePath);
-
+		#region 方法
 		public CommitDiffInfo(TreeEntryChanges tree) => Tree = tree;
 
 		/// <summary>
@@ -24,7 +20,7 @@ namespace VMS.Model
 		/// </summary>
 		/// <param name="blob"></param>
 		/// <returns></returns>
-		static string CreateFile(ObjectId id)
+		private static string CreateFile(ObjectId id)
 		{
 			using var repo = new Repository(Global.Settings.LoaclRepoPath);
 			var blob = repo.Lookup<Blob>(id);
@@ -38,7 +34,16 @@ namespace VMS.Model
 			}
 			return filePath;
 		}
+		#endregion
 
+		#region 属性
+		private TreeEntryChanges Tree { get; set; }
+		public string FilePath => Tree.Path;
+		public string State => Tree.Status.ToString();
+		public string Ext => Path.GetExtension(FilePath);
+		#endregion
+
+		#region 命令
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
 			var info = parameter as CommitDiffInfo;
@@ -52,5 +57,6 @@ namespace VMS.Model
 				MessageBox.Show(x.Message, "对比文件不存在", MessageBoxButton.OK, MessageBoxImage.Warning);
 			}
 		});
+		#endregion
 	}
 }

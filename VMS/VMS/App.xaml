@@ -6,7 +6,6 @@
 	<Application.Resources>
 		<ResourceDictionary>
 			<local:EmptyStringConvert x:Key="EmptyStringConvert"/>
-			<local:StringMatchConverter x:Key="StringMatchConverter"/>
 			<local:BranchDetailConverter x:Key="BranchDetailConverter"/>
 			<local:CommitDiffConverter x:Key="CommitDiffConverter"/>
 			<ResourceDictionary.MergedDictionaries>

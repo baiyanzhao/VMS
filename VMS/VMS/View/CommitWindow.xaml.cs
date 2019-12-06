@@ -20,7 +20,7 @@ namespace VMS.View
 			DialogResult = true;
 		}
 
-		public static string ShowWindow(Window owner, ICollection<CommitInfoView> status, VersionInfo version)
+		public static string ShowWindow(Window owner, ICollection<CommitFileStatus> status, VersionInfo version)
 		{
 			var commitWindow = new CommitWindow() { Owner = owner };
 			commitWindow.FileGrid.DataContext = status;
