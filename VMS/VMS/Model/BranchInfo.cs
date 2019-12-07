@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using LibGit2Sharp;
@@ -119,9 +120,38 @@ namespace VMS.Model
 				using var repo = new Repository(Global.Settings.LoaclRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
 				var version = Global.ReadVersionInfo(cmt)?.VersionNow?.ToString();
-				var name = Global.Settings.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
-				repo.ObjectDatabase.Archive(cmt, name);
-				Process.Start("explorer", "/select,\"" + name + "\"");
+				var path = Global.Settings.PackageFolder + (version?? info.Name) + info.Author + "\\";
+				WriteFile(path, cmt.Tree);
+				Process.Start("explorer", "\"" + path + "\"");
+
+				static void WriteFile(string path, Tree tree)
+				{
+					if(tree == null)
+						return;
+
+					Directory.CreateDirectory(path);
+					foreach(var item in tree)
+					{
+						switch(item.TargetType)
+						{
+						case TreeEntryTargetType.Blob:
+							{
+								using var stream = (item.Target as Blob).GetContentStream();
+								var bytes = new byte[stream.Length];
+								stream.Read(bytes, 0, bytes.Length);
+								File.WriteAllBytes(path + item.Name, bytes);
+							}
+							break;
+						case TreeEntryTargetType.Tree:
+							WriteFile(path + item.Name + "/", item.Target as Tree);
+							break;
+						case TreeEntryTargetType.GitLink:
+							break;
+						default:
+							break;
+						}
+					}
+				}
 			}
 		});
 

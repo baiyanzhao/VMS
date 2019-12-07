@@ -288,7 +288,7 @@ namespace VMS
 					{
 						var window = new InputWindow
 						{
-							Title = "请输入仓库URL"
+							Title = "请输入仓库URL: " + Settings.LoaclRepoPath
 						};
 
 						var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
@@ -297,7 +297,7 @@ namespace VMS
 						url = box.Text;
 					});
 
-					Repository.Clone(url, Settings.LoaclRepoPath);
+					Repository.Clone(url, Settings.LoaclRepoPath, GitCloneOptions);
 					using var repo = new Repository(Settings.LoaclRepoPath);
 					repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上流分支,禁止用户提交此分支
 				}
@@ -306,18 +306,18 @@ namespace VMS
 				using(var repo = new Repository(Settings.LoaclRepoPath))
 				{
 					//同步仓库
-					repo.Network.Fetch(repo.Network.Remotes["origin"]);
+					repo.Network.Fetch(repo.Network.Remotes["origin"], GitFetchOptions);
 
 					//拉取当前分支
 					if(repo.Head.TrackingDetails.BehindBy > 0)
 					{
-						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+						repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions() { FetchOptions = GitFetchOptions });
 					}
 
 					//推送未上传的提交
 					if(repo.Head.TrackingDetails.AheadBy > 0)
 					{
-						repo.Network.Push(repo.Head, GetPushOptions());
+						repo.Network.Push(repo.Head, GitPushOptions);
 					}
 				}
 			}
@@ -334,68 +334,8 @@ namespace VMS
 					repo.Stage("*");
 					var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
 					repo.Commit(message, sign, sign);
-					repo.Network.Push(repo.Head, GetPushOptions());
+					repo.Network.Push(repo.Head, GitPushOptions);
 				});
-			}
-
-			public static PushOptions GetPushOptions()
-			{
-				return new PushOptions
-				{
-					CredentialsProvider = (string url, string usernameFromUrl, SupportedCredentialTypes types) =>
-					{
-						string user = null, password = null;
-						if(Settings.CredentialPairs.ContainsKey((url, usernameFromUrl)))
-						{
-							var (User, Password) = Settings.CredentialPairs[(url, usernameFromUrl)];
-							user = User;
-							password = Password;
-						}
-						else
-						{
-							Application.Current.Dispatcher.Invoke(delegate
-							{
-								var window = new InputWindow
-								{
-									Title = "请输入仓库账号和密码:" + url
-								};
-
-								var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
-								var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
-								window.InputGrid.Children.Add(userBox);
-								window.InputGrid.Children.Add(passwordBox);
-								window.ShowDialog();
-								user = userBox.Text;
-								password = passwordBox.Password;
-							});
-
-							if(!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(password))
-							{
-								Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
-								WriteObject(FILE_SETTING, Settings);
-							}
-						}
-						return new UsernamePasswordCredentials() { Username = user, Password = password };
-					},
-					OnPushTransferProgress = (int current, int total, long bytes) =>
-					{
-						ProgressWindow.Update(string.Format("Push{0}/{1},{2}byte", current, total, bytes));
-						return true;
-					},
-					OnNegotiationCompletedBeforePush = (updates) =>
-					{
-						return true;
-					},
-					OnPackBuilderProgress = (stage, current, total) =>
-					{
-						ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
-						return true;
-					},
-					OnPushStatusError = (err) =>
-					{
-						throw new Exception(err.Message);
-					}
-				};
 			}
 
 			/// <summary>
@@ -456,6 +396,114 @@ namespace VMS
 					return false;
 				}
 				return true;
+			}
+
+			/// <summary>
+			/// Git PushOptions
+			/// </summary>
+			public static PushOptions GitPushOptions => new PushOptions
+			{
+				CredentialsProvider = GetCredential,
+				OnPushTransferProgress = (int current, int total, long bytes) =>
+				{
+					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", current, total, Math.Ceiling(bytes / 1024.0)));
+					return true;
+				},
+				OnNegotiationCompletedBeforePush = (updates) =>
+				{
+					return true;
+				},
+				OnPackBuilderProgress = (stage, current, total) =>
+				{
+					ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
+					return true;
+				},
+				OnPushStatusError = (err) =>
+				{
+					throw new Exception(err.Message);
+				}
+			};
+
+			/// <summary>
+			/// Git CloneOptions
+			/// </summary>
+			public static CloneOptions GitCloneOptions => new CloneOptions
+			{
+				CredentialsProvider = GetCredential,
+				OnProgress = (string serverProgressOutput) =>
+				{
+					ProgressWindow.Update(serverProgressOutput);
+					return true;
+				},
+				OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
+				{
+					ProgressWindow.Update(referenceName);
+					return true;
+				},
+				OnTransferProgress = (TransferProgress progress) =>
+				{
+					ProgressWindow.Update(progress.ToString());
+					return true;
+				}
+			};
+
+			/// <summary>
+			/// Git FetchOptions
+			/// </summary>
+			public static FetchOptions GitFetchOptions => new FetchOptions
+			{
+				CredentialsProvider = GetCredential,
+				OnProgress = (string serverProgressOutput) =>
+				{
+					ProgressWindow.Update(serverProgressOutput);
+					return true;
+				},
+				OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
+				{
+					ProgressWindow.Update(referenceName);
+					return true;
+				},
+				OnTransferProgress = (TransferProgress progress) =>
+				{
+					ProgressWindow.Update(progress.ToString());
+					return true;
+				}
+			};
+
+			private static UsernamePasswordCredentials GetCredential(string url, string usernameFromUrl, SupportedCredentialTypes types)
+			{
+				string user = null, password = null;
+				if(Settings.CredentialPairs.ContainsKey((url, usernameFromUrl)))
+				{
+					var (User, Password) = Settings.CredentialPairs[(url, usernameFromUrl)];
+					user = User;
+					password = Password;
+				}
+				else
+				{
+					Application.Current.Dispatcher.Invoke(delegate
+					{
+						var window = new InputWindow
+						{
+							Title = "请输入仓库账号和密码:" + url
+						};
+
+						var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
+						var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
+						window.InputGrid.Children.Add(userBox);
+						window.InputGrid.Children.Add(passwordBox);
+						window.ShowDialog();
+						user = userBox.Text;
+						password = passwordBox.Password;
+					});
+
+					if(!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(password))
+					{
+						Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
+						WriteObject(FILE_SETTING, Settings);
+					}
+				}
+				return new UsernamePasswordCredentials() { Username = user, Password = password };
 			}
 		}
 	}

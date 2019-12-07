@@ -207,7 +207,7 @@ namespace VMS.View
 				if(string.Equals(name, "master")) //master分支上传Tag
 				{
 					name = versionInfo.VersionNow.ToString(3);
-					ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GetPushOptions()));
+					ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GitPushOptions));
 					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
