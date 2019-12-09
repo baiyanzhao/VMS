@@ -425,14 +425,7 @@ namespace VMS.View
 			}
 		}
 
-		private void Open_Click(object sender, RoutedEventArgs e)
-		{
-			var prj = Directory.GetFiles(Settings.LoaclRepoPath, "*.sln", SearchOption.AllDirectories);
-			if(prj.Length > 0)
-			{
-				Process.Start(prj[0]);
-			}
-		}
+		private void Open_Click(object sender, RoutedEventArgs e) => Process.Start(Directory.GetFiles(Settings.LoaclRepoPath, "*.sln", SearchOption.AllDirectories).FirstOrDefault() ?? Settings.LoaclRepoPath);
 
 		private void Explorer_Click(object sender, RoutedEventArgs e) => Process.Start(Settings.LoaclRepoPath);
 
