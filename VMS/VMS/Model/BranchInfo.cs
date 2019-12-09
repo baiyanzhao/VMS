@@ -29,7 +29,7 @@ namespace VMS.Model
 		/// <summary>
 		/// 类型
 		/// </summary>
-		public GitType Type { get; set; }
+		public GlobalShared.Git.Type Type { get; set; }
 
 		/// <summary>
 		/// 版本
@@ -116,10 +116,10 @@ namespace VMS.Model
 		{
 			if(parameter is BranchInfo info)
 			{
-				using var repo = new Repository(Global.Settings.LoaclRepoPath);
+				using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
-				var version = Global.ReadVersionInfo(cmt)?.VersionNow?.ToString();
-				var name = Global.Settings.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
+				var version = GlobalShared.ReadVersionInfo(cmt)?.VersionNow?.ToString();
+				var name = GlobalShared.Settings.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
 				repo.ObjectDatabase.Archive(cmt, name);
 				Process.Start("explorer", "/select,\"" + name + "\"");
 			}
@@ -132,9 +132,9 @@ namespace VMS.Model
 		{
 			if(parameter is BranchInfo info)
 			{
-				if(Global.Git.Checkout(Global.Settings.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
+				if(GlobalShared.Git.Checkout(GlobalShared.Settings.LoaclRepoPath, info.Type == GlobalShared.Git.Type.Sha ? info.Sha : info.Name, info.Type))
 				{
-					using var repo = new Repository(Global.Settings.LoaclRepoPath);
+					using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
 					var commit = repo.Head.Tip;
 					info.Sha = commit.Sha;
 					info.Author = commit.Author.Name;

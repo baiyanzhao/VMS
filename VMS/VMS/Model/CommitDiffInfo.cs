@@ -10,7 +10,7 @@ namespace VMS.Model
 	/// <summary>
 	/// 已提交版本的更改信息
 	/// </summary>
-	internal class CommitDiffInfo
+	public class CommitDiffInfo
 	{
 		#region 方法
 		public CommitDiffInfo(TreeEntryChanges tree) => Tree = tree;
@@ -22,7 +22,7 @@ namespace VMS.Model
 		/// <returns></returns>
 		private static string CreateFile(ObjectId id)
 		{
-			using var repo = new Repository(Global.Settings.LoaclRepoPath);
+			using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
 			var blob = repo.Lookup<Blob>(id);
 			var filePath = Path.GetTempFileName();
 			if(blob != null)
@@ -50,7 +50,7 @@ namespace VMS.Model
 
 			try
 			{
-				Process.Start(Global.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid) + "\" \"" + CreateFile(info.Tree.Oid) + "\"" + " /ro");
+				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid) + "\" \"" + CreateFile(info.Tree.Oid) + "\"" + " /ro");
 			}
 			catch(Exception x)
 			{

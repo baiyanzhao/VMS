@@ -12,10 +12,10 @@
 
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition/>
+			<RowDefinition Height="*"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<StackPanel Name="InputGrid" Orientation="Vertical"/>
-		<Button Grid.Row="1" IsCancel="True" IsDefault="True" Content="OK" HorizontalAlignment="Right" Margin="2" Padding="12,0"/>
+		<StackPanel Name="InputGrid" Orientation="Vertical" VerticalAlignment="Center"/>
+		<Button Grid.Row="1" IsCancel="True" IsDefault="True" Content="OK" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="2" Padding="12,0"/>
 	</Grid>
 </Window>
