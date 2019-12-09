@@ -208,12 +208,12 @@ namespace VMS.View
 				{
 					name = versionInfo.VersionNow.ToString(3);
 					ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Global.Git.GitPushOptions));
-					info = new BranchInfo { Type = GitType.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
+					info = new BranchInfo { Type = Global.Git.Type.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
 				else if(System.Version.TryParse(name, out var version)) //版本分支在界面新增一行; 非版本分支界面不更新
 				{
-					info = new BranchInfo { Type = GitType.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
+					info = new BranchInfo { Type = Global.Git.Type.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
 					instance._branchInfos.Add(info);
 				}
 			}
@@ -338,7 +338,7 @@ namespace VMS.View
 
 			if(!infos.Any(info => info.Sha == commit.Sha))
 			{
-				infos.Add(new BranchInfo { Name = name, Version = version, Type = GitType.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				infos.Add(new BranchInfo { Name = name, Version = version, Type = Global.Git.Type.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
 				foreach(var item in commit.Parents)
 				{
 					LookupCommit(name, version, item, infos);
@@ -363,7 +363,7 @@ namespace VMS.View
 				if(!System.Version.TryParse(name, out var version))
 					continue;
 
-				_branchInfos.Add(new BranchInfo { Type = GitType.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				_branchInfos.Add(new BranchInfo { Type = Global.Git.Type.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
 			}
 
 			foreach(var branch in repo.Branches.Where(p => p.IsRemote))
@@ -373,7 +373,7 @@ namespace VMS.View
 				if(commit == null || !System.Version.TryParse(name, out var version))
 					continue;
 
-				_branchInfos.Add(new BranchInfo { Type = GitType.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				_branchInfos.Add(new BranchInfo { Type = Global.Git.Type.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
 			}
 
 			UpdateTitle();

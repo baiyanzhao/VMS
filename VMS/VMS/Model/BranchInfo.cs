@@ -30,7 +30,7 @@ namespace VMS.Model
 		/// <summary>
 		/// 类型
 		/// </summary>
-		public GitType Type { get; set; }
+		public Global.Git.Type Type { get; set; }
 
 		/// <summary>
 		/// 版本
@@ -162,7 +162,7 @@ namespace VMS.Model
 		{
 			if(parameter is BranchInfo info)
 			{
-				if(Global.Git.Checkout(Global.Settings.LoaclRepoPath, info.Type == GitType.Sha ? info.Sha : info.Name, info.Type))
+				if(Global.Git.Checkout(Global.Settings.LoaclRepoPath, info.Type == Global.Git.Type.Sha ? info.Sha : info.Name, info.Type))
 				{
 					using var repo = new Repository(Global.Settings.LoaclRepoPath);
 					var commit = repo.Head.Tip;

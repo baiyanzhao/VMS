@@ -10,7 +10,7 @@ namespace VMS.Model
 	/// <summary>
 	/// 已提交版本的更改信息
 	/// </summary>
-	internal class CommitDiffInfo
+	public class CommitDiffInfo
 	{
 		#region 方法
 		public CommitDiffInfo(TreeEntryChanges tree) => Tree = tree;

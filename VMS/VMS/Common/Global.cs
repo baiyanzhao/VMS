@@ -13,36 +13,19 @@ using VMS.View;
 
 namespace VMS
 {
-	/// <summary>
-	/// 签出类型
-	/// </summary>
-	public enum GitType
+	public static class Global
 	{
-		Branch,
-		Sha,
-		Tag,
-	}
-
-	internal static class Global
-	{
+		#region 属性
 		private const string FILE_VERSION_INFO = "Version.json"; //定制信息
 		private const string FILE_SETTING_LOCAL = "Setting.json"; //设置
-		public static readonly string FILE_SETTING = ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
-		public static Setting Settings = GetSetting();
+		public static string FILE_SETTING => ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
+		public static Setting Settings { get; } = GetSetting();
+		#endregion
 
+		#region 方法
 		private static Setting GetSetting()
 		{
-			Setting set = null;
-
-			//配置文件
-			try
-			{
-				set = ReadObject<Setting>(FILE_SETTING);
-			}
-			catch(Exception)
-			{ }
-
-			set ??= new Setting();
+			var set = ReadObject<Setting>(FILE_SETTING) ?? new Setting();
 			set.RepoPathList ??= new List<string>();
 			set.PackageFolder ??= Path.GetTempPath() + @"Package\";
 			set.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
@@ -50,74 +33,6 @@ namespace VMS
 			set.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
 			set.CredentialPairs ??= new Dictionary<(string Url, string UsernameFromUrl), (string User, string Password)>();
 			return set;
-		}
-
-		/// <summary>
-		/// 程序集信息
-		/// </summary>
-		public class AssemblyInfo
-		{
-			/// <summary>
-			/// 工程类型
-			/// </summary>
-			public ProjectType Type { get; set; }
-
-			/// <summary>
-			/// 工程文件夹的相对路径
-			/// </summary>
-			public string ProjectPath { get; set; }
-
-			/// <summary>
-			/// 版本配置文件的绝对路径
-			/// </summary>
-			public string FilePath { get; set; }
-
-			/// <summary>
-			/// 工程存在修改的文件
-			/// </summary>
-			public bool IsModified { get; set; }
-
-			/// <summary>
-			/// 当前版本
-			/// </summary>
-			public System.Version Version { get; set; }
-
-			/// <summary>
-			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
-			/// </summary>
-			/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
-			public void HitVersion(int versionBuild)
-			{
-				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
-				//C工程版本格式为: static const char VERSION[] = "1.0.0.0";
-				var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
-				var encoding = FileEncoding.EncodingType.GetType(FilePath);
-				var lines = File.ReadAllLines(FilePath, encoding);
-				for(var i = 0; i < lines.Length; i++)
-				{
-					if(lines[i].IndexOf(verKey) == 0)
-					{
-						var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
-						if(System.Version.TryParse(strVersion, out var version))
-						{
-							if(IsModified && versionBuild >= 0)
-							{
-								var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
-								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
-								lines[i] = lines[i].Replace(strVersion, Version.ToString());
-								File.WriteAllLines(FilePath, lines, encoding);
-							}
-							else
-							{
-								Version = version;
-							}
-						}
-						break;
-					}
-				}
-			}
-
-			public enum ProjectType { C, CSharp }
 		}
 
 		/// <summary>
@@ -204,10 +119,7 @@ namespace VMS
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo()
-		{
-			return ReadObject<VersionInfo>(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO));
-		}
+		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO));
 
 		/// <summary>
 		/// 工程版本信息
@@ -250,10 +162,7 @@ namespace VMS
 		/// 更新版本,并写入文件
 		/// </summary>
 		/// <param name="info"></param>
-		public static void WriteVersionInfo(VersionInfo info)
-		{
-			WriteObject(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO), info);
-		}
+		public static void WriteVersionInfo(VersionInfo info) => WriteObject(Path.Combine(Settings.LoaclRepoPath, FILE_VERSION_INFO), info);
 
 		public static IEnumerable<CommitDiffInfo> GetDiff(string sha)
 		{
@@ -272,9 +181,164 @@ namespace VMS
 
 			return diffInfo;
 		}
+		#endregion
+
+		#region 子类
+		/// <summary>
+		/// 程序集信息
+		/// </summary>
+		public class AssemblyInfo
+		{
+			/// <summary>
+			/// 工程类型
+			/// </summary>
+			public ProjectType Type { get; set; }
+
+			/// <summary>
+			/// 工程文件夹的相对路径
+			/// </summary>
+			public string ProjectPath { get; set; }
+
+			/// <summary>
+			/// 版本配置文件的绝对路径
+			/// </summary>
+			public string FilePath { get; set; }
+
+			/// <summary>
+			/// 工程存在修改的文件
+			/// </summary>
+			public bool IsModified { get; set; }
+
+			/// <summary>
+			/// 当前版本
+			/// </summary>
+			public System.Version Version { get; set; }
+
+			/// <summary>
+			/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
+			/// </summary>
+			/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
+			public void HitVersion(int versionBuild)
+			{
+				//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
+				//C工程版本格式为: static const char VERSION[] = "1.0.0.0";
+				var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
+				var encoding = FileEncoding.EncodingType.GetType(FilePath);
+				var lines = File.ReadAllLines(FilePath, encoding);
+				for(var i = 0; i < lines.Length; i++)
+				{
+					if(lines[i].IndexOf(verKey) == 0)
+					{
+						var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
+						if(System.Version.TryParse(strVersion, out var version))
+						{
+							if(IsModified && versionBuild >= 0)
+							{
+								var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
+								Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
+								lines[i] = lines[i].Replace(strVersion, Version.ToString());
+								File.WriteAllLines(FilePath, lines, encoding);
+							}
+							else
+							{
+								Version = version;
+							}
+						}
+						break;
+					}
+				}
+			}
+
+			public enum ProjectType { C, CSharp }
+		}
 
 		public static class Git
 		{
+			/// <summary>
+			/// 签出类型
+			/// </summary>
+			public enum Type
+			{
+				Branch,
+				Sha,
+				Tag,
+			}
+
+			#region 属性
+			/// <summary>
+			/// Git PushOptions
+			/// </summary>
+			public static PushOptions GitPushOptions { get; } = new PushOptions
+			{
+				CredentialsProvider = GetCredential,
+				OnPushTransferProgress = (int current, int total, long bytes) =>
+				{
+					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", current, total, Math.Ceiling(bytes / 1024.0)));
+					return true;
+				},
+				OnNegotiationCompletedBeforePush = (updates) =>
+				{
+					return true;
+				},
+				OnPackBuilderProgress = (stage, current, total) =>
+				{
+					ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
+					return true;
+				},
+				OnPushStatusError = (err) =>
+				{
+					throw new Exception(err.Message);
+				}
+			};
+
+			/// <summary>
+			/// Git CloneOptions
+			/// </summary>
+			public static CloneOptions GitCloneOptions { get; } = new CloneOptions
+			{
+				CredentialsProvider = GetCredential,
+				OnProgress = (string serverProgressOutput) =>
+				{
+					ProgressWindow.Update(serverProgressOutput);
+					return true;
+				},
+				OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
+				{
+					ProgressWindow.Update(referenceName);
+					return true;
+				},
+				OnTransferProgress = (TransferProgress progress) =>
+				{
+					ProgressWindow.Update(progress.ToString());
+					return true;
+				}
+			};
+
+			/// <summary>
+			/// Git FetchOptions
+			/// </summary>
+			public static FetchOptions GitFetchOptions { get; } = new FetchOptions
+			{
+				CredentialsProvider = GetCredential,
+				OnProgress = (string serverProgressOutput) =>
+				{
+					ProgressWindow.Update(serverProgressOutput);
+					return true;
+				},
+				OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
+				{
+					ProgressWindow.Update(referenceName);
+					return true;
+				},
+				OnTransferProgress = (TransferProgress progress) =>
+				{
+					ProgressWindow.Update(progress.ToString());
+					return true;
+				}
+			};
+			#endregion
+
+			#region 方法
 			/// <summary>
 			/// 同步仓库
 			/// </summary>
@@ -327,16 +391,13 @@ namespace VMS
 			/// </summary>
 			/// <param name="repo">仓库</param>
 			/// <param name="message">信息</param>
-			public static bool Commit(Window owner, Repository repo, string message)
-			{
-				return ProgressWindow.Show(owner, delegate
-				{
-					repo.Stage("*");
-					var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
-					repo.Commit(message, sign, sign);
-					repo.Network.Push(repo.Head, GitPushOptions);
-				});
-			}
+			public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
+																									  {
+																										  repo.Stage("*");
+																										  var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
+																										  repo.Commit(message, sign, sign);
+																										  repo.Network.Push(repo.Head, GitPushOptions);
+																									  });
 
 			/// <summary>
 			/// 更新并签出指定版本的工程
@@ -344,7 +405,7 @@ namespace VMS
 			/// <param name="repoPath">Git仓库路径</param>
 			/// <param name="mark">签出标识字符串,由<paramref name="type"/>决定类型 </param>
 			/// <param name="type">签出类型</param>
-			public static bool Checkout(string repoPath, string mark, GitType type)
+			public static bool Checkout(string repoPath, string mark, Type type)
 			{
 				using var repo = new Repository(repoPath);
 				if(repo == null)
@@ -360,7 +421,7 @@ namespace VMS
 				string committishOrBranchSpec;
 				switch(type)
 				{
-				case GitType.Branch:
+				case Type.Branch:
 					committishOrBranchSpec = mark;
 					try
 					{
@@ -373,7 +434,7 @@ namespace VMS
 					}
 					break;
 
-				case GitType.Tag:
+				case Type.Tag:
 					committishOrBranchSpec = repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha;
 					break;
 
@@ -385,7 +446,7 @@ namespace VMS
 				try
 				{
 					repo.Checkout(committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
-					if(type == GitType.Branch && !repo.Head.IsTracking)
+					if(type == Type.Branch && !repo.Head.IsTracking)
 					{
 						repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
 					}
@@ -397,78 +458,6 @@ namespace VMS
 				}
 				return true;
 			}
-
-			/// <summary>
-			/// Git PushOptions
-			/// </summary>
-			public static PushOptions GitPushOptions => new PushOptions
-			{
-				CredentialsProvider = GetCredential,
-				OnPushTransferProgress = (int current, int total, long bytes) =>
-				{
-					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", current, total, Math.Ceiling(bytes / 1024.0)));
-					return true;
-				},
-				OnNegotiationCompletedBeforePush = (updates) =>
-				{
-					return true;
-				},
-				OnPackBuilderProgress = (stage, current, total) =>
-				{
-					ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
-					return true;
-				},
-				OnPushStatusError = (err) =>
-				{
-					throw new Exception(err.Message);
-				}
-			};
-
-			/// <summary>
-			/// Git CloneOptions
-			/// </summary>
-			public static CloneOptions GitCloneOptions => new CloneOptions
-			{
-				CredentialsProvider = GetCredential,
-				OnProgress = (string serverProgressOutput) =>
-				{
-					ProgressWindow.Update(serverProgressOutput);
-					return true;
-				},
-				OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
-				{
-					ProgressWindow.Update(referenceName);
-					return true;
-				},
-				OnTransferProgress = (TransferProgress progress) =>
-				{
-					ProgressWindow.Update(progress.ToString());
-					return true;
-				}
-			};
-
-			/// <summary>
-			/// Git FetchOptions
-			/// </summary>
-			public static FetchOptions GitFetchOptions => new FetchOptions
-			{
-				CredentialsProvider = GetCredential,
-				OnProgress = (string serverProgressOutput) =>
-				{
-					ProgressWindow.Update(serverProgressOutput);
-					return true;
-				},
-				OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
-				{
-					ProgressWindow.Update(referenceName);
-					return true;
-				},
-				OnTransferProgress = (TransferProgress progress) =>
-				{
-					ProgressWindow.Update(progress.ToString());
-					return true;
-				}
-			};
 
 			private static UsernamePasswordCredentials GetCredential(string url, string usernameFromUrl, SupportedCredentialTypes types)
 			{
@@ -505,6 +494,8 @@ namespace VMS
 				}
 				return new UsernamePasswordCredentials() { Username = user, Password = password };
 			}
+			#endregion
 		}
+		#endregion
 	}
 }
