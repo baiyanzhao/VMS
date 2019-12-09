@@ -309,8 +309,7 @@ namespace VMS
 				},
 				OnTransferProgress = (TransferProgress progress) =>
 				{
-					var s = progress.ToString();
-					ProgressWindow.Update(string.Format("{0}/{1},{2}Bytes", progress.ReceivedObjects, progress.TotalObjects, progress.ReceivedBytes));
+					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", progress.ReceivedObjects, progress.TotalObjects, Math.Ceiling(progress.ReceivedBytes / 1024.0)));
 					return true;
 				}
 			};
@@ -333,7 +332,6 @@ namespace VMS
 				},
 				OnTransferProgress = (TransferProgress progress) =>
 				{
-					var s = progress.ToString();
 					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", progress.ReceivedObjects, progress.TotalObjects, Math.Ceiling(progress.ReceivedBytes / 1024.0)));
 					return true;
 				}
