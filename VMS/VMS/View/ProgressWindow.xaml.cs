@@ -39,6 +39,11 @@ namespace VMS.View
 		{
 			bool isCompleted = true;
 			var dlg = new ProgressWindow() { Owner = owner };
+			if(owner == null)
+			{
+				dlg.ShowInTaskbar = true;
+				dlg.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+			}
 			sInit = new BackgroundWorker() { WorkerReportsProgress = true };
 
 			sInit.DoWork += delegate

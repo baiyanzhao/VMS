@@ -38,7 +38,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>28</ApplicationRevision>
+    <ApplicationRevision>29</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -132,8 +132,8 @@
     </ApplicationDefinition>
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\EncodingType.cs" />
+    <Compile Include="Common\GlobalShared.cs" />
     <Compile Include="Model\BranchInfo.cs" />
-    <Compile Include="Common\Global.cs" />
     <Compile Include="Model\CommitDiffInfo.cs" />
     <Compile Include="Model\CommitFileStatus.cs" />
     <Compile Include="Common\Converter.cs" />
@@ -275,12 +275,12 @@
   <ItemGroup>
     <PublishFile Include="Setting.json">
       <Visible>False</Visible>
+      <PublishState>DataFile</PublishState>
+      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
-      <PublishState>DataFile</PublishState>
-      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>

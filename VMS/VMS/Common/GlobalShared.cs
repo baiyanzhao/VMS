@@ -13,19 +13,19 @@ using VMS.View;
 
 namespace VMS
 {
-	public static class Global
+	public static class GlobalShared
 	{
 		#region 属性
 		private const string FILE_VERSION_INFO = "Version.json"; //定制信息
 		private const string FILE_SETTING_LOCAL = "Setting.json"; //设置
-		public static string FILE_SETTING => ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
+		public static string SetFilePath => ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 		public static Setting Settings { get; } = GetSetting();
 		#endregion
 
 		#region 方法
 		private static Setting GetSetting()
 		{
-			var set = ReadObject<Setting>(FILE_SETTING) ?? new Setting();
+			var set = ReadObject<Setting>(SetFilePath) ?? new Setting();
 			set.RepoPathList ??= new List<string>();
 			set.PackageFolder ??= Path.GetTempPath() + @"Package\";
 			set.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
@@ -145,7 +145,7 @@ namespace VMS
 			VersionInfo version = null;
 			try
 			{
-				var obj = commit.Tree["Version.json"]?.Target as Blob;
+				var obj = commit?.Tree["Version.json"]?.Target as Blob;
 				version = obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
 				if(version != null)
 				{
@@ -309,7 +309,7 @@ namespace VMS
 				},
 				OnTransferProgress = (TransferProgress progress) =>
 				{
-					ProgressWindow.Update(progress.ToString());
+					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", progress.ReceivedObjects, progress.TotalObjects, Math.Ceiling(progress.ReceivedBytes / 1024.0)));
 					return true;
 				}
 			};
@@ -332,7 +332,7 @@ namespace VMS
 				},
 				OnTransferProgress = (TransferProgress progress) =>
 				{
-					ProgressWindow.Update(progress.ToString());
+					ProgressWindow.Update(string.Format("{0}/{1},{2}kB", progress.ReceivedObjects, progress.TotalObjects, Math.Ceiling(progress.ReceivedBytes / 1024.0)));
 					return true;
 				}
 			};
@@ -352,7 +352,9 @@ namespace VMS
 					{
 						var window = new InputWindow
 						{
-							Title = "请输入仓库URL: " + Settings.LoaclRepoPath
+							ShowInTaskbar = false,
+							Title = "请输入仓库URL: " + Settings.LoaclRepoPath,
+							Owner = Application.Current.MainWindow.IsLoaded ? Application.Current.MainWindow : null
 						};
 
 						var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
@@ -392,12 +394,12 @@ namespace VMS
 			/// <param name="repo">仓库</param>
 			/// <param name="message">信息</param>
 			public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
-																									  {
-																										  repo.Stage("*");
-																										  var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
-																										  repo.Commit(message, sign, sign);
-																										  repo.Network.Push(repo.Head, GitPushOptions);
-																									  });
+			{
+				repo.Stage("*");
+				var sign = new Signature(Settings.User, Environment.MachineName, DateTime.Now);
+				repo.Commit(message, sign, sign);
+				repo.Network.Push(repo.Head, GitPushOptions);
+			});
 
 			/// <summary>
 			/// 更新并签出指定版本的工程
@@ -489,7 +491,7 @@ namespace VMS
 					if(!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(password))
 					{
 						Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
-						WriteObject(FILE_SETTING, Settings);
+						WriteObject(SetFilePath, Settings);
 					}
 				}
 				return new UsernamePasswordCredentials() { Username = user, Password = password };

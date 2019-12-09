@@ -20,7 +20,7 @@ namespace VMS.ViewModel
 		{
 			get
 			{
-				var info = new FileInfo(Global.Settings.LoaclRepoPath + FilePath);
+				var info = new FileInfo(GlobalShared.Settings.LoaclRepoPath + FilePath);
 				return info.Exists ? Convert.ToInt32(Math.Ceiling(info.Length / 1024.0)) : 0;
 			}
 		}
@@ -30,7 +30,7 @@ namespace VMS.ViewModel
 		#region 命令
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			using var repo = new Repository(Global.Settings.LoaclRepoPath);
+			using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
 			var info = parameter as CommitFileStatus;
 			var blob = repo.Head.Tip?.Tree?[info.FilePath]?.Target as Blob;
 			if(info == null || blob == null)
@@ -45,7 +45,7 @@ namespace VMS.ViewModel
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);
 				}
-				Process.Start(Global.Settings.CompareToolPath, " \"" + filePath + "\" \"" + Global.Settings.LoaclRepoPath + info.FilePath + "\"" + " /lro");
+				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + filePath + "\" \"" + GlobalShared.Settings.LoaclRepoPath + info.FilePath + "\"" + " /lro");
 			}
 			catch(Exception x)
 			{

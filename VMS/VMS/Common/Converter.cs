@@ -47,7 +47,7 @@ namespace VMS
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			return Global.ReadVersionInfo(value as string);
+			return GlobalShared.ReadVersionInfo(value as string);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -63,7 +63,7 @@ namespace VMS
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			return Global.GetDiff(value as string);
+			return GlobalShared.GetDiff(value as string);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
