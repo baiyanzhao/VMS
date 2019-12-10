@@ -142,9 +142,10 @@ namespace VMS.View
 			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
 			var instance = Application.Current.MainWindow as MainWindow;
-			var commitText = CommitWindow.ShowWindow(instance, status, versionInfo);
-			if(commitText == null)
+			if(CommitWindow.ShowWindow(instance, status, versionInfo) != true)
 				return false;
+
+			WriteVersionInfo(versionInfo);	//先将提交信息写入文件,以备提交失败时自动填入.
 			#endregion
 
 			#region 同步上游分支
@@ -158,14 +159,17 @@ namespace VMS.View
 				return false;
 			}
 
-			//以Sys名称拉取上游分支
-			repo.Network.Fetch(repo.Network.Remotes["origin"]);
-			if(repo.Head.TrackingDetails.BehindBy > 0)
+			if(!ProgressWindow.Show(instance, delegate
 			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
-			}
+				repo.Network.Fetch(repo.Network.Remotes["origin"]);
+				if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
+				{
+					repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+				}
 
-			repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+				repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+			}))
+				return false;
 			#endregion
 
 			#region 更新版本信息
@@ -192,6 +196,9 @@ namespace VMS.View
 					versionInfo.VersionList.Add(new VersionInfo.StringPair() { Label = Path.GetFileName(assembly.ProjectPath), Value = assembly.Version.ToString() });
 				}
 			}
+
+			var commitText = versionInfo.Message;
+			versionInfo.Message = null; //提交信息不保存在版本文件中
 			WriteVersionInfo(versionInfo);
 			#endregion
 
