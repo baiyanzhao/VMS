@@ -47,8 +47,9 @@
 		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding MSBuildPath}" Foreground="Gray" Grid.Row="4" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
-		<TextBlock Grid.Row="5" Grid.Column="1" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center">
-			<Hyperlink Click="Hyperlink_Click">下载最新版本</Hyperlink> 
+		<TextBlock Grid.Row="5" Grid.Column="1" Margin="0,0,64,5" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<Hyperlink Click="Hyperlink_Click">下载最新版本</Hyperlink>
 		</TextBlock>
+		<Button Grid.Row="5" Grid.Column="1" IsCancel="True" IsDefault="True" Content="OK" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5" Padding="12,2"/>
 	</Grid>
 </Window>

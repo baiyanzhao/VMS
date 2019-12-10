@@ -20,7 +20,7 @@ namespace VMS.View
 	public sealed partial class MainWindow : Window, IDisposable
 	{
 		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden }; //通知区图标
-		private readonly ObservableCollection<BranchInfo> _branchInfos = new ObservableCollection<BranchInfo>(); //分支信息
+		private ObservableCollection<BranchInfo> BranchInfos { get; } = new ObservableCollection<BranchInfo>(); //分支信息
 
 		#region 公共方法
 		public MainWindow()
@@ -111,8 +111,7 @@ namespace VMS.View
 				return null;
 
 			#region 打开提交对话框
-			//读取文件状态
-			var assemblyList = GetAssemblyInfo();
+			var assemblyList = GetAssemblyInfo(); //读取文件状态
 			var status = new Collection<CommitFileStatus>();
 			foreach(var item in entries)
 			{
@@ -126,9 +125,10 @@ namespace VMS.View
 					status.Add(new CommitFileStatus() { FilePath = item.FilePath, FileStatus = item.State });
 					foreach(var assembly in assemblyList)
 					{
-						if(item.FilePath.Contains(assembly.ProjectPath))
+						if(assembly.IsModified == false && item.FilePath.Replace('\\', '/').Contains(assembly.ProjectPath))
 						{
 							assembly.IsModified = true;
+							break;
 						}
 					}
 					break;
@@ -197,34 +197,13 @@ namespace VMS.View
 			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
 				return false;
 
-			//更新界面显示
-			var commit = repo.Head.Tip;
-			var name = repo.Head.FriendlyName;
-			var info = instance._branchInfos.FirstOrDefault(p => p.Name.Equals(name, StringComparison.Ordinal));
-			if(info == null) //界面列表不存在此项,则新增一行
+			if(string.Equals(repo.Head.FriendlyName, "master")) //master分支上传Tag
 			{
-				if(string.Equals(name, "master")) //master分支上传Tag
-				{
-					name = versionInfo.VersionNow.ToString(3);
-					ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(name).ToString(), Git.GitPushOptions));
-					info = new BranchInfo { Type = Git.Type.Tag, Name = name, Version = new System.Version(name), Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
-					instance._branchInfos.Add(info);
-				}
-				else if(System.Version.TryParse(name, out var version)) //版本分支在界面新增一行; 非版本分支界面不更新
-				{
-					info = new BranchInfo { Type = Git.Type.Branch, Name = name, Version = version, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort };
-					instance._branchInfos.Add(info);
-				}
-			}
-			else //界面列表存在此项,则更新显示
-			{
-				info.Sha = commit.Sha;
-				info.Author = commit.Author.Name;
-				info.When = commit.Author.When;
-				info.Message = commit.MessageShort;
+				ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(versionInfo.VersionNow.ToString(3)).ToString(), Git.GitPushOptions));
 			}
 			#endregion
 
+			instance?.UpdateBranchInfo();
 			return true;
 		}
 
@@ -382,13 +361,11 @@ namespace VMS.View
 		}
 
 		/// <summary>
-		/// 更新界面
+		/// 更新分支列表
 		/// </summary>
 		private void UpdateBranchInfo()
 		{
 			using var repo = new Repository(Settings.LoaclRepoPath);
-			//更新分支列表
-			_branchInfos.Clear();
 			foreach(var tag in repo.Tags)
 			{
 				if(!(tag.Target is Commit commit))
@@ -398,7 +375,10 @@ namespace VMS.View
 				if(!System.Version.TryParse(name, out var version))
 					continue;
 
-				_branchInfos.Add(new BranchInfo { Type = Git.Type.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				if(!BranchInfos.Any(info => info.Name == name))
+				{
+					BranchInfos.Add(new BranchInfo { Type = Git.Type.Tag, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				}
 			}
 
 			foreach(var branch in repo.Branches.Where(p => p.IsRemote))
@@ -408,11 +388,22 @@ namespace VMS.View
 				if(commit == null || !System.Version.TryParse(name, out var version))
 					continue;
 
-				_branchInfos.Add(new BranchInfo { Type = Git.Type.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				var info = BranchInfos.FirstOrDefault(info => info.Name == name);
+				if(info == null)
+				{
+					BranchInfos.Add(new BranchInfo { Type = Git.Type.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				}
+				else
+				{
+					info.Sha = commit.Sha;
+					info.When = commit.Author.When;
+					info.Author = commit.Author.Name;
+					info.Message = commit.MessageShort;
+				}
 			}
 
 			UpdateTitle();
-			BranchInfoGrid.DataContext = _branchInfos;  //在界面显示前,设定上下文
+			BranchInfoGrid.DataContext = BranchInfos;  //在界面显示前,设定上下文
 		}
 
 		/// <summary>
@@ -542,8 +533,15 @@ namespace VMS.View
 
 		private void Set_Click(object sender, RoutedEventArgs e)
 		{
+			var oldPath = Settings.LoaclRepoPath;
+
 			ShowSetWindow();
-			ProgressWindow.Show(this, Git.Sync, UpdateBranchInfo);
+			if(oldPath != Settings.LoaclRepoPath)
+			{
+				ProgressWindow.Show(this, Git.Sync);
+				BranchInfos.Clear();
+				UpdateBranchInfo();
+			}
 		}
 		#endregion
 	}

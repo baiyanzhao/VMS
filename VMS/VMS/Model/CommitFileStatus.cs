@@ -39,7 +39,7 @@ namespace VMS.ViewModel
 			try
 			{
 				var filePath = Path.GetTempFileName();
-				using(var stream = blob.GetContentStream())
+				using(var stream = blob.GetContentStream(new FilteringOptions(".gitattributes")))
 				{
 					var bytes = new byte[stream.Length];
 					stream.Read(bytes, 0, bytes.Length);

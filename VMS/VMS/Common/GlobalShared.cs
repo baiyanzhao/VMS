@@ -52,6 +52,7 @@ namespace VMS
 				list.Add(new AssemblyInfo()
 				{
 					FilePath = file,
+					IsModified = false,
 					Type = AssemblyInfo.ProjectType.CSharp,
 					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
@@ -67,6 +68,7 @@ namespace VMS
 				list.Add(new AssemblyInfo()
 				{
 					FilePath = file,
+					IsModified = false,
 					Type = AssemblyInfo.ProjectType.C,
 					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
@@ -396,13 +398,13 @@ namespace VMS
 			/// <returns></returns>
 			public static bool FetchHead(Window owner, Repository repo) => ProgressWindow.Show(owner, delegate
 			{
-				repo.Network.Fetch(repo.Network.Remotes["origin"]);
+				repo.Network.Fetch(repo.Network.Remotes["origin"], GitFetchOptions);
 				if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
 				{
-					repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+					repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
 				}
 
-				repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+				repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }, GitFetchOptions);
 			});
 
 			/// <summary>
