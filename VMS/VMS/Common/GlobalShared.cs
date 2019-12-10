@@ -149,7 +149,7 @@ namespace VMS
 				version = obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
 				if(version != null)
 				{
-					version.Message = commit.Message;
+					version.CommitMessage = commit.Message;
 				}
 			}
 			catch
@@ -387,6 +387,23 @@ namespace VMS
 					}
 				}
 			}
+
+			/// <summary>
+			/// 同步Head
+			/// </summary>
+			/// <param name="owner">主窗体</param>
+			/// <param name="repo">仓库</param>
+			/// <returns></returns>
+			public static bool FetchHead(Window owner, Repository repo) => ProgressWindow.Show(owner, delegate
+			{
+				repo.Network.Fetch(repo.Network.Remotes["origin"]);
+				if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
+				{
+					repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
+				}
+
+				repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
+			});
 
 			/// <summary>
 			/// 提交并推送

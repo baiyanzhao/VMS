@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using LibGit2Sharp;
@@ -17,10 +15,7 @@ namespace VMS.Model
 		#region 属性
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		private void OnPropertyChanged<TProperty>(Expression<Func<INotifyPropertyChanged, TProperty>> exp)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
-		}
+		private void OnPropertyChanged<TProperty>(Expression<Func<INotifyPropertyChanged, TProperty>> exp) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
 
 		/// <summary>
 		/// 名称
@@ -115,44 +110,7 @@ namespace VMS.Model
 		/// </summary>
 		public ICommand ArchiveCmd { get; } = new DelegateCommand((parameter) =>
 		{
-			if(parameter is BranchInfo info)
-			{
-				using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
-				var cmt = repo.Lookup<Commit>(info.Sha);
-				var version = GlobalShared.ReadVersionInfo(cmt)?.VersionNow?.ToString();
-				var path = GlobalShared.Settings.PackageFolder + (version?? info.Name) + info.Author + "\\";
-				WriteFile(path, cmt.Tree);
-				Process.Start("explorer", "\"" + path + "\"");
-
-				static void WriteFile(string path, Tree tree)
-				{
-					if(tree == null)
-						return;
-
-					Directory.CreateDirectory(path);
-					foreach(var item in tree)
-					{
-						switch(item.TargetType)
-						{
-						case TreeEntryTargetType.Blob:
-							{
-								using var stream = (item.Target as Blob).GetContentStream();
-								var bytes = new byte[stream.Length];
-								stream.Read(bytes, 0, bytes.Length);
-								File.WriteAllBytes(path + item.Name, bytes);
-							}
-							break;
-						case TreeEntryTargetType.Tree:
-							WriteFile(path + item.Name + "/", item.Target as Tree);
-							break;
-						case TreeEntryTargetType.GitLink:
-							break;
-						default:
-							break;
-						}
-					}
-				}
-			}
+			MainWindow.ArchiveCommit(parameter as BranchInfo);
 		});
 
 		/// <summary>

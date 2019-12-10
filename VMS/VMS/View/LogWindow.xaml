@@ -76,7 +76,7 @@
 											</Style>
 										</DataGrid.RowStyle>
 									</DataGrid>
-									<TextBlock Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" Text="{Binding Message}"/>
+									<TextBox Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True" Text="{Binding CommitMessage}"/>
 								</Grid>
 						</TabItem>
 						<TabItem>

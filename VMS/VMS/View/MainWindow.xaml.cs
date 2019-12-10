@@ -145,7 +145,7 @@ namespace VMS.View
 			if(CommitWindow.ShowWindow(instance, status, versionInfo) != true)
 				return false;
 
-			WriteVersionInfo(versionInfo);	//先将提交信息写入文件,以备提交失败时自动填入.
+			WriteVersionInfo(versionInfo);  //先将提交信息写入文件,以备提交失败时自动填入.
 			#endregion
 
 			#region 同步上游分支
@@ -159,16 +159,7 @@ namespace VMS.View
 				return false;
 			}
 
-			if(!ProgressWindow.Show(instance, delegate
-			{
-				repo.Network.Fetch(repo.Network.Remotes["origin"]);
-				if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
-				{
-					repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions());
-				}
-
-				repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName });
-			}))
+			if(!Git.FetchHead(instance, repo))
 				return false;
 			#endregion
 
@@ -197,8 +188,8 @@ namespace VMS.View
 				}
 			}
 
-			var commitText = versionInfo.Message;
-			versionInfo.Message = null; //提交信息不保存在版本文件中
+			var commitText = versionInfo.LatestMessage;
+			versionInfo.LatestMessage = null; //不提交最近信息
 			WriteVersionInfo(versionInfo);
 			#endregion
 
@@ -262,19 +253,11 @@ namespace VMS.View
 			versionInfo.VersionNow = null;
 
 			var instance = Application.Current.MainWindow as MainWindow;
-			var commitText = CommitWindow.ShowWindow(instance, null, versionInfo);
-			if(commitText == null)
+			if(CommitWindow.ShowWindow(instance, null, versionInfo) != true)
 				return;
 
-			try
-			{
-				repo.Network.Fetch(repo.Network.Remotes["origin"]);
-			}
-			catch
-			{
-				MessageBox.Show("连接服务器失败,请检查网络连接或重启软件后重试!", "同步失败");
+			if(!Git.FetchHead(instance, repo))
 				return;
-			}
 			#endregion
 
 			#region 更新版本信息
@@ -298,6 +281,8 @@ namespace VMS.View
 
 			//更新版本信息
 			versionInfo.VersionNow = version;
+			var commitText = versionInfo.LatestMessage;
+			versionInfo.LatestMessage = null; //不提交最近信息
 			WriteVersionInfo(versionInfo);
 			#endregion
 
@@ -309,6 +294,51 @@ namespace VMS.View
 			}
 			instance?.UpdateBranchInfo();
 			#endregion
+		}
+
+		public static void ArchiveCommit(BranchInfo info)
+		{
+			if(info == null)
+				return;
+
+			ProgressWindow.Show(Application.Current.MainWindow, delegate
+			{
+				using var repo = new Repository(Settings.LoaclRepoPath);
+				var cmt = repo.Lookup<Commit>(info.Sha);
+				var version = ReadVersionInfo(cmt)?.VersionNow?.ToString();
+				var path = Settings.PackageFolder + (version ?? info.Name) + info.Author + "\\";
+				WriteFile(path, cmt.Tree);
+				Process.Start("explorer", "\"" + path + "\"");
+
+				static void WriteFile(string path, Tree tree)
+				{
+					if(tree == null)
+						return;
+
+					Directory.CreateDirectory(path);
+					foreach(var item in tree)
+					{
+						switch(item.TargetType)
+						{
+						case TreeEntryTargetType.Blob:
+							{
+								using var stream = (item.Target as Blob).GetContentStream(new FilteringOptions(".gitattributes"));
+								var bytes = new byte[stream.Length];
+								stream.Read(bytes, 0, bytes.Length);
+								File.WriteAllBytes(path + item.Name, bytes);
+							}
+							break;
+						case TreeEntryTargetType.Tree:
+							WriteFile(path + item.Name + "/", item.Target as Tree);
+							break;
+						case TreeEntryTargetType.GitLink:
+							break;
+						default:
+							break;
+						}
+					}
+				}
+			});
 		}
 
 		/// <summary>

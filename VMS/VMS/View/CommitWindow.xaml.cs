@@ -10,15 +10,9 @@ namespace VMS.View
 	/// </summary>
 	public partial class CommitWindow : Window
 	{
-		public CommitWindow()
-		{
-			InitializeComponent();
-		}
+		public CommitWindow() => InitializeComponent();
 
-		private void Commit_Click(object sender, RoutedEventArgs e)
-		{
-			DialogResult = true;
-		}
+		private void Commit_Click(object sender, RoutedEventArgs e) => DialogResult = true;
 
 		public static bool? ShowWindow(Window owner, ICollection<CommitFileStatus> status, VersionInfo version)
 		{
