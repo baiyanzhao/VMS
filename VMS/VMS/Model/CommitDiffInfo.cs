@@ -27,7 +27,7 @@ namespace VMS.Model
 			var filePath = Path.GetTempFileName();
 			if(blob != null)
 			{
-				using var stream = blob.GetContentStream();
+				using var stream = blob.GetContentStream(new FilteringOptions(".gitattributes"));
 				var bytes = new byte[stream.Length];
 				stream.Read(bytes, 0, bytes.Length);
 				File.WriteAllBytes(filePath, bytes);

@@ -76,7 +76,7 @@
 											</Style>
 										</DataGrid.RowStyle>
 									</DataGrid>
-									<TextBlock Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" Text="{Binding Message}"/>
+									<TextBox Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True" Text="{Binding CommitMessage}"/>
 								</Grid>
 						</TabItem>
 						<TabItem>
@@ -120,26 +120,31 @@
 				<DataGridTextColumn Width="*" Binding="{Binding Message}" FontSize="16" />
 				<DataGridTextColumn Width="Auto" MinWidth="64" Binding="{Binding Author}" Foreground="DarkSlateGray" FontSize="16"/>
 				<DataGridTextColumn Width="Auto" MinWidth="150" Binding="{Binding When, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Foreground="DarkSlateGray" FontSize="16"/>
-				<DataGridTemplateColumn Width="Auto">
+				<DataGridTemplateColumn Width="180" MinWidth="120">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<StackPanel Orientation="Horizontal">
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="检出版本" Focusable="False" Command="{Binding CheckoutCmd}" CommandParameter="{Binding}">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition/>
+									<ColumnDefinition/>
+									<ColumnDefinition/>
+								</Grid.ColumnDefinitions>
+								<Button Grid.Column="0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="检出版本" Focusable="False" Command="{Binding CheckoutCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Checkout.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="导出版本,保存为归档文件" Focusable="False" Command="{Binding ArchiveCmd}" CommandParameter="{Binding}">
+								<Button Grid.Column="1" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="导出版本,保存为归档文件" Focusable="False" Command="{Binding ArchiveCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Archive.png"/>
 									</Button.Content>
 								</Button>
-								<Button Margin="0,0,12,0" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="基于此版本新建分支" Focusable="False" Command="{Binding AddCmd}" CommandParameter="{Binding}">
+								<Button Grid.Column="2" Width="36" Background="{x:Null}" BorderThickness="0" ClickMode="Press" ToolTip="基于此版本新建分支" Focusable="False" Command="{Binding AddCmd}" CommandParameter="{Binding}">
 									<Button.Content>
 										<Image Source="/Images/Branch.png"/>
 									</Button.Content>
 								</Button>
-							</StackPanel>
+							</Grid>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>

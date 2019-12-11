@@ -16,10 +16,7 @@ namespace VMS.Model
 		#region 属性
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		private void OnPropertyChanged<TProperty>(Expression<Func<INotifyPropertyChanged, TProperty>> exp)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
-		}
+		private void OnPropertyChanged<TProperty>(Expression<Func<INotifyPropertyChanged, TProperty>> exp) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((exp.Body as MemberExpression)?.Member.Name));
 
 		/// <summary>
 		/// 名称

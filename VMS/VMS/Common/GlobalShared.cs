@@ -52,6 +52,7 @@ namespace VMS
 				list.Add(new AssemblyInfo()
 				{
 					FilePath = file,
+					IsModified = false,
 					Type = AssemblyInfo.ProjectType.CSharp,
 					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
@@ -67,6 +68,7 @@ namespace VMS
 				list.Add(new AssemblyInfo()
 				{
 					FilePath = file,
+					IsModified = false,
 					Type = AssemblyInfo.ProjectType.C,
 					ProjectPath = Path.GetDirectoryName(item).Substring(Settings.LoaclRepoPath.Length).Replace('\\', '/')
 				});
@@ -149,7 +151,7 @@ namespace VMS
 				version = obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
 				if(version != null)
 				{
-					version.Message = commit.Message;
+					version.CommitMessage = commit.Message;
 				}
 			}
 			catch
@@ -352,7 +354,9 @@ namespace VMS
 					{
 						var window = new InputWindow
 						{
-							Title = "请输入仓库URL: " + Settings.LoaclRepoPath
+							ShowInTaskbar = false,
+							Title = "请输入仓库URL: " + Settings.LoaclRepoPath,
+							Owner = Application.Current.MainWindow.IsLoaded ? Application.Current.MainWindow : null
 						};
 
 						var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
@@ -385,6 +389,23 @@ namespace VMS
 					}
 				}
 			}
+
+			/// <summary>
+			/// 同步Head
+			/// </summary>
+			/// <param name="owner">主窗体</param>
+			/// <param name="repo">仓库</param>
+			/// <returns></returns>
+			public static bool FetchHead(Window owner, Repository repo) => ProgressWindow.Show(owner, delegate
+			{
+				Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
+				if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
+				{
+					Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
+				}
+
+				Commands.Fetch(repo, "origin", new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }, GitFetchOptions, null);
+			});
 
 			/// <summary>
 			/// 提交并推送

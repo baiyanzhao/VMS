@@ -27,7 +27,7 @@
 					<TextBlock Text="订单编号" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 					<TextBox Text="{Binding OrderNumber}" Margin="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBox Name="Message" DockPanel.Dock="Top" Margin="5,5,0,2" TextWrapping="Wrap" AcceptsReturn="True">
+				<TextBox Name="Message" Text="{Binding LatestMessage}" DockPanel.Dock="Top" Margin="5,5,0,2" TextWrapping="Wrap" AcceptsReturn="True">
 					<TextBox.Style>
 						<Style TargetType="TextBox">
 							<Style.Triggers>
