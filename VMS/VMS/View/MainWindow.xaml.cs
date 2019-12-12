@@ -285,7 +285,7 @@ namespace VMS.View
 				using var repo = new Repository(Settings.LoaclRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
 				var version = ReadVersionInfo(cmt)?.VersionNow?.ToString();
-				var path = Settings.PackageFolder + (version ?? info.Name) + info.Author + "\\";
+				var path = Settings.PackageFolder + (version ?? info.Name) + " " + info.Author + "\\";
 				WriteFile(path, cmt.Tree);
 				Process.Start("explorer", "\"" + path + "\"");
 
@@ -300,8 +300,8 @@ namespace VMS.View
 						switch(item.TargetType)
 						{
 						case TreeEntryTargetType.Blob:
+							using(var stream = (item.Target as Blob).GetContentStream(new FilteringOptions(".gitattributes")))
 							{
-								using var stream = (item.Target as Blob).GetContentStream(new FilteringOptions(".gitattributes"));
 								var bytes = new byte[stream.Length];
 								stream.Read(bytes, 0, bytes.Length);
 								File.WriteAllBytes(path + item.Name, bytes);

@@ -87,16 +87,23 @@
 							<DataGrid BorderThickness="0" DataContext="{Binding Path=Sha, Converter={StaticResource CommitDiffConverter}}" ItemsSource="{Binding}" Background="{x:Null}" MaxHeight="240" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
 								<DataGrid.CellStyle>
 									<Style TargetType="{x:Type DataGridCell}">
-										<Setter Property="Focusable" Value="False"/>
-										<Setter Property="Background" Value="{x:Null}"/>
-										<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+										<Setter Property="Background" Value="Transparent"/>
+										<Setter Property="BorderBrush" Value="Transparent"/>
+										<Setter Property="BorderThickness" Value="0"/>
 										<Setter Property="Template">
 											<Setter.Value>
 												<ControlTemplate TargetType="{x:Type DataGridCell}">
-													<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+													<Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+														<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+													</Border>
 												</ControlTemplate>
 											</Setter.Value>
 										</Setter>
+										<Style.Triggers>
+											<Trigger Property="IsSelected" Value="True">
+												<Setter Property="Background" Value="LightSteelBlue"/>
+											</Trigger>
+										</Style.Triggers>
 									</Style>
 								</DataGrid.CellStyle>
 								<DataGrid.Columns>
