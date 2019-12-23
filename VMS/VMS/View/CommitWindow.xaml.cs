@@ -20,7 +20,8 @@ namespace VMS.View
 			commitWindow.FileGrid.DataContext = status;
 			commitWindow.Version.DataContext = version;
 			commitWindow.Info.Text = status?.Count.ToString();
-			return commitWindow.ShowDialog();
+			var x= commitWindow.ShowDialog();
+			return x;
 		}
 	}
 }

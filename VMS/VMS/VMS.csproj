@@ -38,7 +38,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>33</ApplicationRevision>
+    <ApplicationRevision>34</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -124,19 +124,26 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WPFFolderBrowser">
+      <HintPath>.\WPFFolderBrowser.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Common\AssemblyInfo.cs" />
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Common\EncodingType.cs" />
+    <Compile Include="Common\Git.cs" />
     <Compile Include="Common\GlobalShared.cs" />
+    <Compile Include="Common\TabContent.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Model\CommitDiffInfo.cs" />
     <Compile Include="Model\CommitFileStatus.cs" />
     <Compile Include="Common\Converter.cs" />
+    <Compile Include="Model\RepoTabData.cs" />
     <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\VersionInfo.cs" />
     <Compile Include="SingleInstance.cs" />
@@ -230,6 +237,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="Images\Background.png" />
+    <Resource Include="Images\Close.png" />
+    <Resource Include="Images\Del.png" />
     <Content Include="Package\Default.SFX">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

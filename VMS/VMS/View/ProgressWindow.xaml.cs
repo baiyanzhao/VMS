@@ -11,7 +11,7 @@ namespace VMS.View
 	/// </summary>
 	public sealed partial class ProgressWindow : Window
 	{
-		static BackgroundWorker sInit = null;
+		public static BackgroundWorker Worker { get; private set; } = null;
 
 		public ProgressWindow()
 		{
@@ -25,7 +25,7 @@ namespace VMS.View
 
 		public static void Update(string msg)
 		{
-			sInit?.ReportProgress(0, msg);
+			Worker?.ReportProgress(0, msg);
 		}
 
 		/// <summary>
@@ -44,20 +44,20 @@ namespace VMS.View
 				dlg.ShowInTaskbar = true;
 				dlg.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 			}
-			sInit = new BackgroundWorker() { WorkerReportsProgress = true };
+			Worker = new BackgroundWorker() { WorkerReportsProgress = true };
 
-			sInit.DoWork += delegate
+			Worker.DoWork += delegate
 			{
 				work?.Invoke();
 				Thread.Sleep(10);
 			};
 
-			sInit.ProgressChanged += (s, e) =>
+			Worker.ProgressChanged += (s, e) =>
 			{
 				dlg.MessageText.Text = e.UserState as string;
 			};
 
-			sInit.RunWorkerCompleted += (s, e) =>
+			Worker.RunWorkerCompleted += (s, e) =>
 			{
 				try
 				{
@@ -77,10 +77,10 @@ namespace VMS.View
 					dlg.Close();
 				}
 			};
-			sInit.RunWorkerAsync();
+			Worker.RunWorkerAsync();
 			dlg.ShowDialog();
-			sInit.Dispose();
-			sInit = null;
+			Worker.Dispose();
+			Worker = null;
 			return isCompleted;
 		}
 	}

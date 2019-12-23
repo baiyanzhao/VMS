@@ -8,7 +8,6 @@ namespace VMS.Model
 	public class Setting
 	{
 		public string User { get; set; }
-		public string LoaclRepoPath { get; set; }
 		public List<string> RepoPathList { get; set; }
 		public string PackageFolder { get; set; }
 		public string CompareToolPath { get; set; }
