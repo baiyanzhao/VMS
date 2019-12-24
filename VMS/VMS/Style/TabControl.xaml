@@ -16,7 +16,7 @@
 							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 						<TabPanel Name="HeaderPanel" Grid.Row="0" Panel.ZIndex="1" Margin="0,0,4,-1" IsItemsHost="True" KeyboardNavigation.TabIndex="1" Background="{TemplateBinding Background}"  />
-						<Border Name="Border" Grid.Row="1" Background="{StaticResource WindowBackgroundBrush}" BorderBrush="{StaticResource SolidBorderBrush}" BorderThickness="1" CornerRadius="2" KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained" KeyboardNavigation.TabIndex="2">
+						<Border Name="Border" Grid.Row="1" Background="{TemplateBinding Background}" BorderBrush="{StaticResource SolidBorderBrush}" BorderThickness="1" CornerRadius="2" KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained" KeyboardNavigation.TabIndex="2">
 							<ContentPresenter Name="PART_SelectedContentHost" ContentSource="SelectedContent" />
 						</Border>
 					</Grid>

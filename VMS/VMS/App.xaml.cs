@@ -52,6 +52,9 @@ namespace VMS
 		void App_SessionEnding(object sender, SessionEndingCancelEventArgs e)
 		{
 			e.Cancel = true;
+			if(View.ProgressWindow.Worker != null)
+				return;
+
 			MainWindow?.Close();
 		}
 	}

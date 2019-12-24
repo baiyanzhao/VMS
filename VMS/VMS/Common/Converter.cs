@@ -63,7 +63,7 @@ namespace VMS
 	{
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			return GlobalShared.GetDiff(value as string);
+			return GlobalShared.GetDiffList(value as string);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Windows;
 using System.Windows.Input;
 using LibGit2Sharp;
 using VMS.View;
@@ -26,7 +27,7 @@ namespace VMS.Model
 		/// <summary>
 		/// 类型
 		/// </summary>
-		public GlobalShared.Git.Type Type { get; set; }
+		public Git.Type Type { get; set; }
 
 		/// <summary>
 		/// 版本
@@ -113,7 +114,7 @@ namespace VMS.Model
 		{
 			if(parameter is BranchInfo info)
 			{
-				using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
+				using var repo = new Repository(GlobalShared.LoaclRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
 				var version = GlobalShared.ReadVersionInfo(cmt)?.VersionNow?.ToString();
 				var name = GlobalShared.Settings.PackageFolder + (version == null ? info.Name : version + " " + info.Author) + ".tar";
@@ -129,16 +130,19 @@ namespace VMS.Model
 		{
 			if(parameter is BranchInfo info)
 			{
-				if(GlobalShared.Git.Checkout(GlobalShared.Settings.LoaclRepoPath, info.Type == GlobalShared.Git.Type.Sha ? info.Sha : info.Name, info.Type))
+				ProgressWindow.Show(Application.Current.MainWindow, delegate
 				{
-					using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
-					var commit = repo.Head.Tip;
-					info.Sha = commit.Sha;
-					info.Author = commit.Author.Name;
-					info.When = commit.Author.When;
-					info.Message = commit.MessageShort;
-					MainWindow.UpdateTitle();
-				}
+					using var repo = new Repository(GlobalShared.LoaclRepoPath);
+					if(Git.Checkout(repo, info.Type == Git.Type.Sha ? info.Sha : info.Name, info.Type))
+					{
+						var commit = repo.Head.Tip;
+						info.Sha = commit.Sha;
+						info.Author = commit.Author.Name;
+						info.When = commit.Author.When;
+						info.Message = commit.MessageShort;
+						GlobalShared.RepoData.CurrentRepo?.Update();
+					}
+				});
 			}
 		});
 		#endregion

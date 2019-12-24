@@ -20,7 +20,7 @@ namespace VMS.ViewModel
 		{
 			get
 			{
-				var info = new FileInfo(GlobalShared.Settings.LoaclRepoPath + FilePath);
+				var info = new FileInfo(GlobalShared.LoaclRepoPath + FilePath);
 				return info.Exists ? Convert.ToInt32(Math.Ceiling(info.Length / 1024.0)) : 0;
 			}
 		}
@@ -30,7 +30,7 @@ namespace VMS.ViewModel
 		#region 命令
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			using var repo = new Repository(GlobalShared.Settings.LoaclRepoPath);
+			using var repo = new Repository(GlobalShared.LoaclRepoPath);
 			var info = parameter as CommitFileStatus;
 			var blob = repo.Head.Tip?.Tree?[info.FilePath]?.Target as Blob;
 			if(info == null || blob == null)
@@ -38,14 +38,14 @@ namespace VMS.ViewModel
 
 			try
 			{
-				var filePath = Path.GetTempFileName();
+				var filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "." + Path.GetFileName(info.FilePath);
 				using(var stream = blob.GetContentStream(new FilteringOptions(".gitattributes")))
 				{
 					var bytes = new byte[stream.Length];
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);
 				}
-				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + filePath + "\" \"" + GlobalShared.Settings.LoaclRepoPath + info.FilePath + "\"" + " /lro");
+				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + filePath + "\" \"" + GlobalShared.LoaclRepoPath + info.FilePath + "\"" + " /lro");
 			}
 			catch(Exception x)
 			{
