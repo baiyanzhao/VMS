@@ -31,8 +31,8 @@ namespace VMS.Model
 			foreach(var path in paths)
 			{
 				RepoList.Add(new RepoInfo(path));
-				CurrentRepo ??= RepoList.FirstOrDefault();
 			}
+			CurrentRepo ??= RepoList.FirstOrDefault();
 		}
 	}
 

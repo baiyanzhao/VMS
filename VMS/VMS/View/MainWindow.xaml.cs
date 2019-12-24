@@ -29,10 +29,16 @@ namespace VMS.View
 		{
 			InitializeComponent();
 
-			_taskbar.IconSource = Icon;
-			_taskbar.LeftClickCommand = TaskbarCmd();
-			_taskbar.DoubleClickCommand = TaskbarCmd();
+			var taskbarCmd = new DelegateCommand((parameter) =>
+			{
+				Visibility = Visibility.Visible;
+				WindowState = WindowState.Maximized;
+				Activate();
+			});
 
+			_taskbar.IconSource = Icon;
+			_taskbar.LeftClickCommand = taskbarCmd;
+			_taskbar.DoubleClickCommand = taskbarCmd;
 			StateChanged += delegate
 			{
 				switch(WindowState)
@@ -53,19 +59,7 @@ namespace VMS.View
 				}
 			};
 
-			if(Settings.User == null)
-			{
-				ShowSetWindow();
-			}
-
 			RepoTab.DataContext = RepoData;
-			ProgressWindow.Show(null, delegate
-			{
-				foreach(var item in Settings.RepoPathList)
-				{
-					Git.Sync(item);
-				}
-			}, () => RepoData.Update(Settings.RepoPathList));
 			Directory.CreateDirectory(Settings.PackageFolder);
 		}
 
@@ -337,13 +331,6 @@ namespace VMS.View
 		#endregion
 
 		#region 私有方法
-		private DelegateCommand TaskbarCmd() => new DelegateCommand((parameter) =>
-		{
-			Visibility = Visibility.Visible;
-			WindowState = WindowState.Maximized;
-			Activate();
-		});
-
 		/// <summary>
 		/// 列举与提交关联的所有记录
 		/// </summary>
@@ -381,6 +368,22 @@ namespace VMS.View
 		#endregion
 
 		#region 事件方法
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			if(Settings.User == null)
+			{
+				ShowSetWindow();
+			}
+
+			ProgressWindow.Show(this, delegate
+			{
+				foreach(var item in Settings.RepoPathList)
+				{
+					Git.Sync(item);
+				}
+			}, () => RepoData.Update(Settings.RepoPathList));
+		}
+
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			foreach(var item in RepoData.RepoList)
@@ -413,6 +416,26 @@ namespace VMS.View
 			if(Commit() == null)
 			{
 				MessageBox.Show("当前版本无任何更改!", RepoData.CurrentRepo?.Name);
+			}
+		}
+
+		/// <summary>
+		/// 快速提交全部仓库
+		/// </summary>
+		private void ImmediateCommit_Click(object sender, RoutedEventArgs e)
+		{
+			var instance = Application.Current.MainWindow as MainWindow;
+			foreach(var item in RepoData.RepoList)
+			{
+				using var repo = new Repository(item.LocalRepoPath);
+				if(repo != null && repo.RetrieveStatus().IsDirty)
+				{
+					if(MessageBox.Show(instance, "快速提交不自动更新任何版本信息\n 确定提交吗?", "快速提交 " + item.Name, MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+						return;
+
+					Git.Commit(instance, repo, DateTime.Now.ToString());
+					item.Update();
+				}
 			}
 		}
 
@@ -495,6 +518,7 @@ namespace VMS.View
 
 			if(ProgressWindow.Show(this, () => Git.Sync(path), () => RepoData.RepoList.Add(new RepoInfo(path))))
 			{
+				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
 				Settings.RepoPathList.Add(path);
 				WriteSetting();
 			}
