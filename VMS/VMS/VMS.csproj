@@ -138,6 +138,7 @@
     <Compile Include="Common\EncodingType.cs" />
     <Compile Include="Common\Git.cs" />
     <Compile Include="Common\GlobalShared.cs" />
+    <Compile Include="Common\NativeMethods.cs" />
     <Compile Include="Common\TabContent.cs" />
     <Compile Include="Model\BranchInfo.cs" />
     <Compile Include="Model\CommitDiffInfo.cs" />

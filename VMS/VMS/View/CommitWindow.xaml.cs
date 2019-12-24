@@ -13,15 +13,5 @@ namespace VMS.View
 		public CommitWindow() => InitializeComponent();
 
 		private void Commit_Click(object sender, RoutedEventArgs e) => DialogResult = true;
-
-		public static bool? ShowWindow(Window owner, ICollection<CommitFileStatus> status, VersionInfo version)
-		{
-			var commitWindow = new CommitWindow() { Owner = owner };
-			commitWindow.FileGrid.DataContext = status;
-			commitWindow.Version.DataContext = version;
-			commitWindow.Info.Text = status?.Count.ToString();
-			var x= commitWindow.ShowDialog();
-			return x;
-		}
 	}
 }

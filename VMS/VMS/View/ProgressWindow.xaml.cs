@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
@@ -77,10 +78,12 @@ namespace VMS.View
 					dlg.Close();
 				}
 			};
+			_ = NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionFlag.System | NativeMethods.ExecutionFlag.Continus);
 			Worker.RunWorkerAsync();
 			dlg.ShowDialog();
 			Worker.Dispose();
 			Worker = null;
+			_ = NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionFlag.Continus);
 			return isCompleted;
 		}
 	}

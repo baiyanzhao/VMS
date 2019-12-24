@@ -75,6 +75,8 @@ namespace VMS
 		public static IList<AssemblyInfo> GetInfos(string repoPath)
 		{
 			var list = new List<AssemblyInfo>();
+			if(repoPath == null)
+				return list;
 
 			//检索C#工程版本配置
 			foreach(var item in Directory.GetDirectories(repoPath, "Properties", SearchOption.AllDirectories))

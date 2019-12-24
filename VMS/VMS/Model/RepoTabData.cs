@@ -28,6 +28,9 @@ namespace VMS.Model
 		public void Update(IEnumerable<string> paths)
 		{
 			RepoList.Clear();
+			if(paths == null)
+				return;
+
 			foreach(var path in paths)
 			{
 				RepoList.Add(new RepoInfo(path));
@@ -51,7 +54,7 @@ namespace VMS.Model
 		{
 			LocalRepoPath = path;
 			BranchInfos = new ObservableCollection<BranchInfo>();
-			FileName = path.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).Last();
+			FileName = path?.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).Last();
 			Name = FileName;
 			Update();
 		}

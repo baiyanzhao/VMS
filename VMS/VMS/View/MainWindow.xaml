@@ -146,7 +146,7 @@
 		</Button>
 		<Button Click="DelRepo_Click" Margin="0,2,2,0" Height="28" Background="{x:Null}" BorderThickness="0" Focusable="False" HorizontalAlignment ="Right" VerticalAlignment="Top">
 			<Button.Content>
-				<Image Source="/Images/Del.png"/>
+				<Image Source="/Images/Close.png"/>
 			</Button.Content>
 		</Button>
 		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="6">

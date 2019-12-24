@@ -19,14 +19,14 @@ namespace IKriv.Windows.Controls.Behaviors
     /// </remarks>
     public static class TabContent
     {
-        public static bool GetIsCached(DependencyObject obj)
+        public static bool GetIsCached(DependencyObject o)
         {
-            return (bool)obj.GetValue(IsCachedProperty);
+            return (bool)o?.GetValue(IsCachedProperty);
         }
 
-        public static void SetIsCached(DependencyObject obj, bool value)
+        public static void SetIsCached(DependencyObject o, bool value)
         {
-            obj.SetValue(IsCachedProperty, value);
+            o?.SetValue(IsCachedProperty, value);
         }
 
         /// <summary>
@@ -37,14 +37,14 @@ namespace IKriv.Windows.Controls.Behaviors
             DependencyProperty.RegisterAttached("IsCached", typeof(bool), typeof(TabContent), new UIPropertyMetadata(false, OnIsCachedChanged));
 
 
-        public static DataTemplate GetTemplate(DependencyObject obj)
+        public static DataTemplate GetTemplate(DependencyObject o)
         {
-            return (DataTemplate)obj.GetValue(TemplateProperty);
+            return (DataTemplate)o?.GetValue(TemplateProperty);
         }
 
-        public static void SetTemplate(DependencyObject obj, DataTemplate value)
+        public static void SetTemplate(DependencyObject o, DataTemplate value)
         {
-            obj.SetValue(TemplateProperty, value);
+            o?.SetValue(TemplateProperty, value);
         }
 
         /// <summary>
@@ -54,14 +54,14 @@ namespace IKriv.Windows.Controls.Behaviors
             DependencyProperty.RegisterAttached("Template", typeof(DataTemplate), typeof(TabContent), new UIPropertyMetadata(null));
 
 
-        public static DataTemplateSelector GetTemplateSelector(DependencyObject obj)
+        public static DataTemplateSelector GetTemplateSelector(DependencyObject o)
         {
-            return (DataTemplateSelector)obj.GetValue(TemplateSelectorProperty);
+            return (DataTemplateSelector)o?.GetValue(TemplateSelectorProperty);
         }
 
-        public static void SetTemplateSelector(DependencyObject obj, DataTemplateSelector value)
+        public static void SetTemplateSelector(DependencyObject o, DataTemplateSelector value)
         {
-            obj.SetValue(TemplateSelectorProperty, value);
+            o?.SetValue(TemplateSelectorProperty, value);
         }
 
         /// <summary>
@@ -71,15 +71,15 @@ namespace IKriv.Windows.Controls.Behaviors
             DependencyProperty.RegisterAttached("TemplateSelector", typeof(DataTemplateSelector), typeof(TabContent), new UIPropertyMetadata(null));
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static TabControl GetInternalTabControl(DependencyObject obj)
+        public static TabControl GetInternalTabControl(DependencyObject o)
         {
-            return (TabControl)obj.GetValue(InternalTabControlProperty);
+            return (TabControl)o?.GetValue(InternalTabControlProperty);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SetInternalTabControl(DependencyObject obj, TabControl value)
+        public static void SetInternalTabControl(DependencyObject o, TabControl value)
         {
-            obj.SetValue(InternalTabControlProperty, value);
+            o?.SetValue(InternalTabControlProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for InternalTabControl.  This enables animation, styling, binding, etc...
@@ -89,15 +89,15 @@ namespace IKriv.Windows.Controls.Behaviors
 
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static ContentControl GetInternalCachedContent(DependencyObject obj)
+        public static ContentControl GetInternalCachedContent(DependencyObject o)
         {
-            return (ContentControl)obj.GetValue(InternalCachedContentProperty);
+            return (ContentControl)o?.GetValue(InternalCachedContentProperty);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SetInternalCachedContent(DependencyObject obj, ContentControl value)
+        public static void SetInternalCachedContent(DependencyObject o, ContentControl value)
         {
-            obj.SetValue(InternalCachedContentProperty, value);
+            o?.SetValue(InternalCachedContentProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for InternalCachedContent.  This enables animation, styling, binding, etc...
@@ -106,26 +106,26 @@ namespace IKriv.Windows.Controls.Behaviors
             DependencyProperty.RegisterAttached("InternalCachedContent", typeof(ContentControl), typeof(TabContent), new UIPropertyMetadata(null));
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static object GetInternalContentManager(DependencyObject obj)
+        public static object GetInternalContentManager(DependencyObject o)
         {
-            return (object)obj.GetValue(InternalContentManagerProperty);
+            return (object)o?.GetValue(InternalContentManagerProperty);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SetInternalContentManager(DependencyObject obj, object value)
+        public static void SetInternalContentManager(DependencyObject o, object value)
         {
-            obj.SetValue(InternalContentManagerProperty, value);
+            o?.SetValue(InternalContentManagerProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for InternalContentManager.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InternalContentManagerProperty =
             DependencyProperty.RegisterAttached("InternalContentManager", typeof(object), typeof(TabContent), new UIPropertyMetadata(null));
 
-        private static void OnIsCachedChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        private static void OnIsCachedChanged(DependencyObject o, DependencyPropertyChangedEventArgs args)
         {
-            if (obj == null) return;
+            if (o == null) return;
 
-			if(!(obj is TabControl tabControl))
+			if(!(o is TabControl tabControl))
 			{
 				throw new InvalidOperationException("Cannot set TabContent.IsCached on object of type " + args.NewValue.GetType().Name +
 					". Only objects of type TabControl can have TabContent.IsCached property.");
@@ -155,7 +155,7 @@ namespace IKriv.Windows.Controls.Behaviors
 
 			var context = new ParserContext
 			{
-				XamlTypeMapper = new XamlTypeMapper(new string[0])
+				XamlTypeMapper = new XamlTypeMapper(Array.Empty<string>())
 			};
 			context.XamlTypeMapper.AddMappingProcessingInstruction("b", typeof(TabContent).Namespace, typeof(TabContent).Assembly.FullName);
 
@@ -166,13 +166,13 @@ namespace IKriv.Windows.Controls.Behaviors
             return template;
         }
 
-        private static void OnInternalTabControlChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        private static void OnInternalTabControlChanged(DependencyObject o, DependencyPropertyChangedEventArgs args)
         {
-            if (obj == null) return;
+            if (o == null) return;
 
-			if(!(obj is Decorator container))
+			if(!(o is Decorator container))
 			{
-				var message = "Cannot set TabContent.InternalTabControl on object of type " + obj.GetType().Name +
+				var message = "Cannot set TabContent.InternalTabControl on object of type " + o.GetType().Name +
 					". Only controls that derive from Decorator, such as Border can have a TabContent.InternalTabControl.";
 				throw new InvalidOperationException(message);
 			}
@@ -236,7 +236,10 @@ namespace IKriv.Windows.Controls.Behaviors
             {
                 _tabControl = tabControl;
                 _border = border;
-                _tabControl.SelectionChanged += (sender, args) => { UpdateSelectedTab(); };
+                if(tabControl != null)
+                {
+                    _tabControl.SelectionChanged += (sender, args) => { UpdateSelectedTab(); };
+                }
             }
 
             public void ReplaceContainer(Decorator newBorder)

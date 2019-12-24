@@ -18,7 +18,7 @@ namespace VMS
 		private static string SetFilePath => ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 		public static Setting Settings { get; } = GetSetting();
 		public static RepoTabData RepoData { get; } = new RepoTabData();
-		public static string LoaclRepoPath { get => RepoData.CurrentRepo?.LocalRepoPath; }
+		public static string LoaclRepoPath => RepoData.CurrentRepo?.LocalRepoPath;
 		#endregion
 
 		#region 方法
