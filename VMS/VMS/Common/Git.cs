@@ -33,6 +33,7 @@ namespace VMS
 			},
 			OnNegotiationCompletedBeforePush = (updates) =>
 			{
+				ProgressWindow.Update("BeforePush");
 				return true;
 			},
 			OnPackBuilderProgress = (stage, current, total) =>
@@ -171,8 +172,10 @@ namespace VMS
 		public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
 		{
 			Commands.Stage(repo, "*");
+			ProgressWindow.Update("Stage Complete");
 			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
 			repo.Commit(message, sign, sign);
+			ProgressWindow.Update("Commit Complete");
 			repo.Network.Push(repo.Head, GitPushOptions);
 		});
 
@@ -250,7 +253,9 @@ namespace VMS
 				{
 					var window = new InputWindow
 					{
-						Title = "请输入仓库账号和密码:" + url
+						ShowInTaskbar = false,
+						Title = "请输入仓库账号和密码:" + url,
+						Owner = Application.Current.MainWindow.IsLoaded ? Application.Current.MainWindow : null
 					};
 
 					var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };

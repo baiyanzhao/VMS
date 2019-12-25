@@ -30,7 +30,7 @@
 		<TabControl Name="RepoTab" Margin="1,2,0,1" ikriv:TabContent.IsCached="True" ItemsSource="{Binding RepoList}" SelectedItem="{Binding CurrentRepo, Mode=TwoWay}">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
-					<TextBlock FontSize="20" Foreground="MidnightBlue" Text="{Binding Name}" />
+					<TextBlock FontSize="20" Foreground="MidnightBlue" Text="{Binding Title}" />
 				</DataTemplate>
 			</TabControl.ItemTemplate>
 			<ikriv:TabContent.Template>
