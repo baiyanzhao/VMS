@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using LibGit2Sharp;
@@ -28,7 +30,7 @@ namespace VMS
 			CredentialsProvider = GetCredential,
 			OnPushTransferProgress = (int current, int total, long bytes) =>
 			{
-				ProgressWindow.Update(string.Format("{0}/{1},{2}kB", current, total, Math.Ceiling(bytes / 1024.0)));
+				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", current, total, string.Format("{0:N}", bytes / 1024.0)));
 				return true;
 			},
 			OnNegotiationCompletedBeforePush = (updates) =>
@@ -64,7 +66,7 @@ namespace VMS
 			},
 			OnTransferProgress = (TransferProgress progress) =>
 			{
-				ProgressWindow.Update(string.Format("{0}/{1},{2}kB", progress.ReceivedObjects, progress.TotalObjects, Math.Ceiling(progress.ReceivedBytes / 1024.0)));
+				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
 				return true;
 			}
 		};
@@ -87,7 +89,7 @@ namespace VMS
 			},
 			OnTransferProgress = (TransferProgress progress) =>
 			{
-				ProgressWindow.Update(string.Format("{0}/{1},{2}kB", progress.ReceivedObjects, progress.TotalObjects, Math.Ceiling(progress.ReceivedBytes / 1024.0)));
+				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
 				return true;
 			}
 		};
@@ -120,6 +122,7 @@ namespace VMS
 
 				Repository.Clone(url, localPath, GitCloneOptions);
 				using var repo = new Repository(localPath);
+				repo.Config.Set("lfs.forceprogress", true);
 				repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上游分支,禁止用户提交此分支
 			}
 
@@ -127,18 +130,18 @@ namespace VMS
 			using(var repo = new Repository(localPath))
 			{
 				//同步仓库
-				repo.Network.Fetch(repo.Network.Remotes["origin"], GitFetchOptions);
+				Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
 
 				//拉取当前分支
 				if(repo.Head.TrackingDetails.BehindBy > 0)
 				{
-					repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions() { FetchOptions = GitFetchOptions });
+					Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
 				}
 
 				//推送未上传的提交
 				if(repo.Head.TrackingDetails.AheadBy > 0)
 				{
-					repo.Network.Push(repo.Head, GitPushOptions);
+					Push(repo.Info.WorkingDirectory);
 				}
 			}
 		}
@@ -151,15 +154,15 @@ namespace VMS
 		/// <returns></returns>
 		public static bool FetchHead(Window owner, Repository repo) => ProgressWindow.Show(owner, delegate
 		{
-			repo.Network.Fetch(repo.Network.Remotes["origin"], GitFetchOptions);
+			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
 			if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
 			{
-				repo.Network.Pull(new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
 			}
 
 			if(repo.Head.IsTracking)
 			{
-				repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }, GitFetchOptions);
+				Commands.Fetch(repo, "origin", new string[] { repo.Head.CanonicalName + ":" + repo.Head.CanonicalName }, GitFetchOptions, null);
 			}
 		});
 
@@ -170,11 +173,58 @@ namespace VMS
 		/// <param name="message">信息</param>
 		public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
 		{
-			repo.Stage("*");
+			Commands.Stage(repo, "*");
 			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
 			repo.Commit(message, sign, sign);
-			repo.Network.Push(repo.Head, GitPushOptions);
+			Push(repo.Info.WorkingDirectory);
 		});
+
+		public static void Push(string workDir) => Cmd(workDir, "push --verbose --progress");
+
+		public static void Cmd(string workDir, string cmd)
+		{
+			using var process = new Process();
+			process.StartInfo.FileName = "git";
+			process.StartInfo.Arguments = cmd;
+			process.StartInfo.WorkingDirectory = workDir;
+			process.StartInfo.RedirectStandardInput = false;
+			process.StartInfo.RedirectStandardOutput = true;
+			process.StartInfo.RedirectStandardError = true;
+			process.StartInfo.CreateNoWindow = true;
+			process.StartInfo.UseShellExecute = false;
+			process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+			process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+
+			var errors = string.Empty;
+			var ErrorPrefixes = new string[] { "error:", "fatal:" };
+			var dataHandler = new DataReceivedEventHandler((s, e) =>
+			{
+				var msg = e.Data;
+				if(string.IsNullOrWhiteSpace(msg))
+					return;
+
+				foreach(var prefix in ErrorPrefixes)
+				{
+					if(msg.StartsWith(prefix))
+					{
+						errors += msg;
+						break;
+					}
+				}
+				ProgressWindow.Update(msg);
+			});
+
+			process.OutputDataReceived += dataHandler;
+			process.ErrorDataReceived += dataHandler;
+			process.Start();
+			process.BeginErrorReadLine();
+			process.BeginOutputReadLine();
+			process.WaitForExit();
+			if(!string.IsNullOrEmpty(errors))
+			{
+				throw new Exception(errors);
+			}
+		}
 
 		/// <summary>
 		/// 更新并签出指定版本的工程
@@ -199,15 +249,7 @@ namespace VMS
 			{
 			case Type.Branch:
 				committishOrBranchSpec = mark;
-				try
-				{
-					repo.Network.Fetch(repo.Network.Remotes["origin"], new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec });
-				}
-				catch(Exception x)
-				{
-					if(MessageBox.Show(x.Message + "\n是否继续?", "数据更新失败!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-						return false;
-				}
+				Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, GitFetchOptions, null);
 				break;
 
 			case Type.Tag:
@@ -219,18 +261,10 @@ namespace VMS
 				break;
 			}
 
-			try
+			Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
+			if(type == Type.Branch && !repo.Head.IsTracking)
 			{
-				repo.Checkout(committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
-				if(type == Type.Branch && !repo.Head.IsTracking)
-				{
-					repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
-				}
-			}
-			catch(Exception x)
-			{
-				MessageBox.Show(x.Message, "切换版本库错误!");
-				return false;
+				repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
 			}
 			return true;
 		}
@@ -250,7 +284,9 @@ namespace VMS
 				{
 					var window = new InputWindow
 					{
-						Title = "请输入仓库账号和密码:" + url
+						ShowInTaskbar = false,
+						Title = "请输入仓库账号和密码:" + url,
+						Owner = Application.Current.MainWindow.IsLoaded ? Application.Current.MainWindow : null
 					};
 
 					var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };

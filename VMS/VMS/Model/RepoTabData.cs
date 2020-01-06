@@ -24,19 +24,6 @@ namespace VMS.Model
 		/// 仓库列表
 		/// </summary>
 		public ObservableCollection<RepoInfo> RepoList { get; } = new ObservableCollection<RepoInfo>();
-
-		public void Update(IEnumerable<string> paths)
-		{
-			RepoList.Clear();
-			if(paths == null)
-				return;
-
-			foreach(var path in paths)
-			{
-				RepoList.Add(new RepoInfo(path));
-			}
-			CurrentRepo ??= RepoList.FirstOrDefault();
-		}
 	}
 
 	/// <summary>
@@ -45,18 +32,29 @@ namespace VMS.Model
 	public class RepoInfo : NotifyProperty
 	{
 		private string _name;
-		public string FileName { get; }
-		public string Name { get => _name; private set => SetProperty(ref _name, value); }
+		/// <summary>
+		/// 仓库文件夹名称
+		/// </summary>
+		public string Folder { get; }
+		/// <summary>
+		/// 标题
+		/// </summary>
+		public string Title { get => _name; private set => SetProperty(ref _name, value); }
+		/// <summary>
+		/// 仓库路径
+		/// </summary>
 		public string LocalRepoPath { get; }
+		/// <summary>
+		/// 仓库分支信息
+		/// </summary>
 		public ObservableCollection<BranchInfo> BranchInfos { get; }
 
 		public RepoInfo(string path)
 		{
 			LocalRepoPath = path;
 			BranchInfos = new ObservableCollection<BranchInfo>();
-			FileName = path?.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).Last();
-			Name = FileName;
-			Update();
+			Folder = path?.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).Last();
+			Title = Folder;
 		}
 
 		/// <summary>
@@ -101,7 +99,7 @@ namespace VMS.Model
 				}
 			}
 
-			Name = FileName + (repo.Head.IsTracking ? "[" + repo.Head.FriendlyName + "]" : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName);
+			Title = Folder + (repo.Head.IsTracking ? "[" + repo.Head.FriendlyName + "]" : repo.Tags.FirstOrDefault(s => s.Target.Id.Equals(repo.Head.Tip.Id))?.FriendlyName);
 		}
 	}
 

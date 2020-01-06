@@ -22,13 +22,13 @@ namespace VMS.View
 	{
 		#region 定义
 		private readonly TaskbarIcon _taskbar = new TaskbarIcon { Visibility = Visibility.Hidden }; //通知区图标
+		private readonly FileExportFilter _lfsFilter = new FileExportFilter("lfs-filter", new List<FilterAttributeEntry> { new FilterAttributeEntry("lfs") });  //Git-LFS筛选器
 		#endregion
 
 		#region 公共方法
 		public MainWindow()
 		{
 			InitializeComponent();
-
 			var taskbarCmd = new DelegateCommand((parameter) =>
 			{
 				Visibility = Visibility.Visible;
@@ -49,7 +49,7 @@ namespace VMS.View
 					Hide();
 					_taskbar.ToolTipText = Title;
 					_taskbar.Visibility = Visibility.Visible;
-					_taskbar.ShowBalloonTip("进入后台运行", Title, BalloonIcon.None);
+					_taskbar.ShowBalloonTip(Title, "进入后台运行", BalloonIcon.None);
 					break;
 				case WindowState.Maximized:
 					_taskbar.Visibility = Visibility.Hidden;
@@ -60,6 +60,7 @@ namespace VMS.View
 			};
 
 			RepoTab.DataContext = RepoData;
+			GlobalSettings.RegisterFilter(_lfsFilter);
 			Directory.CreateDirectory(Settings.PackageFolder);
 		}
 
@@ -80,6 +81,7 @@ namespace VMS.View
 		public void Dispose()
 		{
 			_taskbar.Dispose();
+			_lfsFilter.Dispose();
 			GC.SuppressFinalize(this);
 		}
 
@@ -143,7 +145,7 @@ namespace VMS.View
 			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
 			var instance = Application.Current.MainWindow as MainWindow;
-			var commitWindow = new CommitWindow() { Owner = instance, Title = RepoData.CurrentRepo?.Name };
+			var commitWindow = new CommitWindow() { Owner = instance, Title = RepoData.CurrentRepo?.Title };
 			commitWindow.FileGrid.DataContext = status;
 			commitWindow.Version.DataContext = versionInfo;
 			commitWindow.Info.Text = status?.Count.ToString();
@@ -259,12 +261,12 @@ namespace VMS.View
 			var name = version.ToString(3);
 			if(repo.Branches[name] != null)
 			{
-				repo.Checkout(info.Sha);
+				Commands.Checkout(repo, info.Sha);
 			}
 
 			//创建新分支
 			var branch = repo.Branches.Add(name, info.Sha, true);
-			repo.Checkout(branch);
+			Commands.Checkout(repo, branch);
 			repo.Branches.Update(branch, (s) => { s.TrackedBranch = "refs/remotes/origin/" + name; });
 
 			//更新版本信息
@@ -277,7 +279,7 @@ namespace VMS.View
 			#region 提交
 			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
 			{
-				repo.Checkout(info.Sha);
+				Commands.Checkout(repo, info.Sha);
 				repo.Branches.Remove(branch);
 			}
 			RepoData.CurrentRepo?.Update();
@@ -375,13 +377,14 @@ namespace VMS.View
 				ShowSetWindow();
 			}
 
-			ProgressWindow.Show(this, delegate
+			//每个仓库独立更新,避免互相影响
+			foreach(var item in Settings.RepoPathList)
 			{
-				foreach(var item in Settings.RepoPathList)
-				{
-					Git.Sync(item);
-				}
-			}, () => RepoData.Update(Settings.RepoPathList));
+				var info = new RepoInfo(item);
+				RepoData.RepoList.Add(info);
+				ProgressWindow.Show(this, () => Git.Sync(item), info.Update);
+			}
+			RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -391,7 +394,7 @@ namespace VMS.View
 				using var repo = new Repository(item.LocalRepoPath);
 				if(repo != null && repo.RetrieveStatus().IsDirty)
 				{
-					switch(MessageBox.Show(Application.Current.MainWindow, "存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", item.Name + " 尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
+					switch(MessageBox.Show(Application.Current.MainWindow, "存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", item.Title + " 尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
 					{
 					case MessageBoxResult.Yes:
 						RepoData.CurrentRepo = item;
@@ -415,7 +418,7 @@ namespace VMS.View
 		{
 			if(Commit() == null)
 			{
-				MessageBox.Show("当前版本无任何更改!", RepoData.CurrentRepo?.Name);
+				MessageBox.Show("当前版本无任何更改!", RepoData.CurrentRepo?.Title);
 			}
 		}
 
@@ -425,18 +428,21 @@ namespace VMS.View
 		private void ImmediateCommit_Click(object sender, RoutedEventArgs e)
 		{
 			var instance = Application.Current.MainWindow as MainWindow;
+			if(MessageBox.Show(instance, "快速提交自动上传当前打开的全部仓库,而不自动更新任何版本信息.\n并在提交完成后关闭计算机！\n\n 确定执行快速提交吗?", "快速提交并关机", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+				return;
+
 			foreach(var item in RepoData.RepoList)
 			{
 				using var repo = new Repository(item.LocalRepoPath);
 				if(repo != null && repo.RetrieveStatus().IsDirty)
 				{
-					if(MessageBox.Show(instance, "快速提交不自动更新任何版本信息\n 确定提交吗?", "快速提交 " + item.Name, MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
-						return;
-
 					Git.Commit(instance, repo, DateTime.Now.ToString());
 					item.Update();
 				}
 			}
+
+			Close();
+			Process.Start("shutdown", @"/s /t 300");
 		}
 
 		/// <summary>
@@ -501,14 +507,11 @@ namespace VMS.View
 			});
 		}
 
-		private void Set_Click(object sender, RoutedEventArgs e)
-		{
-			ShowSetWindow();
-		}
+		private void Set_Click(object sender, RoutedEventArgs e) => ShowSetWindow();
 
 		private void AddRepo_Click(object sender, RoutedEventArgs e)
 		{
-			var dlg = new WPFFolderBrowser.WPFFolderBrowserDialog();
+			var dlg = new FolderBrowserForWPF.Dialog();
 			if(dlg.ShowDialog() != true)
 				return;
 
@@ -516,10 +519,12 @@ namespace VMS.View
 			if(Settings.RepoPathList.Contains(path))
 				return;
 
-			if(ProgressWindow.Show(this, () => Git.Sync(path), () => RepoData.RepoList.Add(new RepoInfo(path))))
+			var info = new RepoInfo(path);
+			ProgressWindow.Show(this, () => Git.Sync(path), info.Update);
 			{
-				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
+				RepoData.RepoList.Add(info);
 				Settings.RepoPathList.Add(path);
+				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
 				WriteSetting();
 			}
 		}

@@ -29,6 +29,16 @@ namespace VMS
 			{
 				Environment.Exit(0);
 			}
+
+			try
+			{
+				Git.Cmd(null, "lfs version");
+			}
+			catch
+			{
+				MessageBox.Show("未正确安装Git\n 请下载安装完整版 Git For Windows", "缺少依赖项!", MessageBoxButton.OK, MessageBoxImage.Error);
+				Environment.Exit(0);
+			}
 		}
 
 		private void ShowMainWindow()

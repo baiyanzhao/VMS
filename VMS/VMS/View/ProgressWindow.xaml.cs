@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
@@ -14,20 +13,11 @@ namespace VMS.View
 	{
 		public static BackgroundWorker Worker { get; private set; } = null;
 
-		public ProgressWindow()
-		{
-			InitializeComponent();
-		}
+		public ProgressWindow() => InitializeComponent();
 
-		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			e.Handled = true;   //屏蔽所有按键
-		}
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e) => e.Handled = true;   //屏蔽所有按键
 
-		public static void Update(string msg)
-		{
-			Worker?.ReportProgress(0, msg);
-		}
+		public static void Update(string msg) => Worker?.ReportProgress(0, msg);
 
 		/// <summary>
 		/// 弹出进度条
@@ -38,7 +28,7 @@ namespace VMS.View
 		/// <returns>是否完成任务</returns>
 		public static bool Show(Window owner, Action work, Action completed = null)
 		{
-			bool isCompleted = true;
+			var isCompleted = true;
 			var dlg = new ProgressWindow() { Owner = owner };
 			if(owner == null)
 			{

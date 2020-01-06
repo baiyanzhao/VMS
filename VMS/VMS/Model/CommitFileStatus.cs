@@ -33,18 +33,21 @@ namespace VMS.ViewModel
 			using var repo = new Repository(GlobalShared.LoaclRepoPath);
 			var info = parameter as CommitFileStatus;
 			var blob = repo.Head.Tip?.Tree?[info.FilePath]?.Target as Blob;
-			if(info == null || blob == null)
+			if(info == null)
 				return;
 
 			try
 			{
-				var filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "." + Path.GetFileName(info.FilePath);
-				using(var stream = blob.GetContentStream(new FilteringOptions(".gitattributes")))
+				string filePath = null;
+				if(blob != null)
 				{
+					filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "." + Path.GetFileName(info.FilePath);
+					using var stream = blob.GetContentStream(new FilteringOptions(".gitattributes"));
 					var bytes = new byte[stream.Length];
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);
 				}
+
 				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + filePath + "\" \"" + GlobalShared.LoaclRepoPath + info.FilePath + "\"" + " /lro");
 			}
 			catch(Exception x)

@@ -3,8 +3,8 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		Width="480" Height="24" ShowInTaskbar="False" WindowStyle="None" Background="#7FFFFFFF"
 		ResizeMode="NoResize" WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown" AllowsTransparency="True">
-	<DockPanel>
-		<TextBlock Name="MessageText" DockPanel.Dock="Right" Margin="5,0" Foreground="DarkBlue" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	<Grid>
 		<ProgressBar IsIndeterminate="True" />
-	</DockPanel>
+		<TextBlock Name="MessageText" Foreground="DarkBlue" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	</Grid>
 </Window>
