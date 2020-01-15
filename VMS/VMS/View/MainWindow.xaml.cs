@@ -311,7 +311,7 @@ namespace VMS.View
 						switch(item.TargetType)
 						{
 						case TreeEntryTargetType.Blob:
-							using(var stream = (item.Target as Blob).GetContentStream(new FilteringOptions(".gitattributes")))
+							using(var stream = (item.Target as Blob).GetContentStream(new FilteringOptions(item.Path)))
 							{
 								var bytes = new byte[stream.Length];
 								stream.Read(bytes, 0, bytes.Length);

@@ -29,7 +29,7 @@ namespace VMS.Model
 			var info = parameter as CommitDiffInfo;
 			try
 			{
-				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid, Path.GetFileName(info.Tree.OldPath)) + "\" \"" + CreateFile(info.Tree.Oid, Path.GetFileName(info.FilePath)) + "\"" + " /ro");
+				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid, info.Tree.OldPath) + "\" \"" + CreateFile(info.Tree.Oid, info.FilePath) + "\"" + " /ro");
 			}
 			catch(Exception x)
 			{
@@ -42,14 +42,14 @@ namespace VMS.Model
 			/// <param name="id">Git Oid</param>
 			/// <param name="fileName"></param>
 			/// <returns>文件路径</returns>
-			static string CreateFile(ObjectId id, string fileName)
+			static string CreateFile(ObjectId id, string blobPath)
 			{
 				using var repo = new Repository(GlobalShared.LoaclRepoPath);
 				var blob = repo.Lookup<Blob>(id);
-				var filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "." + fileName;
+				var filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "#" + blobPath.Replace('/', '.');
 				if(blob != null)
 				{
-					using var stream = blob.GetContentStream(new FilteringOptions(".gitattributes"));
+					using var stream = blob.GetContentStream(new FilteringOptions(blobPath));
 					var bytes = new byte[stream.Length];
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);

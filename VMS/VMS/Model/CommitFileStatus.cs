@@ -41,8 +41,8 @@ namespace VMS.ViewModel
 				string filePath = null;
 				if(blob != null)
 				{
-					filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "." + Path.GetFileName(info.FilePath);
-					using var stream = blob.GetContentStream(new FilteringOptions(".gitattributes"));
+					filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "#" + info.FilePath.Replace('/', '.');
+					using var stream = blob.GetContentStream(new FilteringOptions(info.FilePath));
 					var bytes = new byte[stream.Length];
 					stream.Read(bytes, 0, bytes.Length);
 					File.WriteAllBytes(filePath, bytes);
