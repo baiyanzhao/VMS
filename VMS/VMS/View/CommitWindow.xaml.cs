@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows;
-using VMS.Model;
-using VMS.ViewModel;
+﻿using System.Windows;
 
 namespace VMS.View
 {
@@ -10,7 +7,10 @@ namespace VMS.View
 	/// </summary>
 	public partial class CommitWindow : Window
 	{
-		public CommitWindow() => InitializeComponent();
+		public CommitWindow()
+		{
+			InitializeComponent();
+		}
 
 		private void Commit_Click(object sender, RoutedEventArgs e) => DialogResult = true;
 	}

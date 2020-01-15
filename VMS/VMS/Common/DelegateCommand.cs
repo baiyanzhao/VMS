@@ -3,10 +3,10 @@ using System.Windows.Input;
 
 namespace VMS
 {
-	class DelegateCommand : ICommand
+	internal class DelegateCommand : ICommand
 	{
-		readonly Action<object> execute;
-		readonly Predicate<object> canExecute;
+		private readonly Action<object> execute;
+		private readonly Predicate<object> canExecute;
 		public event EventHandler CanExecuteChanged;
 
 		public DelegateCommand(Action<object> _execute, Predicate<object> _canexecute = null)

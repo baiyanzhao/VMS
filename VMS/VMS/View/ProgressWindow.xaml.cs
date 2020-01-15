@@ -13,7 +13,10 @@ namespace VMS.View
 	{
 		public static BackgroundWorker Worker { get; private set; } = null;
 
-		public ProgressWindow() => InitializeComponent();
+		public ProgressWindow()
+		{
+			InitializeComponent();
+		}
 
 		private void Window_PreviewKeyDown(object sender, KeyEventArgs e) => e.Handled = true;   //屏蔽所有按键
 

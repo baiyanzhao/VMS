@@ -13,7 +13,10 @@ namespace VMS.Model
 	public class CommitDiffInfo
 	{
 		#region 方法
-		public CommitDiffInfo(TreeEntryChanges tree) => Tree = tree;
+		public CommitDiffInfo(TreeEntryChanges tree)
+		{
+			Tree = tree;
+		}
 		#endregion
 
 		#region 属性
