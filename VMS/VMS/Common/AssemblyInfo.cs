@@ -34,6 +34,11 @@ namespace VMS
 		public System.Version Version { get; set; }
 
 		/// <summary>
+		/// 工程标题
+		/// </summary>
+		public string Title { get; set; }
+
+		/// <summary>
 		/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 		/// </summary>
 		/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
@@ -42,10 +47,16 @@ namespace VMS
 			//C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
 			//C工程版本格式为: static const char VERSION[] = "1.0.0.0";
 			var verKey = Type == ProjectType.CSharp ? "[assembly: AssemblyFileVersion(\"" : "static const char VERSION[] = \"";
+			var titleKey = Type == ProjectType.CSharp ? "[assembly: AssemblyTitle(\"" : "static const char TITLE[] = \"";
 			var encoding = FileEncoding.EncodingType.GetType(FilePath);
 			var lines = File.ReadAllLines(FilePath, encoding);
 			for(var i = 0; i < lines.Length; i++)
 			{
+				if(lines[i].IndexOf(titleKey) == 0)
+				{
+					Title = lines[i].Substring(titleKey.Length).Split(new char[] { '\"' })[0];
+				}
+
 				if(lines[i].IndexOf(verKey) == 0)
 				{
 					var strVersion = lines[i].Substring(verKey.Length).Split(new char[] { '\"' })[0];
