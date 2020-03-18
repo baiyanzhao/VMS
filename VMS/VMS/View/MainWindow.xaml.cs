@@ -94,7 +94,7 @@ namespace VMS.View
 		public static void ShowLogWindow(string name, System.Version version, string sha)
 		{
 			var infos = new Collection<BranchInfo>();
-			using(var repo = new Repository(LoaclRepoPath))
+			using(var repo = new Repository(LocalRepoPath))
 			{
 				LookupCommit(name, version, repo.Lookup<Commit>(sha), infos);
 			}
@@ -108,13 +108,13 @@ namespace VMS.View
 		/// <returns>工程未更改, null; 提交成功, true: 否则,false</returns>
 		public static bool? Commit()
 		{
-			using var repo = new Repository(LoaclRepoPath);
+			using var repo = new Repository(LocalRepoPath);
 			var entries = repo.RetrieveStatus();
 			if(!entries.IsDirty)
 				return null;
 
 			#region 打开提交对话框
-			var assemblyList = AssemblyInfo.GetInfos(LoaclRepoPath); //读取文件状态
+			var assemblyList = AssemblyInfo.GetInfos(LocalRepoPath); //读取文件状态
 			var status = new Collection<CommitFileStatus>();
 			foreach(var item in entries)
 			{
@@ -151,8 +151,6 @@ namespace VMS.View
 			commitWindow.Info.Text = status?.Count.ToString();
 			if(commitWindow.ShowDialog() != true)
 				return false;
-
-			WriteVersionInfo(versionInfo);  //先将提交信息写入文件,以备提交失败时自动填入.
 			#endregion
 
 			#region 同步上游分支
@@ -194,14 +192,11 @@ namespace VMS.View
 					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Value = assembly.Version.ToString() });
 				}
 			}
-
-			var commitText = versionInfo.LatestMessage;
-			versionInfo.LatestMessage = null; //不提交最近信息
 			WriteVersionInfo(versionInfo);
 			#endregion
 
 			#region 提交
-			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
+			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text))
 				return false;
 
 			if(string.Equals(repo.Head.FriendlyName, "master")) //master分支上传Tag
@@ -224,7 +219,7 @@ namespace VMS.View
 			if(info == null)
 				return;
 
-			using var repo = new Repository(LoaclRepoPath);
+			using var repo = new Repository(LocalRepoPath);
 			var entries = repo.RetrieveStatus();
 			if(entries.IsDirty)
 			{
@@ -271,13 +266,11 @@ namespace VMS.View
 
 			//更新版本信息
 			versionInfo.VersionNow = version;
-			var commitText = versionInfo.LatestMessage;
-			versionInfo.LatestMessage = null; //不提交最近信息
 			WriteVersionInfo(versionInfo);
 			#endregion
 
 			#region 提交
-			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitText))
+			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text))
 			{
 				Commands.Checkout(repo, info.Sha);
 				repo.Branches.Remove(branch);
@@ -293,7 +286,7 @@ namespace VMS.View
 
 			ProgressWindow.Show(Application.Current.MainWindow, delegate
 			{
-				using var repo = new Repository(LoaclRepoPath);
+				using var repo = new Repository(LocalRepoPath);
 				var cmt = repo.Lookup<Commit>(info.Sha);
 				var version = ReadVersionInfo(cmt)?.VersionNow?.ToString();
 				var path = Settings.PackageFolder + (version ?? info.Name) + " " + info.Author + "\\";
@@ -410,9 +403,9 @@ namespace VMS.View
 			}
 		}
 
-		private void Open_Click(object sender, RoutedEventArgs e) => Process.Start(Directory.GetFiles(LoaclRepoPath, "*.sln", SearchOption.AllDirectories).FirstOrDefault() ?? LoaclRepoPath);
+		private void Open_Click(object sender, RoutedEventArgs e) => Process.Start(Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories).FirstOrDefault() ?? LocalRepoPath);
 
-		private void Explorer_Click(object sender, RoutedEventArgs e) => Process.Start(LoaclRepoPath);
+		private void Explorer_Click(object sender, RoutedEventArgs e) => Process.Start(LocalRepoPath);
 
 		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
@@ -460,7 +453,7 @@ namespace VMS.View
 				Directory.CreateDirectory(folder);
 
 				//生成解决方案
-				foreach(var item in Directory.GetFiles(LoaclRepoPath, "*.sln", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
 					Process.Start(new ProcessStartInfo
 					{
@@ -473,7 +466,7 @@ namespace VMS.View
 				}
 
 				//生成自解压安装包
-				foreach(var item in Directory.GetFiles(LoaclRepoPath, "setup.exe", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(LocalRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
 					var app = Directory.GetFiles(dir, "*.application").FirstOrDefault();
@@ -493,13 +486,13 @@ namespace VMS.View
 				}
 
 				//复制hex文件
-				foreach(var item in Directory.GetFiles(LoaclRepoPath, "*.hex", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.hex", SearchOption.AllDirectories))
 				{
 					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
 				}
 
 				//复制bin文件
-				foreach(var item in Directory.GetFiles(LoaclRepoPath, "*.bin", SearchOption.AllDirectories))
+				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.bin", SearchOption.AllDirectories))
 				{
 					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
 				}

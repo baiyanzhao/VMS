@@ -12,6 +12,7 @@ namespace VMS.Model
 		public string PackageFolder { get; set; }
 		public string CompareToolPath { get; set; }
 		public string MSBuildPath { get; set; }
+		public List<string> LatestMessage { get; set; }
 		public Dictionary<(string Url, string UsernameFromUrl), (string User, string Password)> CredentialPairs { get; set; }
 	}
 }

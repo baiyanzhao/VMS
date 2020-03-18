@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using Microsoft.Shell;
+using Serilog;
 
 namespace VMS
 {
@@ -13,8 +14,10 @@ namespace VMS
 		private const string Unique = "VMS_Unique_Application_String";
 		public App()
 		{
+			Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File("log/" + DateTime.Now.ToLongDateString() + "/" + DateTime.Now.Ticks + ".log").CreateLogger();
 			DispatcherUnhandledException += (s, e) =>
 			{
+				Log.Fatal(e.Exception, "UnhandledException");
 				MessageBox.Show(e.Exception.Message + Environment.NewLine + e.Exception, "Exception");
 				(Current.MainWindow as IDisposable)?.Dispose();
 				Environment.Exit(0);

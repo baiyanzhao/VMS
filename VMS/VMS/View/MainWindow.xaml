@@ -175,7 +175,7 @@
 					<Image Margin="4,2" Source="/Images/Upload.png" Stretch="Uniform"/>
 				</DockPanel>
 			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
+			<Button Visibility="Collapsed" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
 				<DockPanel>
 					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="快速提交"/>
 					<Image Margin="4,2" Source="/Images/Lightning.png" Stretch="Uniform"/>

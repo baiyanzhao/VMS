@@ -64,6 +64,7 @@ namespace VMS.View
 				catch(Exception x)
 				{
 					isCompleted = false;
+					Serilog.Log.Error(x, "后台线程异常!");
 					MessageBox.Show(x.Message + "\n" + x.StackTrace, "后台线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 				finally

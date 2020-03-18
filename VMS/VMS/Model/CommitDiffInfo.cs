@@ -47,7 +47,7 @@ namespace VMS.Model
 			/// <returns>文件路径</returns>
 			static string CreateFile(ObjectId id, string blobPath)
 			{
-				using var repo = new Repository(GlobalShared.LoaclRepoPath);
+				using var repo = new Repository(GlobalShared.LocalRepoPath);
 				var blob = repo.Lookup<Blob>(id);
 				var filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "#" + blobPath.Replace('/', '.');
 				if(blob != null)

@@ -123,7 +123,7 @@ namespace VMS.Model
 			{
 				ProgressWindow.Show(Application.Current.MainWindow, delegate
 				{
-					using var repo = new Repository(GlobalShared.LoaclRepoPath);
+					using var repo = new Repository(GlobalShared.LocalRepoPath);
 					if(Git.Checkout(repo, info.Type == Git.Type.Sha ? info.Sha : info.Name, info.Type))
 					{
 						var commit = repo.Head.Tip;

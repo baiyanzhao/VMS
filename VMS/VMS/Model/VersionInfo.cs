@@ -27,7 +27,6 @@ namespace VMS.Model
 		public string OrderNumber { get; set; }
 		public List<VersionProperty> VersionList { get; set; }
 		public ObservableCollection<StringProperty> KeyWords { get; set; }
-		public string LatestMessage { get; set; }
 		[System.Runtime.Serialization.IgnoreDataMember]
 		public string CommitMessage { get; set; }
 	}
