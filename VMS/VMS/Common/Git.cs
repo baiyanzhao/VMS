@@ -109,10 +109,10 @@ namespace VMS
 		/// <param name="message">信息</param>
 		public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
 		{
-			Commands.Stage(repo, "*");
 			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
+			Cmd(repo.Info.WorkingDirectory, " add . --verbose");
 			repo.Commit(message, sign, sign);
-			Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");   //推送未上传的提交
+			Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
 			Serilog.Log.Verbose("Commit {FriendlyName} {message}", repo.Head.FriendlyName, message);
 		});
 

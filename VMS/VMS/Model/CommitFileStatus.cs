@@ -54,7 +54,7 @@ namespace VMS.ViewModel
 			}
 			catch(Exception x)
 			{
-				Serilog.Log.Error(x, "CommitFileStatus");
+				Serilog.Log.Error(x, "CommitFileStatus Diff");
 				MessageBox.Show(x.Message);
 			}
 		});
@@ -86,7 +86,7 @@ namespace VMS.ViewModel
 			}
 			catch(Exception x)
 			{
-				Serilog.Log.Error(x, "Revoke");
+				Serilog.Log.Error(x, "CommitFileStatus Revoke");
 				MessageBox.Show(x.Message);
 			}
 		});

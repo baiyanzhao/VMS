@@ -114,17 +114,17 @@
 				<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
 				<DataGridTextColumn Header="大小(KB)" Width="Auto" Binding="{Binding FileSize}" Foreground="DarkBlue"/>
 				<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
-				<DataGridTemplateColumn Width="36">
+				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Content="还原" ToolTip="还原到未修订版本" Focusable="False" Command="{Binding Revoke}" CommandParameter="{Binding}"/>
+							<Button Content="还原" ToolTip="还原到未修订版本" Foreground="DarkRed" Focusable="False" Command="{Binding Revoke}" CommandParameter="{Binding}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
-				<DataGridTemplateColumn Width="36">
+				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+							<Button FontSize="14" Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
