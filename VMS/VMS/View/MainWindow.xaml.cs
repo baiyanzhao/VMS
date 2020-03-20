@@ -115,7 +115,7 @@ namespace VMS.View
 
 			#region 打开提交对话框
 			var assemblyList = AssemblyInfo.GetInfos(LocalRepoPath); //读取文件状态
-			var status = new Collection<CommitFileStatus>();
+			var status = new ObservableCollection<CommitFileStatus>();
 			foreach(var item in entries)
 			{
 				switch(item.State)

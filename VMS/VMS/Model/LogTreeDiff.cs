@@ -10,10 +10,10 @@ namespace VMS.Model
 	/// <summary>
 	/// 已提交版本的更改信息
 	/// </summary>
-	public class CommitDiffInfo
+	public class LogTreeDiff
 	{
 		#region 方法
-		public CommitDiffInfo(TreeEntryChanges tree)
+		public LogTreeDiff(TreeEntryChanges tree)
 		{
 			Tree = tree;
 		}
@@ -29,7 +29,7 @@ namespace VMS.Model
 		#region 命令
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
-			var info = parameter as CommitDiffInfo;
+			var info = parameter as LogTreeDiff;
 			try
 			{
 				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid, info.Tree.OldPath) + "\" \"" + CreateFile(info.Tree.Oid, info.FilePath) + "\"" + " /ro");

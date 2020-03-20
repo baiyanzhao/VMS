@@ -17,7 +17,7 @@ namespace VMS
 		{
 		}
 
-		public void Dispose() => process.Dispose();
+		public void Dispose() => process?.Dispose();
 
 		protected override void Create(string path, string root, FilterMode mode)
 		{
@@ -86,6 +86,7 @@ namespace VMS
 				}
 
 				process.Dispose();
+				View.ProgressWindow.Update(path);
 			}
 			catch(Exception e)
 			{

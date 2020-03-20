@@ -31,6 +31,12 @@ namespace VMS.View
 		/// <returns>是否完成任务</returns>
 		public static bool Show(Window owner, Action work, Action completed = null)
 		{
+			if(Worker != null)
+			{
+				work?.Invoke();
+				return true;
+			}
+
 			var isCompleted = true;
 			var dlg = new ProgressWindow() { Owner = owner };
 			if(owner == null)

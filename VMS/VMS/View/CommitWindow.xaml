@@ -117,14 +117,14 @@
 				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Content="还原" ToolTip="还原到未修订版本" Foreground="DarkRed" Focusable="False" Command="{Binding Revoke}" CommandParameter="{Binding}"/>
+							<Button Content="还原" ToolTip="还原到未修订版本" Foreground="DarkRed" Focusable="False" Command="{Binding Revoke}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
 				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button FontSize="14" Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+							<Button Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>

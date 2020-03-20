@@ -39,7 +39,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>4</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>3.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -149,7 +149,7 @@
     <Compile Include="Common\TabContent.cs" />
     <Compile Include="Common\FileExportFilter.cs" />
     <Compile Include="Model\BranchInfo.cs" />
-    <Compile Include="Model\CommitDiffInfo.cs" />
+    <Compile Include="Model\LogTreeDiff.cs" />
     <Compile Include="Model\CommitFileStatus.cs" />
     <Compile Include="Common\Converter.cs" />
     <Compile Include="Model\RepoTabData.cs" />

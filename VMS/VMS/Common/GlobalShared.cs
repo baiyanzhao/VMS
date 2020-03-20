@@ -130,16 +130,16 @@ namespace VMS
 		/// </summary>
 		/// <param name="sha">Git Sha</param>
 		/// <returns></returns>
-		public static IEnumerable<CommitDiffInfo> GetDiffList(string sha)
+		public static IEnumerable<LogTreeDiff> GetDiffList(string sha)
 		{
-			var diffInfo = new ObservableCollection<CommitDiffInfo>();
+			var diffInfo = new ObservableCollection<LogTreeDiff>();
 			try
 			{
 				using var repo = new Repository(LocalRepoPath);
 				var commit = repo.Lookup<Commit>(sha);
 				foreach(var item in repo.Diff.Compare<TreeChanges>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree))
 				{
-					diffInfo.Add(new CommitDiffInfo(item));
+					diffInfo.Add(new LogTreeDiff(item));
 				}
 			}
 			catch

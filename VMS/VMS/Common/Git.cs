@@ -47,6 +47,52 @@ namespace VMS
 				throw new Exception(err.Message);
 			}
 		};
+
+		/// <summary>
+		/// Git CloneOptions
+		/// </summary>
+		public static CloneOptions GitCloneOptions { get; } = new CloneOptions
+		{
+			CredentialsProvider = GetCredential,
+			OnProgress = (string serverProgressOutput) =>
+			{
+				ProgressWindow.Update(serverProgressOutput);
+				return true;
+			},
+			OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
+			{
+				ProgressWindow.Update(referenceName);
+				return true;
+			},
+			OnTransferProgress = (TransferProgress progress) =>
+			{
+				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
+				return true;
+			}
+		};
+
+		/// <summary>
+		/// Git FetchOptions
+		/// </summary>
+		public static FetchOptions GitFetchOptions { get; } = new FetchOptions
+		{
+			CredentialsProvider = GetCredential,
+			OnProgress = (string serverProgressOutput) =>
+			{
+				ProgressWindow.Update(serverProgressOutput);
+				return true;
+			},
+			OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
+			{
+				ProgressWindow.Update(referenceName);
+				return true;
+			},
+			OnTransferProgress = (TransferProgress progress) =>
+			{
+				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
+				return true;
+			}
+		};
 		#endregion
 
 		#region 方法
@@ -74,7 +120,7 @@ namespace VMS
 					url = box.Text;
 				});
 
-				Cmd(null, "clone --verbose --progress " + url + " " + localPath);
+				Repository.Clone(url, localPath, GitCloneOptions);
 				using var repo = new Repository(localPath);
 				repo.Config.Set("lfs.forceprogress", true);
 				repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上游分支,禁止用户提交此分支
@@ -83,7 +129,15 @@ namespace VMS
 			//同步仓库,并推送当前分支
 			using(var repo = new Repository(localPath))
 			{
-				Cmd(repo.Info.WorkingDirectory, "pull --verbose --progress");	//拉取当前分支
+				//同步仓库
+				Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
+
+				//拉取当前分支
+				if(repo.Head.TrackingDetails.BehindBy > 0)
+				{
+					Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
+				}
+
 				if(repo.Head.TrackingDetails.AheadBy > 0)
 				{
 					Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");	//推送未上传的提交
@@ -99,7 +153,11 @@ namespace VMS
 		/// <returns></returns>
 		public static bool FetchHead(Window owner, Repository repo) => ProgressWindow.Show(owner, delegate
 		{
-			Cmd(repo.Info.WorkingDirectory, "pull --verbose --progress");
+			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
+			if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
+			{
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
+			}
 		});
 
 		/// <summary>
@@ -110,7 +168,8 @@ namespace VMS
 		public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
 		{
 			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
-			Cmd(repo.Info.WorkingDirectory, " add . --verbose");
+			ProgressWindow.Update("Commands.Stage...");
+			Commands.Stage(repo, "*");
 			repo.Commit(message, sign, sign);
 			Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
 			Serilog.Log.Verbose("Commit {FriendlyName} {message}", repo.Head.FriendlyName, message);
@@ -151,7 +210,7 @@ namespace VMS
 				ProgressWindow.Update(msg);
 			});
 
-			Serilog.Log.Information("Git.Cmd {cmd} {workDir}", cmd, workDir);
+			Serilog.Log.Information("git {cmd} {workDir}", cmd, workDir);
 			process.OutputDataReceived += dataHandler;
 			process.ErrorDataReceived += dataHandler;
 			process.Start();
@@ -162,7 +221,7 @@ namespace VMS
 			{
 				throw new Exception(errors);
 			}
-			Serilog.Log.Verbose("Git.Cmd End");
+			Serilog.Log.Verbose("git End");
 		}
 
 		/// <summary>
@@ -183,14 +242,24 @@ namespace VMS
 					return false;
 			}
 
-			var committishOrBranchSpec = type switch
+			string committishOrBranchSpec;
+			switch(type)
 			{
-				Type.Branch => mark,
-				Type.Tag => repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha,
-				_ => mark,
-			};
-			Cmd(repo.Info.WorkingDirectory, "checkout " + committishOrBranchSpec + " --force --progress");
-			Cmd(repo.Info.WorkingDirectory, "pull --verbose --progress");
+			case Type.Branch:
+				committishOrBranchSpec = mark;
+				Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, GitFetchOptions, null);
+				break;
+
+			case Type.Tag:
+				committishOrBranchSpec = repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha;
+				break;
+
+			default:
+				committishOrBranchSpec = mark;
+				break;
+			}
+
+			Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
 			if(type == Type.Branch && !repo.Head.IsTracking)
 			{
 				repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
