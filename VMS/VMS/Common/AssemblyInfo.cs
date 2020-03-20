@@ -130,4 +130,3 @@ namespace VMS
 		public enum ProjectType { C, CSharp }
 	}
 }
-
