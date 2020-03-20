@@ -31,7 +31,7 @@ namespace VMS.View
 		{
 			var window = new InputWindow
 			{
-				Height = 500,
+				Height = 540,
 				Width = 800,
 				ShowInTaskbar = false,
 				Title = "历史记录",
@@ -45,6 +45,19 @@ namespace VMS.View
 				window.DialogResult = true;
 				Message.Text = listBox.SelectedValue?.ToString();
 			};
+
+			var btn = new Button { Content = "确定", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 120, 2), Padding = new Thickness(12, 0, 12, 0) };
+			btn.Click += delegate
+			{
+				window.DialogResult = true;
+				if(listBox.SelectedValue == null)
+					return;
+
+				Message.Text = listBox.SelectedValue.ToString();
+			};
+
+			Grid.SetRow(btn, 1);
+			window.Panel.Children.Add(btn);
 			window.InputGrid.Children.Add(listBox);
 			window.ShowDialog();
 		}
