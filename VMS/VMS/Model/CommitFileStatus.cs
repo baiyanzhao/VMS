@@ -33,6 +33,11 @@ namespace VMS.ViewModel
 		public ICommand Diff { get; }
 
 		/// <summary>
+		/// 对比差异
+		/// </summary>
+		public ICommand Explore { get; }
+
+		/// <summary>
 		/// 撤销更改
 		/// </summary>
 		public ICommand Revoke { get; }
@@ -66,9 +71,13 @@ namespace VMS.ViewModel
 				}
 			});
 
+			Explore = new DelegateCommand((parameter) =>
+			{
+				View.ProgressWindow.Show(null, () => Process.Start(GlobalShared.LocalRepoPath + Path.GetDirectoryName(FilePath)));
+			});
+
 			Revoke = new DelegateCommand((parameter) =>
 			{
-
 				using var repo = new Repository(GlobalShared.LocalRepoPath);
 				var blob = repo.Head.Tip?.Tree?[FilePath]?.Target as Blob;
 				if(MessageBox.Show("确实要撤销此文件的修改吗?\n此操作不可恢复!", "还原修改", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)

@@ -124,6 +124,13 @@
 				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
+							<Button Content="浏览" ToolTip="打开所在文件夹" Focusable="False" Command="{Binding Explore}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn Width="40">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
 							<Button Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>

@@ -38,6 +38,7 @@ namespace VMS.View
 			}
 
 			var isCompleted = true;
+			owner = (owner == null && Application.Current.MainWindow.IsLoaded) ? Application.Current.MainWindow : owner;
 			var dlg = new ProgressWindow() { Owner = owner };
 			if(owner == null)
 			{
