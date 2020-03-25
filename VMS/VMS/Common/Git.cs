@@ -230,23 +230,14 @@ namespace VMS
 		/// <param name="repo">Git仓库</param>
 		/// <param name="mark">签出标识字符串,由<paramref name="type"/>决定类型 </param>
 		/// <param name="type">签出类型</param>
-		public static bool Checkout(Repository repo, string mark, Type type)
+		public static void Checkout(Repository repo, string mark, Type type)
 		{
-			if(repo == null)
-				return false;
-
-			var entries = repo.RetrieveStatus();
-			if(entries.IsDirty)
-			{
-				if(MessageBox.Show(mark + "\n文件更改尚未上传,切换分支将撤销所有更改.\n注意: 新建文件不会删除!", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-					return false;
-			}
-
 			string committishOrBranchSpec;
 			switch(type)
 			{
 			case Type.Branch:
 				committishOrBranchSpec = mark;
+				Cmd(repo.Info.WorkingDirectory, "push origin " + committishOrBranchSpec + " --verbose --progress");  //同步前先推送,防止本地更改被远程覆盖
 				Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, GitFetchOptions, null);
 				break;
 
@@ -264,7 +255,6 @@ namespace VMS
 			{
 				repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
 			}
-			return true;
 		}
 
 		private static UsernamePasswordCredentials GetCredential(string url, string usernameFromUrl, SupportedCredentialTypes types)
