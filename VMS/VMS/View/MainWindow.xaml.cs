@@ -469,15 +469,15 @@ namespace VMS.View
 				foreach(var item in Directory.GetFiles(LocalRepoPath, "setup.exe", SearchOption.AllDirectories))
 				{
 					var dir = Path.GetDirectoryName(item);
-					var app = Directory.GetFiles(dir, "*.application").FirstOrDefault();
-					if(string.IsNullOrEmpty(app))
+					var name = Path.GetFileNameWithoutExtension(Directory.GetFiles(dir, "*.application").FirstOrDefault()) ?? item.Substring(LocalRepoPath.Length).Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).First();
+					if(string.IsNullOrEmpty(name))
 						continue;
 
 					var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, Path.GetFileNameWithoutExtension(app) + " v" + version)),
+						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, name + " v" + version)),
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
