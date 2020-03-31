@@ -199,13 +199,8 @@ namespace VMS.View
 			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text))
 				return false;
 
-			if(string.Equals(repo.Head.FriendlyName, "master")) //master分支上传Tag
-			{
-				ProgressWindow.Show(instance, () => repo.Network.Push(repo.Network.Remotes["origin"], repo.ApplyTag(versionInfo.VersionNow.ToString(3)).ToString(), Git.GitPushOptions));
-			}
-			#endregion
-
 			RepoData.CurrentRepo?.Update();
+			#endregion
 			return true;
 		}
 
@@ -220,8 +215,7 @@ namespace VMS.View
 				return;
 
 			using var repo = new Repository(LocalRepoPath);
-			var entries = repo.RetrieveStatus();
-			if(entries.IsDirty)
+			if(repo.RetrieveStatus().IsDirty)
 			{
 				MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
 				return;
@@ -370,14 +364,21 @@ namespace VMS.View
 				ShowSetWindow();
 			}
 
-			//每个仓库独立更新,避免互相影响
-			foreach(var item in Settings.RepoPathList)
+			if(Settings.RepoPathList.Count <= 0)
 			{
-				var info = new RepoInfo(item);
-				RepoData.RepoList.Add(info);
-				ProgressWindow.Show(this, () => Git.Sync(item), info.Update);
+				AddRepo_Click(null, null);
 			}
-			RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
+			else
+			{
+				/// 每个仓库独立更新,避免互相影响
+				foreach(var item in Settings.RepoPathList)
+				{
+					var info = new RepoInfo(item);
+					RepoData.RepoList.Add(info);
+					ProgressWindow.Show(this, () => Git.Sync(item), info.Update);
+				}
+				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
+			}
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -500,11 +501,46 @@ namespace VMS.View
 			});
 		}
 
+		/// <summary>
+		/// 发布标准版
+		/// </summary>
+		private void Publish_Click(object sender, RoutedEventArgs e)
+		{
+			#region 确认状态
+			using var repo = new Repository(LocalRepoPath);
+			if(!string.Equals(repo.Head.FriendlyName, "0.0.0") || repo.RetrieveStatus().IsDirty)
+			{
+				MessageBox.Show("只能基于纯净的内测版发布", "权限不足");
+				return;
+			}
+
+			var versionInfo = ReadVersionInfo() ?? new VersionInfo();
+			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
+			var instance = Application.Current.MainWindow as MainWindow;
+			var commitWindow = new CommitWindow() { Owner = instance, Title = RepoData.CurrentRepo?.Title };
+			commitWindow.FileGrid.DataContext = null;
+			commitWindow.Version.DataContext = versionInfo;
+			commitWindow.Info.Text = null;
+			if(commitWindow.ShowDialog() != true)
+				return;
+
+			if(!Git.FetchHead(instance, repo))
+				return;
+			#endregion
+
+			#region 提交标准版
+			versionInfo.VersionNow = versionInfo.VersionNow == null ? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor + 1, 0, 0);
+			WriteVersionInfo(versionInfo);	//升级版本文件
+			Git.Publish(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text, versionInfo.VersionNow.ToString(3));
+			RepoData.CurrentRepo?.Update();
+			#endregion
+		}
+
 		private void Set_Click(object sender, RoutedEventArgs e) => ShowSetWindow();
 
 		private void AddRepo_Click(object sender, RoutedEventArgs e)
 		{
-			var dlg = new FolderBrowserForWPF.Dialog();
+			var dlg = new FolderBrowserForWPF.Dialog() { Title = "打开[空文件夹]或[本地仓库文件夹]" };
 			if(dlg.ShowDialog() != true)
 				return;
 
@@ -513,7 +549,7 @@ namespace VMS.View
 				return;
 
 			var info = new RepoInfo(path);
-			ProgressWindow.Show(this, () => Git.Sync(path), info.Update);
+			ProgressWindow.Show(null, () => Git.Sync(path), info.Update);
 			{
 				RepoData.RepoList.Add(info);
 				Settings.RepoPathList.Add(path);

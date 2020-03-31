@@ -139,12 +139,12 @@
 				</DataTemplate>
 			</ikriv:TabContent.Template>
 		</TabControl>
-		<Button Click="AddRepo_Click" Margin="0,2,36,0" Height="28" Background="{x:Null}" BorderThickness="0" Focusable="False" HorizontalAlignment ="Right" VerticalAlignment="Top">
+		<Button Click="AddRepo_Click" Margin="0,2,36,0" Height="28" Background="{x:Null}" BorderThickness="0" Focusable="False" HorizontalAlignment ="Right" VerticalAlignment="Top" ToolTip="新增仓库">
 			<Button.Content>
 				<Image Source="/Images/Add.png"/>
 			</Button.Content>
 		</Button>
-		<Button Click="DelRepo_Click" Margin="0,2,2,0" Height="28" Background="{x:Null}" BorderThickness="0" Focusable="False" HorizontalAlignment ="Right" VerticalAlignment="Top">
+		<Button Click="DelRepo_Click" Margin="0,2,2,0" Height="28" Background="{x:Null}" BorderThickness="0" Focusable="False" HorizontalAlignment ="Right" VerticalAlignment="Top" ToolTip="移除仓库">
 			<Button.Content>
 				<Image Source="/Images/Close.png"/>
 			</Button.Content>
@@ -185,6 +185,12 @@
 				<DockPanel>
 					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="安装包"/>
 					<Image Margin="4,2" Source="/Images/Package.png" Stretch="Uniform"/>
+				</DockPanel>
+			</Button>
+			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Publish_Click" ToolTip="根据测试版修订发布标准版" >
+				<DockPanel>
+					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="发布"/>
+					<Image Margin="4,2" Source="/Images/Publish.png" Stretch="Uniform"/>
 				</DockPanel>
 			</Button>
 			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >

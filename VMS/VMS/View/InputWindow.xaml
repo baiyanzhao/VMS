@@ -16,6 +16,6 @@
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 		<StackPanel Name="InputGrid" Orientation="Vertical" VerticalAlignment="Center"/>
-		<Button Grid.Row="1" IsCancel="True" IsDefault="True" Content="关闭" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="2" Padding="12,0"/>
+		<Button Name="DefaultButton" Grid.Row="1" IsCancel="True" IsDefault="True" Content="关闭" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="2" Padding="12,0"/>
 	</Grid>
 </Window>

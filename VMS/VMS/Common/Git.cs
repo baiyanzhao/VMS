@@ -116,6 +116,17 @@ namespace VMS
 
 					var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
 					window.InputGrid.Children.Add(box);
+					window.DefaultButton.IsCancel = false;
+					window.DefaultButton.Click += (s, e) => 
+					{
+						box.Text = box.Text.Trim();
+						if(!box.Text.EndsWith(".git"))
+						{
+							MessageBox.Show("当前仓库地址不可用,可能的原因有:\n1. 含有非法字符\n2. 未以[.git]结尾.", "无效的仓库地址");
+							return;
+						}
+						window.DialogResult = true;
+					};
 					window.ShowDialog();
 					url = box.Text;
 				});
@@ -168,11 +179,45 @@ namespace VMS
 		public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
 		{
 			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
-			ProgressWindow.Update("Commands.Stage...");
+			ProgressWindow.Update("Stage...");
 			Commands.Stage(repo, "*");
 			repo.Commit(message, sign, sign);
 			Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
 			Serilog.Log.Verbose("Commit {FriendlyName} {message}", repo.Head.FriendlyName, message);
+		});
+
+		/// <summary>
+		/// 发布标准版
+		/// </summary>
+		/// <param name="repo">仓库</param>
+		/// <param name="message">信息</param>
+		/// <param name="version">新版本号</param>
+		public static void Publish(Window owner, Repository repo, string message, string version) => ProgressWindow.Show(owner, delegate
+		{
+			/// 升级版本并提交内测版
+			var sign = new Signature("Sys", Environment.MachineName, DateTime.Now);
+			ProgressWindow.Update("Stage...");
+			Commands.Stage(repo, "*");
+			repo.Commit(version, sign, sign);
+
+			/// 生成标准版提交,并设置标签
+			sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
+			var parent = repo.Tags.OrderByDescending((o) =>
+			{
+				if(System.Version.TryParse(o.FriendlyName, out var ver))
+					return ver;
+				return null;
+			}).First().Target as Commit;	//获取标准版最新版本
+			var cmt = repo.ObjectDatabase.CreateCommit(sign, sign, message, repo.Head.Tip.Tree, new Commit[] { parent }, false);
+			var tag = repo.ApplyTag(version, cmt.Sha);
+
+			/// 内测版合并同步
+			sign = new Signature("Merge", Environment.MachineName, DateTime.Now);
+			repo.Merge(cmt, sign, new MergeOptions { CommitOnSuccess = true, FileConflictStrategy = CheckoutFileConflictStrategy.Theirs, MergeFileFavor = MergeFileFavor.Theirs });
+
+			/// 上传更改
+			Cmd(repo.Info.WorkingDirectory, "push origin refs/* --verbose --progress");
+			Serilog.Log.Verbose("Publish {version} {message}", version, message);
 		});
 
 		public static void Cmd(string workDir, string cmd)
