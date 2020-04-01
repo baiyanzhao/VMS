@@ -456,10 +456,13 @@ namespace VMS.View
 				//生成解决方案
 				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
+					var arg = string.Format("\"{0}\" /t:Clean;Publish /p:Configuration=Release /p:ApplicationVersion=\"{1}\" /noconsolelogger", item, version);
+					Serilog.Log.Information("\"{MSBuildPath}\" {arg}", Settings.MSBuildPath, arg);
+					ProgressWindow.Update(item);
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Settings.MSBuildPath,
-						Arguments = "/t:publish /p:Configuration=Release /noconsolelogger \"" + item + "\"",
+						Arguments = arg,
 						UseShellExecute = false,
 						CreateNoWindow = true,
 						WindowStyle = ProcessWindowStyle.Hidden
@@ -475,10 +478,13 @@ namespace VMS.View
 						continue;
 
 					var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
+					var arg = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, name + " v" + version));
+					Serilog.Log.Information("WinRAR {arg}", arg);
+					ProgressWindow.Update(item);
 					Process.Start(new ProcessStartInfo
 					{
 						FileName = Path.Combine(rarPath, "WinRAR.exe"),
-						Arguments = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, name + " v" + version)),
+						Arguments = arg,
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
