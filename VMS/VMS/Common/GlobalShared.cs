@@ -43,6 +43,7 @@ namespace VMS
 		{
 			try
 			{
+				File.Delete(path);
 				using(Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 				{
 					new DataContractJsonSerializer(typeof(T)).WriteObject(stream, val);
