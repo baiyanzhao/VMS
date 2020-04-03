@@ -83,12 +83,19 @@ namespace VMS.ViewModel
 
 			Ignore = new DelegateCommand((parameter) =>
 			{
-				if(FileStatus != FileStatus.NewInWorkdir)
+				if(MessageBox.Show("确实要忽略此文件的修改吗?", "忽略修改", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
 					return;
 
-				Serilog.Log.Information("CommitFileStatus Ignore {FilePath}", FilePath);
-				File.AppendAllText(GlobalShared.LocalRepoPath + "/.gitignore", "/" + FilePath + "\n");
+				if(FileStatus == FileStatus.NewInWorkdir)
+				{
+					File.AppendAllText(GlobalShared.LocalRepoPath + "/.gitignore", "/" + FilePath + "\n");
+				}
+				else
+				{
+					Git.Cmd(GlobalShared.LocalRepoPath, "update-index --assume-unchanged " + FilePath);
+				}
 				(parameter as ObservableCollection<CommitFileStatus>)?.Remove(this);
+				Serilog.Log.Information("CommitFileStatus Ignore {FilePath}", FilePath);
 			});
 
 			Revoke = new DelegateCommand((parameter) =>

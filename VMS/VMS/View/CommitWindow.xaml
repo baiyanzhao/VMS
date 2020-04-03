@@ -124,7 +124,7 @@
 				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Content="忽略" ToolTip="忽略此文件更改.仅对新增文件有效" Foreground="DarkRed" Focusable="False" Command="{Binding Ignore}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
+							<Button Content="忽略" ToolTip="忽略此文件更改" Foreground="DarkRed" Focusable="False" Command="{Binding Ignore}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>

@@ -282,7 +282,10 @@ namespace VMS
 			{
 			case Type.Branch:
 				committishOrBranchSpec = mark;
-				Cmd(repo.Info.WorkingDirectory, "push origin " + committishOrBranchSpec + " --verbose --progress");  //同步前先推送,防止本地更改被远程覆盖
+				if(repo.Branches[committishOrBranchSpec]?.IsTracking == true && repo.Branches[committishOrBranchSpec]?.TrackingDetails.AheadBy > 0)
+				{
+					Cmd(repo.Info.WorkingDirectory, "push origin " + committishOrBranchSpec + " --verbose --progress");  //同步前先推送,防止本地更改被远程覆盖
+				}
 				Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, GitFetchOptions, null);
 				break;
 
