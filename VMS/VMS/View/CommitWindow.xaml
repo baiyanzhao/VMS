@@ -29,7 +29,7 @@
 				</DockPanel>
 
 				<Button DockPanel.Dock="Top" Content="最近信息" Margin="5,5,0,0" Click="LatestMessage_Click"/>
-				<TextBox Name="Message" Text="{Binding LatestMessage}" DockPanel.Dock="Top" Margin="5,5,0,2" TextWrapping="Wrap" AcceptsReturn="True">
+				<TextBox Name="Message" DockPanel.Dock="Top" Margin="5,5,0,2" TextWrapping="Wrap" AcceptsReturn="True">
 					<TextBox.Style>
 						<Style TargetType="TextBox">
 							<Style.Triggers>
