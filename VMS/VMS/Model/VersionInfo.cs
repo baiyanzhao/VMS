@@ -18,6 +18,7 @@ namespace VMS.Model
 		{
 			public string Label { get; set; }
 			public string Title { get; set; }
+			public string Time { get; set; }
 			public string Value { get; set; }
 		}
 

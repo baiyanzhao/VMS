@@ -177,7 +177,7 @@ namespace VMS.View
 				foreach(var assembly in assemblyList)
 				{
 					assembly.HitVersion(-1);
-					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Value = assembly.Version.ToString() });
+					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
 				}
 			}
 			else //其它分支更新修订号
@@ -189,7 +189,7 @@ namespace VMS.View
 				foreach(var assembly in assemblyList)
 				{
 					assembly.HitVersion(branchVersion == null ? 0 : branchVersion.Build);
-					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Value = assembly.Version.ToString() });
+					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
 				}
 			}
 			WriteVersionInfo(versionInfo);

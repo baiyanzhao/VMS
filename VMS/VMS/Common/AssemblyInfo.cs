@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace VMS
@@ -14,14 +15,14 @@ namespace VMS
 		private TypeMark Mark { get; set; }
 
 		/// <summary>
+		/// 版本配置文件的绝对路径
+		/// </summary>
+		private string FilePath { get; set; }
+
+		/// <summary>
 		/// 工程文件夹的相对路径
 		/// </summary>
 		public string ProjectPath { get; set; }
-
-		/// <summary>
-		/// 版本配置文件的绝对路径
-		/// </summary>
-		public string FilePath { get; set; }
 
 		/// <summary>
 		/// 工程存在修改的文件
@@ -38,6 +39,14 @@ namespace VMS
 		/// </summary>
 		public string Title { get; set; }
 
+		/// <summary>
+		/// 工程修改时间
+		/// </summary>
+		public string Time { get; set; }
+
+		/// <summary>
+		/// 工程标识列表
+		/// </summary>
 		private static readonly List<TypeMark> TypeMarkList = new List<TypeMark>();
 
 		static AssemblyInfo()
@@ -45,8 +54,8 @@ namespace VMS
 			/// C工程版本格式为: static const char VERSION[] = "1.0.0.0";
 			/// C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
 			TypeMarkList.Clear();
-			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.C, Directory = "Inc", File = "Version.h", TitleKey = "static const char TITLE[] = \"", VersionKey = "static const char VERSION[] = \"", AssemblyKey = null });
-			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.CSharp, Directory = "Properties", File = "AssemblyInfo.cs", TitleKey = "[assembly: AssemblyTitle(\"", VersionKey = "[assembly: AssemblyFileVersion(\"", AssemblyKey = "[assembly: AssemblyVersion(\"" });
+			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.C, Directory = "Inc", File = "Version.h", TitleKey = "static const char TITLE[] = \"", VersionKey = "static const char VERSION[] = \"", AssemblyKey = null, TimeKey="static const char UPDATE_TIME[] = \"" });
+			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.CSharp, Directory = "Properties", File = "AssemblyInfo.cs", TitleKey = "[assembly: AssemblyTitle(\"", VersionKey = "[assembly: AssemblyFileVersion(\"", AssemblyKey = "[assembly: AssemblyVersion(\"", TimeKey= "[assembly: AssemblyTitle(\"" });
 		}
 
 		/// <summary>
@@ -96,6 +105,21 @@ namespace VMS
 						{
 							Version = version;
 						}
+					}
+				}
+
+				/// 更新时间
+				if(Mark.TimeKey != null && lines[i].IndexOf(Mark.TimeKey) == 0)
+				{
+					var strTime = lines[i].Substring(Mark.TimeKey.Length).Split(new char[] { '\"' })[0];
+					if(IsModified && versionBuild >= 0)
+					{
+						Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+						lines[i] = lines[i].Replace(strTime, Time);
+					}
+					else
+					{
+						Time = strTime;
 					}
 				}
 			}
@@ -168,6 +192,11 @@ namespace VMS
 			/// 文件版本关键字
 			/// </summary>
 			public string VersionKey { get; set; }
+
+			/// <summary>
+			/// 文件版本关键字
+			/// </summary>
+			public string TimeKey { get; set; }
 
 			/// <summary>
 			/// 当前工程开发环境

@@ -65,6 +65,7 @@
 									<DataGrid.Columns>
 										<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Label}" />
 										<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Title}" />
+										<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Time}" />
 										<DataGridTextColumn Foreground="DarkBlue" FontSize="14" Binding="{Binding Value}" />
 									</DataGrid.Columns>
 								</DataGrid>
