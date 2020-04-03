@@ -25,7 +25,7 @@
 	<Grid Name="Panel" Background="AliceBlue">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
-			<ColumnDefinition Width="72"/>
+			<ColumnDefinition Width="64"/>
 		</Grid.ColumnDefinitions>
 		<TabControl Name="RepoTab" Margin="1,2,0,1" ikriv:TabContent.IsCached="True" ItemsSource="{Binding RepoList}" SelectedItem="{Binding CurrentRepo, Mode=TwoWay}">
 			<TabControl.ItemTemplate>
@@ -149,7 +149,7 @@
 				<Image Source="/Images/Close.png"/>
 			</Button.Content>
 		</Button>
-		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" Rows="6">
+		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" >
 			<UniformGrid.Background>
 				<LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
 					<GradientStop Color="#FF7896B9" />

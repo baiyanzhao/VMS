@@ -96,10 +96,14 @@ namespace VMS.View
 			var infos = new Collection<BranchInfo>();
 			using(var repo = new Repository(LocalRepoPath))
 			{
-				LookupCommit(name, version, repo.Lookup<Commit>(sha), infos);
+				var commit = repo.Lookup<Commit>(sha);
+				while(commit != null)
+				{
+					infos.Add(new BranchInfo { Name = name, Version = version, Type = Git.Type.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+					commit = commit.Parents.FirstOrDefault();
+				}
 			}
-
-			new LogWindow { Owner = Application.Current.MainWindow, Title = name, DataContext = infos.OrderByDescending(info => info.When) }.ShowDialog();
+			new LogWindow { Owner = Application.Current.MainWindow, Title = name, DataContext = infos }.ShowDialog();
 		}
 
 		/// <summary>
@@ -109,8 +113,8 @@ namespace VMS.View
 		public static bool? Commit()
 		{
 			using var repo = new Repository(LocalRepoPath);
-			var entries = repo.RetrieveStatus();
-			if(!entries.IsDirty)
+			var entries = repo?.RetrieveStatus();
+			if(entries == null || !entries.IsDirty)
 				return null;
 
 			#region 打开提交对话框
@@ -199,8 +203,17 @@ namespace VMS.View
 			if(!Git.Commit(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text))
 				return false;
 
-			RepoData.CurrentRepo?.Update();
+			if(string.Equals(repo.Head.FriendlyName, "master")) //master分支上传Tag
+			{
+				ProgressWindow.Show(instance, delegate
+				{
+					Git.Cmd(repo.Info.WorkingDirectory, "tag " + versionInfo.VersionNow.ToString(3));
+					Git.Cmd(repo.Info.WorkingDirectory, "push origin --tags --verbose --progress");
+				});
+			}
 			#endregion
+
+			RepoData.CurrentRepo?.Update();
 			return true;
 		}
 
@@ -320,28 +333,6 @@ namespace VMS.View
 		#endregion
 
 		#region 私有方法
-		/// <summary>
-		/// 列举与提交关联的所有记录
-		/// </summary>
-		/// <param name="name">名称</param>
-		/// <param name="version">版本</param>
-		/// <param name="commit">Git提交标识</param>
-		/// <param name="infos">版本信息列表</param>
-		private static void LookupCommit(string name, System.Version version, Commit commit, Collection<BranchInfo> infos)
-		{
-			if(commit == null || infos.Count > 1000)
-				return;
-
-			if(!infos.Any(info => info.Sha == commit.Sha))
-			{
-				infos.Add(new BranchInfo { Name = name, Version = version, Type = Git.Type.Sha, Sha = commit.Sha, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
-				foreach(var item in commit.Parents)
-				{
-					LookupCommit(name, version, item, infos);
-				}
-			}
-		}
-
 		/// <summary>
 		/// 显示设置界面
 		/// </summary>

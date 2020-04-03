@@ -196,9 +196,9 @@ namespace IKriv.Windows.Controls.Behaviors
 		{
 			var descriptor = DependencyPropertyDescriptor.FromProperty(TabControl.ContentTemplateProperty, typeof(TabControl));
 			descriptor.AddValueChanged(tabControl, (sender, args) =>
-				{
-					throw new InvalidOperationException("Cannot assign to TabControl.ContentTemplate when TabContent.IsCached is True. Use TabContent.Template instead");
-				});
+			{
+				throw new InvalidOperationException("Cannot assign to TabControl.ContentTemplate when TabContent.IsCached is True. Use TabContent.Template instead");
+			});
 		}
 
 		public class ContentManager

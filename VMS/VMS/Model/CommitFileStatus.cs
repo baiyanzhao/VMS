@@ -38,6 +38,11 @@ namespace VMS.ViewModel
 		public ICommand Explore { get; }
 
 		/// <summary>
+		/// 对比差异
+		/// </summary>
+		public ICommand Ignore { get; }
+
+		/// <summary>
 		/// 撤销更改
 		/// </summary>
 		public ICommand Revoke { get; }
@@ -74,6 +79,16 @@ namespace VMS.ViewModel
 			Explore = new DelegateCommand((parameter) =>
 			{
 				View.ProgressWindow.Show(null, () => Process.Start(GlobalShared.LocalRepoPath + Path.GetDirectoryName(FilePath)));
+			});
+
+			Ignore = new DelegateCommand((parameter) =>
+			{
+				if(FileStatus != FileStatus.NewInWorkdir)
+					return;
+
+				Serilog.Log.Information("CommitFileStatus Ignore {FilePath}", FilePath);
+				File.AppendAllText(GlobalShared.LocalRepoPath + "/.gitignore", "/" + FilePath + "\n");
+				(parameter as ObservableCollection<CommitFileStatus>)?.Remove(this);
 			});
 
 			Revoke = new DelegateCommand((parameter) =>

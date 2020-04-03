@@ -55,7 +55,7 @@ namespace VMS
 			/// C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
 			TypeMarkList.Clear();
 			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.C, Directory = "Inc", File = "Version.h", TitleKey = "static const char TITLE[] = \"", VersionKey = "static const char VERSION[] = \"", AssemblyKey = null, TimeKey="static const char UPDATE_TIME[] = \"" });
-			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.CSharp, Directory = "Properties", File = "AssemblyInfo.cs", TitleKey = "[assembly: AssemblyTitle(\"", VersionKey = "[assembly: AssemblyFileVersion(\"", AssemblyKey = "[assembly: AssemblyVersion(\"", TimeKey= "[assembly: AssemblyTitle(\"" });
+			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.CSharp, Directory = "Properties", File = "AssemblyInfo.cs", TitleKey = "[assembly: AssemblyProduct(\"", VersionKey = "[assembly: AssemblyFileVersion(\"", AssemblyKey = "[assembly: AssemblyVersion(\"", TimeKey= "[assembly: AssemblyTitle(\"" });
 		}
 
 		/// <summary>
@@ -136,7 +136,7 @@ namespace VMS
 			if(repoPath == null)
 				return list;
 
-			//检索工程版本配置
+			/// 检索工程版本配置
 			foreach(var mark in TypeMarkList)
 			{
 				foreach(var item in Directory.GetDirectories(repoPath, mark.Directory, SearchOption.AllDirectories))

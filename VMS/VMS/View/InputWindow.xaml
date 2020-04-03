@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="InputWindow" Height="200" Width="720" ResizeMode="NoResize" FontSize="24" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" >
 	<Window.Background>
-		<ImageBrush ImageSource="/TSVNCache;component/Images/Background.png"/>
+		<ImageBrush ImageSource="/Images/Background.png"/>
 	</Window.Background>
 
 	<Grid Name="Panel">
