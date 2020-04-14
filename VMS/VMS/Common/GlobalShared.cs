@@ -93,8 +93,10 @@ namespace VMS
 				using var repo = new Repository(LocalRepoPath);
 				return ReadVersionInfo(repo.Lookup<Commit>(sha));
 			}
-			catch
-			{ }
+			catch(Exception e)
+			{
+				System.Diagnostics.Debug.WriteLine(e);
+			}
 
 			return null;
 		}
@@ -107,15 +109,17 @@ namespace VMS
 			VersionInfo version = null;
 			try
 			{
-				var obj = commit?.Tree["Version.json"]?.Target as Blob;
-				version = obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+				var stream = (commit?.Tree["Version.json"]?.Target as Blob)?.GetContentStream();
+				version = stream == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(stream) as VersionInfo;
 				if(version != null)
 				{
 					version.CommitMessage = commit.Message;
 				}
 			}
-			catch
-			{ }
+			catch(Exception e)
+			{
+				System.Diagnostics.Debug.WriteLine(e);
+			}
 
 			return version;
 		}

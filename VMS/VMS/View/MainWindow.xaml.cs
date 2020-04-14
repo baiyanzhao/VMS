@@ -368,6 +368,7 @@ namespace VMS.View
 					RepoData.RepoList.Add(info);
 					ProgressWindow.Show(this, () => Git.Sync(item), info.Update);
 				}
+				TaskBar.IsEnabled = true;
 				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
 			}
 		}
@@ -527,7 +528,7 @@ namespace VMS.View
 
 			#region 提交标准版
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor + 1, 0, 0);
-			WriteVersionInfo(versionInfo);	//升级版本文件
+			WriteVersionInfo(versionInfo);  //升级版本文件
 			Git.Publish(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text, versionInfo.VersionNow.ToString(3));
 			RepoData.CurrentRepo?.Update();
 			#endregion
@@ -547,12 +548,11 @@ namespace VMS.View
 
 			var info = new RepoInfo(path);
 			ProgressWindow.Show(null, () => Git.Sync(path), info.Update);
-			{
-				RepoData.RepoList.Add(info);
-				Settings.RepoPathList.Add(path);
-				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
-				WriteSetting();
-			}
+			RepoData.RepoList.Add(info);
+			Settings.RepoPathList.Add(path);
+			RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
+			WriteSetting();
+			TaskBar.IsEnabled = true;
 		}
 
 		private void DelRepo_Click(object sender, RoutedEventArgs e)
@@ -563,6 +563,113 @@ namespace VMS.View
 				RepoData.RepoList.Remove(RepoData.CurrentRepo);
 				WriteSetting();
 			}
+		}
+
+		private void Search_Click(object sender, RoutedEventArgs e)
+		{
+			var window = new InputWindow
+			{
+				Owner = this,
+				Height = 360,
+				Width = 540,
+				ShowInTaskbar = false,
+				Title = "检索",
+			};
+
+			var form = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 12, 0, 0) };
+			form.Children.Add(new TextBlock { Text = "提交用户", MinWidth = 100, TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 0, 5, 0) });
+			var user = new TextBox { Width = 120 };
+			form.Children.Add(user);
+			window.InputGrid.Children.Add(form);
+
+			form = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 12, 0, 0) };
+			form.Children.Add(new TextBlock { Text = "提交时间", MinWidth = 100, TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 0, 5, 0) });
+			var timeBegin = new DatePicker { SelectedDate = DateTime.Today.AddDays(1 - DateTime.Today.DayOfYear), Width = 180 };
+			form.Children.Add(timeBegin);
+			form.Children.Add(new TextBlock { Text = "-", Margin = new Thickness(12, 0, 12, 0) });
+			var timeEnd = new DatePicker { SelectedDate = DateTime.Today, Width = 180 };
+			form.Children.Add(timeEnd);
+			window.InputGrid.Children.Add(form);
+
+			form = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 24, 0, 0) };
+			form.Children.Add(new TextBlock { Text = "客户名称", MinWidth = 100, TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 0, 5, 0) });
+			var customer = new TextBox { Width = 240 };
+			form.Children.Add(customer);
+			window.InputGrid.Children.Add(form);
+
+			form = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 12, 0, 0) };
+			form.Children.Add(new TextBlock { Text = "评审单号", MinWidth = 100, TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 0, 5, 0) });
+			var orderNumber = new TextBox { Width = 240 };
+			form.Children.Add(orderNumber);
+			window.InputGrid.Children.Add(form);
+
+			form = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 12, 0, 0) };
+			form.Children.Add(new TextBlock { Text = "关键字", MinWidth = 100, TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 0, 5, 0) });
+			var keyword = new TextBox { Width = 240 };
+			form.Children.Add(keyword);
+			window.InputGrid.Children.Add(form);
+
+			var btnOK = new Button { Content = "检索", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 120, 2), Padding = new Thickness(12, 0, 12, 0) };
+			btnOK.Click += delegate
+			{
+				window.DialogResult = true;
+
+				RepoData.CurrentRepo.BranchInfos.Clear();
+				using var repo = new Repository(LocalRepoPath);
+				foreach(var branch in repo.Branches.Where(p => p.IsRemote))
+				{
+					var commit = branch.Tip;
+					var name = branch.FriendlyName.Split('/').Last();
+					if(commit == null || !System.Version.TryParse(name, out var version))   //过滤掉不含版本号的分支
+						continue;
+
+					if(!string.IsNullOrWhiteSpace(user.Text) && commit.Author.Name?.Contains(user.Text) != true)    //用户
+						continue;
+
+					if(commit.Author.When.CompareTo(timeBegin.DisplayDate) < 0 || commit.Author.When.CompareTo(timeEnd.DisplayDate.Add(new TimeSpan(23, 59, 59))) > 0)  //提交时间
+						continue;
+
+					var versionInfo = ReadVersionInfo(commit);
+					if(!string.IsNullOrWhiteSpace(customer.Text) && versionInfo?.Customer?.Contains(customer.Text) != true) //客户名称
+						continue;
+
+					if(!string.IsNullOrWhiteSpace(orderNumber.Text) && versionInfo?.OrderNumber?.Contains(orderNumber.Text) != true)    //评审单号
+						continue;
+
+					if(!string.IsNullOrWhiteSpace(keyword.Text))    //关键字
+					{
+						if(versionInfo?.KeyWords == null)
+							continue;
+
+						bool isFind = false;
+						foreach(var item in versionInfo.KeyWords)
+						{
+							if(item.Value?.Contains(keyword.Text) == true)
+							{
+								isFind = true;
+								break;
+							}
+						}
+						if(!isFind)
+							continue;
+					}
+
+					RepoData.CurrentRepo.BranchInfos.Add(new BranchInfo { Type = Git.Type.Branch, Name = name, Sha = commit.Sha, Version = version, Author = commit.Author.Name, When = commit.Author.When, Message = commit.MessageShort });
+				}
+			};
+
+			var btnDefault = new Button { Content = "默认", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 240, 2), Padding = new Thickness(12, 0, 12, 0) };
+			btnDefault.Click += delegate
+			{
+				window.DialogResult = true;
+				RepoData.CurrentRepo.Update();
+			};
+
+			Grid.SetRow(btnOK, 1);
+			Grid.SetRow(btnDefault, 1);
+			window.Panel.Children.Add(btnOK);
+			window.Panel.Children.Add(btnDefault);
+			window.ShowDialog();
 		}
 
 		private void DataGrid_Loaded(object sender, RoutedEventArgs e)

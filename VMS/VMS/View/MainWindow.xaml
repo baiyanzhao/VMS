@@ -25,7 +25,7 @@
 	<Grid Name="Panel" Background="AliceBlue">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
-			<ColumnDefinition Width="64"/>
+			<ColumnDefinition Width="72"/>
 		</Grid.ColumnDefinitions>
 		<TabControl Name="RepoTab" Margin="1,2,0,1" ikriv:TabContent.IsCached="True" ItemsSource="{Binding RepoList}" SelectedItem="{Binding CurrentRepo, Mode=TwoWay}">
 			<TabControl.ItemTemplate>
@@ -84,7 +84,7 @@
 												<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
 											</StackPanel>
 											<StackPanel Orientation="Horizontal">
-												<TextBlock FontSize="12" Text="订单编号: " Foreground="Black" VerticalAlignment="Center" />
+												<TextBlock FontSize="12" Text="评审单号: " Foreground="Black" VerticalAlignment="Center" />
 												<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
 											</StackPanel>
 										</StackPanel>
@@ -149,56 +149,64 @@
 				<Image Source="/Images/Close.png"/>
 			</Button.Content>
 		</Button>
-		<UniformGrid x:Name="TaskBar" Grid.Column="1" Columns="1" >
-			<UniformGrid.Background>
+		<DockPanel Grid.Column="1">
+			<DockPanel.Background>
 				<LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
 					<GradientStop Color="#FF7896B9" />
 					<GradientStop Color="#FFD4E1EC" Offset="0.03" />
 				</LinearGradientBrush>
-			</UniformGrid.Background>
-
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Open_Click" ToolTip="打开当前工程">
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="打开"/>
-					<Image Margin="4,2" Source="/Images/VisualStudio.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Explorer_Click" ToolTip="打开工程文件夹">
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="浏览"/>
-					<Image Margin="4,2" Source="/Images/Explorer.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Commit_Click" ToolTip="将更改上传到服务器" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="提交"/>
-					<Image Margin="4,2" Source="/Images/Upload.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Visibility="Collapsed" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="快速提交"/>
-					<Image Margin="4,2" Source="/Images/Lightning.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Package_Click" ToolTip="生成当前版本的安装包" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="安装包"/>
-					<Image Margin="4,2" Source="/Images/Package.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Publish_Click" ToolTip="根据测试版修订发布标准版" >
-				<DockPanel>
-					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="发布"/>
-					<Image Margin="4,2" Source="/Images/Publish.png" Stretch="Uniform"/>
-				</DockPanel>
-			</Button>
-			<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >
+			</DockPanel.Background>
+			<Button Margin="0,0" DockPanel.Dock="Bottom" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >
 				<DockPanel>
 					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="设置"/>
 					<Image Margin="4,2" Source="/Images/Set.png" Stretch="Uniform"/>
 				</DockPanel>
 			</Button>
-		</UniformGrid>
+
+			<UniformGrid x:Name="TaskBar" IsEnabled="False" Columns="1">
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Open_Click" ToolTip="打开当前工程">
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="打开"/>
+						<Image Margin="4,2" Source="/Images/VisualStudio.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Explorer_Click" ToolTip="打开工程文件夹">
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="浏览"/>
+						<Image Margin="4,2" Source="/Images/Explorer.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Search_Click" ToolTip="按指定条件筛选分支">
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="检索"/>
+						<Image Margin="4,2" Source="/Images/Search.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Commit_Click" ToolTip="将更改上传到服务器" >
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="提交"/>
+						<Image Margin="4,2" Source="/Images/Upload.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+				<Button Visibility="Hidden" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="快速提交"/>
+						<Image Margin="4,2" Source="/Images/Lightning.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Package_Click" ToolTip="生成当前版本的安装包" >
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="安装包"/>
+						<Image Margin="4,2" Source="/Images/Package.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Publish_Click" ToolTip="根据测试版修订发布标准版" >
+					<DockPanel>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="发布"/>
+						<Image Margin="4,2" Source="/Images/Publish.png" Stretch="Uniform"/>
+					</DockPanel>
+				</Button>
+			</UniformGrid>
+		</DockPanel>
 	</Grid>
 </Window>

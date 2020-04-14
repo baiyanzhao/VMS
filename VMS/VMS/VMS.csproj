@@ -39,7 +39,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>16</ApplicationRevision>
+    <ApplicationRevision>17</ApplicationRevision>
     <ApplicationVersion>3.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -246,6 +246,7 @@
     <Resource Include="Images\Del.png" />
     <Resource Include="Images\Lightning.png" />
     <Resource Include="Images\Publish.png" />
+    <Resource Include="Images\Search.png" />
     <Content Include="Package\Default.SFX">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

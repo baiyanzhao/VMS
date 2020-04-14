@@ -138,8 +138,7 @@ namespace VMS.Model
 					info.Author = commit.Author.Name;
 					info.When = commit.Author.When;
 					info.Message = commit.MessageShort;
-					GlobalShared.RepoData.CurrentRepo?.Update();
-				});
+				}, GlobalShared.RepoData.CurrentRepo.Update);
 			}
 		});
 		#endregion

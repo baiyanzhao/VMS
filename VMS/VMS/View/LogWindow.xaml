@@ -50,7 +50,7 @@
 										<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
-										<TextBlock FontSize="12" Text="订单编号: " Foreground="Black" VerticalAlignment="Center" />
+										<TextBlock FontSize="12" Text="评审单号: " Foreground="Black" VerticalAlignment="Center" />
 										<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
 									</StackPanel>
 								</StackPanel>
