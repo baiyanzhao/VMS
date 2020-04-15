@@ -79,7 +79,7 @@ namespace VMS.ViewModel
 			Explore = new DelegateCommand((parameter) =>
 			{
 				View.ProgressWindow.Show(null, () => Process.Start(GlobalShared.LocalRepoPath + Path.GetDirectoryName(FilePath)));
-			});
+			}, (parameter) => File.Exists(GlobalShared.LocalRepoPath + FilePath));
 
 			Ignore = new DelegateCommand((parameter) =>
 			{
