@@ -21,7 +21,7 @@
 		</Style>
 	</Window.Resources>
 	<Grid>
-		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="True" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
+		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="True" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
 					<TabControl Margin="24,0,0,0">
@@ -96,6 +96,9 @@
 											<Setter.Value>
 												<ControlTemplate TargetType="{x:Type DataGridCell}">
 													<Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+														<Border.InputBindings>
+															<MouseBinding Gesture="LeftDoubleClick" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+														</Border.InputBindings>
 														<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
 													</Border>
 												</ControlTemplate>

@@ -44,10 +44,9 @@ namespace VMS
 			try
 			{
 				File.Delete(path);
-				using(Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-				{
-					new DataContractJsonSerializer(typeof(T)).WriteObject(stream, val);
-				}
+				using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+				new DataContractJsonSerializer(typeof(T)).WriteObject(stream, val);
+				File.SetAttributes(path, FileAttributes.Hidden);
 				return true;
 			}
 			catch
@@ -67,7 +66,7 @@ namespace VMS
 
 			try
 			{
-				using Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+				using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 				val = new DataContractJsonSerializer(typeof(T)).ReadObject(stream) as T;
 			}
 			catch(Exception e)

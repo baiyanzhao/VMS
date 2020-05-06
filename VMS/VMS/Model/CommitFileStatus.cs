@@ -53,9 +53,14 @@ namespace VMS.ViewModel
 			#region 命令
 			Diff = new DelegateCommand((parameter) =>
 			{
+				if(!File.Exists(GlobalShared.Settings.CompareToolPath))
+				{
+					MessageBox.Show("系统找不到差异查看器, 请在设置界面设置差异查看器路径.", "差异查看器不存在!");
+					return;
+				}
+
 				using var repo = new Repository(GlobalShared.LocalRepoPath);
 				var blob = repo.Head.Tip?.Tree?[FilePath]?.Target as Blob;
-
 				try
 				{
 					var filePath = Path.GetTempPath() + "\\vms@" + Path.GetRandomFileName() + "#" + FilePath.Replace('/', '.');

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -117,7 +118,7 @@ namespace VMS
 					var box = new TextBox { Text = @"http://user:ainuo@192.168.1.49:2507/r/MT.git", Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
 					window.InputGrid.Children.Add(box);
 					window.DefaultButton.IsCancel = false;
-					window.DefaultButton.Click += (s, e) => 
+					window.DefaultButton.Click += (s, e) =>
 					{
 						box.Text = box.Text.Trim();
 						if(!box.Text.EndsWith(".git"))
@@ -132,27 +133,28 @@ namespace VMS
 				});
 
 				Repository.Clone(url, localPath, GitCloneOptions);
-				using var repo = new Repository(localPath);
-				repo.Config.Set("lfs.forceprogress", true);
-				repo.Branches.Update(repo.Branches["master"], (s) => s.TrackedBranch = null);    //取消master的上游分支,禁止用户提交此分支
+
+				/// 运行初始化批处理文件
+				var cmdFile = localPath + "/GitClone.bat";
+				if(File.Exists(cmdFile))
+				{
+					Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = localPath, CreateNoWindow = true, UseShellExecute = false });
+				}
 			}
 
 			//同步仓库,并推送当前分支
-			using(var repo = new Repository(localPath))
+			using var repo = new Repository(localPath);
+			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
+
+			//拉取当前分支
+			if(repo.Head.TrackingDetails.BehindBy > 0)
 			{
-				//同步仓库
-				Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
+			}
 
-				//拉取当前分支
-				if(repo.Head.TrackingDetails.BehindBy > 0)
-				{
-					Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
-				}
-
-				if(repo.Head.TrackingDetails.AheadBy > 0)
-				{
-					Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");	//推送未上传的提交
-				}
+			if(repo.Head.TrackingDetails.AheadBy > 0)
+			{
+				Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");   //推送未上传的提交
 			}
 		}
 
@@ -302,6 +304,13 @@ namespace VMS
 			if(type == Type.Branch && !repo.Head.IsTracking)
 			{
 				repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
+			}
+
+			/// 运行批处理文件
+			var cmdFile = repo.Info.WorkingDirectory + "/GitUpdate.bat";
+			if(File.Exists(cmdFile))
+			{
+				Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = repo.Info.WorkingDirectory, CreateNoWindow = true, UseShellExecute = false });
 			}
 		}
 

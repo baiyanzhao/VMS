@@ -29,6 +29,12 @@ namespace VMS.Model
 		#region 命令
 		public ICommand Diff { get; } = new DelegateCommand((parameter) =>
 		{
+			if(!File.Exists(GlobalShared.Settings.CompareToolPath))
+			{
+				MessageBox.Show("系统找不到差异查看器, 请在设置界面设置差异查看器路径.", "差异查看器不存在!");
+				return;
+			}
+
 			var info = parameter as LogTreeDiff;
 			try
 			{
@@ -36,7 +42,7 @@ namespace VMS.Model
 			}
 			catch(Exception x)
 			{
-				MessageBox.Show(x.Message, "文件不存在", MessageBoxButton.OK, MessageBoxImage.Warning);
+				MessageBox.Show(x.StackTrace, x.Message, MessageBoxButton.OK, MessageBoxImage.Warning);
 			}
 
 			/// <summary>

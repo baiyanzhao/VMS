@@ -283,6 +283,13 @@ namespace VMS.View
 				repo.Branches.Remove(branch);
 			}
 			RepoData.CurrentRepo?.Update();
+
+			/// 运行更新批处理文件
+			var cmdFile = repo.Info.WorkingDirectory + "/GitUpdate.bat";
+			if(File.Exists(cmdFile))
+			{
+				ProgressWindow.Show(null, () => Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = repo.Info.WorkingDirectory, CreateNoWindow = true, UseShellExecute = false }));
+			}
 			#endregion
 		}
 
@@ -609,7 +616,7 @@ namespace VMS.View
 			form.Children.Add(keyword);
 			window.InputGrid.Children.Add(form);
 
-			var btnOK = new Button { Content = "检索", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 120, 2), Padding = new Thickness(12, 0, 12, 0) };
+			var btnOK = new Button { Content = "检索", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 100, 2), Padding = new Thickness(12, 0, 12, 0) };
 			btnOK.Click += delegate
 			{
 				window.DialogResult = true;
@@ -658,7 +665,7 @@ namespace VMS.View
 				}
 			};
 
-			var btnDefault = new Button { Content = "默认", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 240, 2), Padding = new Thickness(12, 0, 12, 0) };
+			var btnDefault = new Button { Content = "默认", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(2, 2, 240, 2), Padding = new Thickness(12, 0, 12, 0) };
 			btnDefault.Click += delegate
 			{
 				window.DialogResult = true;
