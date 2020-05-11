@@ -448,60 +448,62 @@ namespace VMS.View
 
 			ProgressWindow.Show(this, delegate
 			{
+				var processList = new List<Process>();
 				var version = ReadVersionInfo()?.VersionNow?.ToString();
 				var folder = Path.Combine(Settings.PackageFolder, version + "\\");
+				var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
 				Directory.CreateDirectory(folder);
 
-				//生成解决方案
+				/// 生成解决方案
+				processList.Clear();
 				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories))
 				{
+					var dir = Path.GetDirectoryName(item);
 					var arg = string.Format("\"{0}\" /t:Clean;Publish /p:Configuration=Release /p:ApplicationVersion=\"{1}\" /noconsolelogger", item, version);
 					Serilog.Log.Information("\"{MSBuildPath}\" {arg}", Settings.MSBuildPath, arg);
-					ProgressWindow.Update(item);
-					Process.Start(new ProcessStartInfo
+					processList.Add(Process.Start(new ProcessStartInfo
 					{
 						FileName = Settings.MSBuildPath,
-						Arguments = arg,
-						UseShellExecute = false,
-						CreateNoWindow = true,
-						WindowStyle = ProcessWindowStyle.Hidden
-					}).WaitForExit();
-				}
-
-				//生成自解压安装包
-				foreach(var item in Directory.GetFiles(LocalRepoPath, "setup.exe", SearchOption.AllDirectories))
-				{
-					var dir = Path.GetDirectoryName(item);
-					var name = Path.GetFileNameWithoutExtension(Directory.GetFiles(dir, "*.application").FirstOrDefault()) ?? item.Substring(LocalRepoPath.Length).Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).First();
-					if(string.IsNullOrEmpty(name))
-						continue;
-
-					var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
-					var arg = string.Format("a -r -s -sfx -z{0} -iicon{1} -iadm -ibck \"{2}\"", rarPath + "sfx", rarPath + "msi.ico", Path.Combine(folder, name + " v" + version));
-					Serilog.Log.Information("WinRAR {arg}", arg);
-					ProgressWindow.Update(item);
-					Process.Start(new ProcessStartInfo
-					{
-						FileName = Path.Combine(rarPath, "WinRAR.exe"),
 						Arguments = arg,
 						WorkingDirectory = dir,
 						UseShellExecute = false,
 						CreateNoWindow = true,
 						WindowStyle = ProcessWindowStyle.Hidden
-					}).WaitForExit();
+					}));
 				}
 
-				//复制hex文件
-				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.hex", SearchOption.AllDirectories))
+				foreach(var process in processList)
 				{
-					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
+					ProgressWindow.Update(process.StartInfo.WorkingDirectory);
+					process.WaitForExit();
 				}
 
-				//复制bin文件
-				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.bin", SearchOption.AllDirectories))
+				/// 生成自解压安装包
+				processList.Clear();
+				foreach(var item in Directory.GetFiles(LocalRepoPath, "Pack.bat", SearchOption.AllDirectories))
 				{
-					File.Copy(item, Path.Combine(folder, Path.GetFileName(item)), true);
+					var dir = Path.GetDirectoryName(item);
+					var name = item.Substring(LocalRepoPath.Length).Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).First();
+					var arg = string.Format("\"{0}\" \"{1}\" \"{2}\"", rarPath, Path.Combine(folder, name + " v" + version), folder);
+					Serilog.Log.Information("{item} {arg}", item, arg);
+					processList.Add(Process.Start(new ProcessStartInfo
+					{
+						FileName = item,
+						Arguments = arg,
+						WorkingDirectory = dir,
+						UseShellExecute = false,
+						CreateNoWindow = true,
+						WindowStyle = ProcessWindowStyle.Hidden
+					}));
 				}
+
+				foreach(var process in processList)
+				{
+					ProgressWindow.Update(process.StartInfo.WorkingDirectory);
+					process.WaitForExit();
+				}
+
+				/// 打开安装包目录
 				Process.Start(Settings.PackageFolder);
 			});
 		}
