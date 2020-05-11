@@ -7,7 +7,7 @@ using System.Windows;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("2020-05-11 11:38:20")]
+[assembly: AssemblyTitle("2020-05-11 16:38:23")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
@@ -51,6 +51,6 @@ using System.Windows;
 // 可以指定所有值，也可以使用以下所示的 "*" 预置版本号和修订号
 // 方法是按如下所示使用“*”: :
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.0.0.26")]
-[assembly: AssemblyFileVersion("3.0.0.26")]
+[assembly: AssemblyVersion("3.0.0.27")]
+[assembly: AssemblyFileVersion("3.0.0.27")]
 [assembly: NeutralResourcesLanguage("zh")]

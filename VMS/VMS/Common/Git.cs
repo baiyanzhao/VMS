@@ -24,32 +24,6 @@ namespace VMS
 
 		#region 属性
 		/// <summary>
-		/// Git PushOptions
-		/// </summary>
-		public static PushOptions GitPushOptions { get; } = new PushOptions
-		{
-			CredentialsProvider = GetCredential,
-			OnPushTransferProgress = (int current, int total, long bytes) =>
-			{
-				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", current, total, string.Format("{0:N}", bytes / 1024.0)));
-				return true;
-			},
-			OnNegotiationCompletedBeforePush = (updates) =>
-			{
-				return true;
-			},
-			OnPackBuilderProgress = (stage, current, total) =>
-			{
-				ProgressWindow.Update(string.Format("{0} {1}/{2}", stage, current, total));
-				return true;
-			},
-			OnPushStatusError = (err) =>
-			{
-				throw new Exception(err.Message);
-			}
-		};
-
-		/// <summary>
 		/// Git CloneOptions
 		/// </summary>
 		public static CloneOptions GitCloneOptions { get; } = new CloneOptions
@@ -67,7 +41,7 @@ namespace VMS
 			},
 			OnTransferProgress = (TransferProgress progress) =>
 			{
-				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
+				ProgressWindow.Update(string.Format("Clone {0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
 				return true;
 			}
 		};
@@ -90,7 +64,7 @@ namespace VMS
 			},
 			OnTransferProgress = (TransferProgress progress) =>
 			{
-				ProgressWindow.Update(string.Format("{0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
+				ProgressWindow.Update(string.Format("Fetch {0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
 				return true;
 			}
 		};
@@ -257,7 +231,7 @@ namespace VMS
 				ProgressWindow.Update(msg);
 			});
 
-			Serilog.Log.Information("git {cmd} {workDir}", cmd, workDir);
+			Serilog.Log.Information("git {cmd} {workDir} <==", cmd, workDir);
 			process.OutputDataReceived += dataHandler;
 			process.ErrorDataReceived += dataHandler;
 			process.Start();
@@ -268,7 +242,7 @@ namespace VMS
 			{
 				throw new Exception(errors);
 			}
-			Serilog.Log.Verbose("git End");
+			Serilog.Log.Verbose("git {cmd} ==>", cmd);
 		}
 
 		/// <summary>
