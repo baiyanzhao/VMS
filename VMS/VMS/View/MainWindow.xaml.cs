@@ -112,8 +112,14 @@ namespace VMS.View
 		/// <returns>工程未更改, null; 提交成功, true: 否则,false</returns>
 		public static bool? Commit()
 		{
+			RepositoryStatus entries = null;
 			using var repo = new Repository(LocalRepoPath);
-			var entries = repo?.RetrieveStatus();
+			var instance = Application.Current.MainWindow as MainWindow;
+
+			ProgressWindow.Show(instance, delegate
+			{
+				entries = repo?.RetrieveStatus();
+			});
 			if(entries == null || !entries.IsDirty)
 				return null;
 
@@ -148,7 +154,6 @@ namespace VMS.View
 			var versionInfo = ReadVersionInfo() ?? new VersionInfo();
 			versionInfo.KeyWords ??= new ObservableCollection<VersionInfo.StringProperty>();
 
-			var instance = Application.Current.MainWindow as MainWindow;
 			var commitWindow = new CommitWindow() { Owner = instance, Title = RepoData.CurrentRepo?.Title };
 			commitWindow.FileGrid.DataContext = status;
 			commitWindow.Version.DataContext = versionInfo;
@@ -227,8 +232,14 @@ namespace VMS.View
 			if(info == null)
 				return;
 
+			bool? isDirty = false;
 			using var repo = new Repository(LocalRepoPath);
-			if(repo.RetrieveStatus().IsDirty)
+			var instance = Application.Current.MainWindow as MainWindow;
+			ProgressWindow.Show(instance, delegate
+			{
+				isDirty = repo?.RetrieveStatus().IsDirty;
+			});
+			if(isDirty != false)
 			{
 				MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
 				return;
@@ -240,7 +251,6 @@ namespace VMS.View
 			versionInfo.VersionBase = versionInfo.VersionNow;
 			versionInfo.VersionNow = null;
 
-			var instance = Application.Current.MainWindow as MainWindow;
 			var commitWindow = new CommitWindow() { Owner = instance, Title = "基于" + versionInfo.VersionBase + " 新建分支" };
 			commitWindow.FileGrid.DataContext = null;
 			commitWindow.Version.DataContext = versionInfo;
@@ -377,29 +387,6 @@ namespace VMS.View
 				}
 				TaskBar.IsEnabled = true;
 				RepoData.CurrentRepo ??= RepoData.RepoList.FirstOrDefault();
-			}
-		}
-
-		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			foreach(var item in RepoData.RepoList)
-			{
-				using var repo = new Repository(item.LocalRepoPath);
-				if(repo != null && repo.RetrieveStatus().IsDirty)
-				{
-					switch(MessageBox.Show(Application.Current.MainWindow, "存在尚未提交的文件,是否立即提交?\n 点'是', 提交更改\n 点'否', 直接退出\n 点'取消', 不进行任何操作.", item.Title + " 尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
-					{
-					case MessageBoxResult.Yes:
-						RepoData.CurrentRepo = item;
-						Commit();
-						break;
-					case MessageBoxResult.Cancel:
-						e.Cancel = true;
-						return;
-					default:
-						return;
-					}
-				}
 			}
 		}
 

@@ -12,16 +12,6 @@ namespace VMS
 {
 	public static class Git
 	{
-		/// <summary>
-		/// 签出类型
-		/// </summary>
-		public enum Type
-		{
-			Branch,
-			Sha,
-			Tag,
-		}
-
 		#region 属性
 		/// <summary>
 		/// Git CloneOptions
@@ -68,6 +58,20 @@ namespace VMS
 				return true;
 			}
 		};
+
+		//static private readonly Dictionary<string, FileStatus> STATUS_FLAG = new Dictionary<string, FileStatus>()
+		//{
+		//	{ "?? ",  FileStatus.NewInWorkdir},
+		//	{ " M ",  FileStatus.ModifiedInWorkdir },
+		//	{ " D ",  FileStatus.DeletedFromWorkdir },
+		//	{ " C ",  FileStatus.TypeChangeInWorkdir },
+		//	{ " R ",  FileStatus.RenamedInWorkdir },
+		//	{ "A  ",  FileStatus.NewInIndex },
+		//	{ "M  ",  FileStatus.ModifiedInIndex },
+		//	{ "D  ",  FileStatus.DeletedFromIndex },
+		//	{ "R  ",  FileStatus.RenamedInIndex },
+		//	{ "C  ",  FileStatus.TypeChangeInIndex },
+		//};
 		#endregion
 
 		#region 方法
@@ -76,7 +80,7 @@ namespace VMS
 		/// </summary>
 		public static void Sync(string localPath)
 		{
-			//创建仓库
+			/// 创建仓库
 			if(Repository.Discover(localPath) == null)
 			{
 				string url = null;
@@ -116,24 +120,13 @@ namespace VMS
 				}
 			}
 
-			//同步仓库,并推送当前分支
+			/// 同步仓库
 			using var repo = new Repository(localPath);
-			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
-
-			//拉取当前分支
-			if(repo.Head.TrackingDetails.BehindBy > 0)
-			{
-				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
-			}
-
-			if(repo.Head.TrackingDetails.AheadBy > 0)
-			{
-				Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");   //推送未上传的提交
-			}
+			FetchHead(null, repo);
 		}
 
 		/// <summary>
-		/// 同步Head
+		/// 同步当前分支
 		/// </summary>
 		/// <param name="owner">主窗体</param>
 		/// <param name="repo">仓库</param>
@@ -143,7 +136,12 @@ namespace VMS
 			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
 			if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
 			{
-				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions });
+				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions, MergeOptions = new MergeOptions { FileConflictStrategy = CheckoutFileConflictStrategy.Theirs, MergeFileFavor = MergeFileFavor.Theirs } });
+			}
+
+			if(repo.Head.TrackingDetails.AheadBy > 0) //推送未上传的提交
+			{
+				Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
 			}
 		});
 
@@ -196,7 +194,7 @@ namespace VMS
 			Serilog.Log.Verbose("Publish {version} {message}", version, message);
 		});
 
-		public static void Cmd(string workDir, string cmd)
+		public static void Cmd(string workDir, string cmd, DataReceivedEventHandler dataReceivedHandler = null)
 		{
 			using var process = new Process();
 			process.StartInfo.FileName = "git";
@@ -212,7 +210,7 @@ namespace VMS
 
 			var errors = string.Empty;
 			var ErrorPrefixes = new string[] { "error:", "fatal:" };
-			var dataHandler = new DataReceivedEventHandler((s, e) =>
+			var dataHandler = dataReceivedHandler ?? new DataReceivedEventHandler((s, e) =>
 			{
 				var msg = e.Data;
 				if(string.IsNullOrWhiteSpace(msg))
@@ -244,6 +242,53 @@ namespace VMS
 			}
 			Serilog.Log.Verbose("git {cmd} ==>", cmd);
 		}
+
+		//public static ObservableCollection<CommitFileStatus> Status(string repoPath)
+		//{
+		//	var status = new ObservableCollection<CommitFileStatus>();
+		//	Cmd(repoPath, "status --porcelain -z -uall", new DataReceivedEventHandler((s, e) =>
+		//	{
+		//		if(string.IsNullOrWhiteSpace(e.Data))
+		//			return;
+
+		//		foreach(var line in e.Data.Split('\0'))
+		//		{
+		//			foreach(var pair in STATUS_FLAG)
+		//			{
+		//				if(line.StartsWith(pair.Key))
+		//				{
+		//					status.Add(new CommitFileStatus { FileStatus = pair.Value, FilePath = line.Remove(0, pair.Key.Length) });
+		//				}
+		//			}
+		//		}
+		//	}));
+		//	return status;
+		//}
+
+		//public static (int Ahead, int Behind) TrackingDetails(string repoPath)
+		//{
+		//	var status = new (string Flag, int Num)[] { ("ahead ", 0), ("behind ", 0) };
+		//	Cmd(repoPath, "status --porcelain -b -uno", new DataReceivedEventHandler((s, e) =>
+		//	{
+		//		if(string.IsNullOrWhiteSpace(e.Data) || !e.Data.StartsWith("## "))
+		//			return;
+
+		//		var msg = e.Data;
+		//		for(int i = 0; i < status.Length; i++)
+		//		{
+		//			if(!msg.Contains(status[i].Flag))
+		//				continue;
+
+		//			int begin = msg.IndexOf(status[i].Flag) + status[i].Flag.Length;
+		//			int lenth = msg.IndexOfAny(new char[] { ',', ']' }, begin) - begin;
+		//			if(begin > 0 && lenth > 0)
+		//			{
+		//				int.TryParse(msg.Substring(begin, lenth), out status[i].Num);
+		//			}
+		//		}
+		//	}));
+		//	return (status[0].Num, status[1].Num);
+		//}
 
 		/// <summary>
 		/// 更新并签出指定版本的工程
@@ -324,6 +369,18 @@ namespace VMS
 				}
 			}
 			return new UsernamePasswordCredentials() { Username = user, Password = password };
+		}
+		#endregion
+
+		#region 类型
+		/// <summary>
+		/// 签出类型
+		/// </summary>
+		public enum Type
+		{
+			Branch,
+			Sha,
+			Tag,
 		}
 		#endregion
 	}

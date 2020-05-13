@@ -125,8 +125,7 @@ namespace VMS.Model
 				if(repo == null)
 					return;
 
-				var entries = repo.RetrieveStatus();
-				if(entries.IsDirty && MessageBox.Show("文件更改尚未上传,切换分支将撤销所有更改.\n\n注意:\n撤销的更改无法恢复!\n新建文件不会删除!", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+				if(repo.RetrieveStatus().IsDirty && MessageBox.Show("文件更改尚未上传,切换分支将撤销所有更改.\n\n注意:\n撤销的更改无法恢复!\n新建文件不会删除!", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
 					return;
 
 				ProgressWindow.Show(Application.Current.MainWindow, delegate
