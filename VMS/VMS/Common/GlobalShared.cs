@@ -24,13 +24,12 @@ namespace VMS
 		#region 方法
 		private static Setting GetSetting()
 		{
-			var set = ReadObject<Setting>(SetFilePath) ?? new Setting();
+			var set = ReadObject<Setting>(SetFilePath) ?? new Setting { IsAutoCommit = false };
 			set.RepoPathList ??= new List<string>();
 			set.LatestMessage ??= new List<string>();
 			set.PackageFolder ??= Path.GetTempPath() + @"Package\";
 			set.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			set.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
-			set.CredentialPairs ??= new Dictionary<(string Url, string UsernameFromUrl), (string User, string Password)>();
 			return set;
 		}
 

@@ -39,14 +39,17 @@
 		<TextBlock Text="安装包目录" Grid.Row="1" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="差异查看器" Grid.Row="2" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 		<TextBlock Text="MSBuild" Grid.Row="3" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+		<TextBlock Text="退出程序" Grid.Row="4" FontSize="16" Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 
 		<TextBox Text="{Binding User}" Foreground="DarkBlue" Grid.Row="0" Grid.Column="1" MaxLength="16" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding PackageFolder}" Foreground="Gray" Grid.Row="1" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding CompareToolPath}" Foreground="Gray" Grid.Row="2" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
 		<TextBox Text="{Binding MSBuildPath}" Foreground="Gray" Grid.Row="3" Grid.Column="1" Margin="5,0" VerticalAlignment="Center"/>
+
+		<CheckBox IsChecked="{Binding IsAutoCommit}" Grid.Row="4" Grid.Column="1" Margin="5,0" VerticalAlignment="Center" Content="自动提交"/>
 		<TextBlock Grid.Row="4" Grid.Column="1" Margin="0,0,64,5" HorizontalAlignment="Right" VerticalAlignment="Bottom">
 			<Hyperlink Click="Hyperlink_Click">下载最新版本</Hyperlink>
 		</TextBlock>
-		<Button Grid.Row="5" Grid.Column="1" IsCancel="True" IsDefault="True" Content="OK" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5" Padding="12,2"/>
+		<Button Grid.Row="4" Grid.Column="1" IsCancel="True" IsDefault="True" Content="OK" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5" Padding="12,2"/>
 	</Grid>
 </Window>

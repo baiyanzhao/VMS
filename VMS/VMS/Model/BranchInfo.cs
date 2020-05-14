@@ -121,17 +121,16 @@ namespace VMS.Model
 		{
 			if(parameter is BranchInfo info)
 			{
-				using var repo = new Repository(GlobalShared.LocalRepoPath);
-				if(repo == null)
-					return;
-
-				if(repo.RetrieveStatus().IsDirty && MessageBox.Show("文件更改尚未上传,切换分支将撤销所有更改.\n\n注意:\n撤销的更改无法恢复!\n新建文件不会删除!", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+				if(Git.RepoStatus(GlobalShared.LocalRepoPath).IsDirty && MessageBox.Show("文件更改尚未上传,切换分支将撤销所有更改.\n\n注意:\n撤销的更改无法恢复!\n新建文件不会删除!", "是否继续?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
 					return;
 
 				ProgressWindow.Show(Application.Current.MainWindow, delegate
 				{
-					Git.Checkout(repo, info.Type == Git.Type.Sha ? info.Sha : info.Name, info.Type);
+					using var repo = new Repository(GlobalShared.LocalRepoPath);
+					if(repo == null)
+						return;
 
+					Git.Checkout(repo, info.Type == Git.Type.Sha ? info.Sha : info.Name, info.Type);
 					var commit = repo.Head.Tip;
 					info.Sha = commit.Sha;
 					info.Author = commit.Author.Name;

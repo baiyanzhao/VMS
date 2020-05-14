@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using LibGit2Sharp;
 using VMS.View;
+using VMS.ViewModel;
 
 namespace VMS
 {
@@ -14,74 +17,31 @@ namespace VMS
 	{
 		#region 属性
 		/// <summary>
-		/// Git CloneOptions
+		/// 文件状态字典
 		/// </summary>
-		public static CloneOptions GitCloneOptions { get; } = new CloneOptions
+		static private readonly Dictionary<string, FileStatus> STATUS_FLAG = new Dictionary<string, FileStatus>()
 		{
-			CredentialsProvider = GetCredential,
-			OnProgress = (string serverProgressOutput) =>
-			{
-				ProgressWindow.Update(serverProgressOutput);
-				return true;
-			},
-			OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
-			{
-				ProgressWindow.Update(referenceName);
-				return true;
-			},
-			OnTransferProgress = (TransferProgress progress) =>
-			{
-				ProgressWindow.Update(string.Format("Clone {0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
-				return true;
-			}
+			{ "?? ",  LibGit2Sharp.FileStatus.NewInWorkdir},
+			{ " M ",  LibGit2Sharp.FileStatus.ModifiedInWorkdir },
+			{ " D ",  LibGit2Sharp.FileStatus.DeletedFromWorkdir },
+			{ " C ",  LibGit2Sharp.FileStatus.TypeChangeInWorkdir },
+			{ " R ",  LibGit2Sharp.FileStatus.RenamedInWorkdir },
+			{ "A  ",  LibGit2Sharp.FileStatus.NewInIndex },
+			{ "M  ",  LibGit2Sharp.FileStatus.ModifiedInIndex },
+			{ "D  ",  LibGit2Sharp.FileStatus.DeletedFromIndex },
+			{ "R  ",  LibGit2Sharp.FileStatus.RenamedInIndex },
+			{ "C  ",  LibGit2Sharp.FileStatus.TypeChangeInIndex },
 		};
-
-		/// <summary>
-		/// Git FetchOptions
-		/// </summary>
-		public static FetchOptions GitFetchOptions { get; } = new FetchOptions
-		{
-			CredentialsProvider = GetCredential,
-			OnProgress = (string serverProgressOutput) =>
-			{
-				ProgressWindow.Update(serverProgressOutput);
-				return true;
-			},
-			OnUpdateTips = (string referenceName, ObjectId oldId, ObjectId newId) =>
-			{
-				ProgressWindow.Update(referenceName);
-				return true;
-			},
-			OnTransferProgress = (TransferProgress progress) =>
-			{
-				ProgressWindow.Update(string.Format("Fetch {0}/{1}, {2}kB", progress.ReceivedObjects, progress.TotalObjects, string.Format("{0:N}", progress.ReceivedBytes / 1024.0)));
-				return true;
-			}
-		};
-
-		//static private readonly Dictionary<string, FileStatus> STATUS_FLAG = new Dictionary<string, FileStatus>()
-		//{
-		//	{ "?? ",  FileStatus.NewInWorkdir},
-		//	{ " M ",  FileStatus.ModifiedInWorkdir },
-		//	{ " D ",  FileStatus.DeletedFromWorkdir },
-		//	{ " C ",  FileStatus.TypeChangeInWorkdir },
-		//	{ " R ",  FileStatus.RenamedInWorkdir },
-		//	{ "A  ",  FileStatus.NewInIndex },
-		//	{ "M  ",  FileStatus.ModifiedInIndex },
-		//	{ "D  ",  FileStatus.DeletedFromIndex },
-		//	{ "R  ",  FileStatus.RenamedInIndex },
-		//	{ "C  ",  FileStatus.TypeChangeInIndex },
-		//};
 		#endregion
 
 		#region 方法
 		/// <summary>
 		/// 同步仓库
 		/// </summary>
-		public static void Sync(string localPath)
+		public static void Sync(string repoPath)
 		{
 			/// 创建仓库
-			if(Repository.Discover(localPath) == null)
+			if(Repository.Discover(repoPath) == null)
 			{
 				string url = null;
 				Application.Current.Dispatcher.Invoke(delegate
@@ -89,7 +49,7 @@ namespace VMS
 					var window = new InputWindow
 					{
 						ShowInTaskbar = false,
-						Title = "请输入仓库URL: " + localPath,
+						Title = "请输入仓库URL: " + repoPath,
 						Owner = Application.Current.MainWindow.IsLoaded ? Application.Current.MainWindow : null
 					};
 
@@ -110,54 +70,44 @@ namespace VMS
 					url = box.Text;
 				});
 
-				Repository.Clone(url, localPath, GitCloneOptions);
+				Cmd(null, "clone --verbose --progress " + url + " " + repoPath);
 
 				/// 运行初始化批处理文件
-				var cmdFile = localPath + "/GitClone.bat";
+				var cmdFile = repoPath + "/GitClone.bat";
 				if(File.Exists(cmdFile))
 				{
-					Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = localPath, CreateNoWindow = true, UseShellExecute = false });
+					Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = repoPath, CreateNoWindow = true, UseShellExecute = false });
 				}
 			}
 
 			/// 同步仓库
-			using var repo = new Repository(localPath);
-			FetchHead(null, repo);
+			Cmd(repoPath, "fetch --progress");
+			var (Ahead, Behind, Dirty) = RepoStatus(repoPath);
+			if(Behind > 0) //拉取上游分支
+			{
+				Cmd(repoPath, "stash clear");
+				Cmd(repoPath, "stash --include-untracked");
+				Cmd(repoPath, "merge --verbose --progress -srecursive -Xours");
+				Cmd(repoPath, "stash pop");
+			}
+
+			if(Ahead > 0) //推送未上传的提交
+			{
+				Cmd(repoPath, "push --verbose --progress");
+			}
 		}
-
-		/// <summary>
-		/// 同步当前分支
-		/// </summary>
-		/// <param name="owner">主窗体</param>
-		/// <param name="repo">仓库</param>
-		/// <returns></returns>
-		public static bool FetchHead(Window owner, Repository repo) => ProgressWindow.Show(owner, delegate
-		{
-			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
-			if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
-			{
-				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions, MergeOptions = new MergeOptions { FileConflictStrategy = CheckoutFileConflictStrategy.Theirs, MergeFileFavor = MergeFileFavor.Theirs } });
-			}
-
-			if(repo.Head.TrackingDetails.AheadBy > 0) //推送未上传的提交
-			{
-				Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
-			}
-		});
 
 		/// <summary>
 		/// 提交并推送
 		/// </summary>
 		/// <param name="repo">仓库</param>
 		/// <param name="message">信息</param>
-		public static bool Commit(Window owner, Repository repo, string message) => ProgressWindow.Show(owner, delegate
+		public static bool Commit(Window owner, string repoPath, string message) => ProgressWindow.Show(owner, delegate
 		{
-			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
-			ProgressWindow.Update("Stage...");
-			Commands.Stage(repo, "*");
-			repo.Commit(message, sign, sign);
-			Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
-			Serilog.Log.Verbose("Commit {FriendlyName} {message}", repo.Head.FriendlyName, message);
+			Cmd(repoPath, "add . --verbose");
+			Cmd(repoPath, "commit --author " + GlobalShared.Settings.User + "<" + Environment.MachineName + "> -m\"" + message + "\"");
+			Cmd(repoPath, "push --verbose --progress");
+			Serilog.Log.Verbose("Commit {repoPath} {message}", repoPath, message);
 		});
 
 		/// <summary>
@@ -169,13 +119,11 @@ namespace VMS
 		public static void Publish(Window owner, Repository repo, string message, string version) => ProgressWindow.Show(owner, delegate
 		{
 			/// 升级版本并提交内测版
-			var sign = new Signature("Sys", Environment.MachineName, DateTime.Now);
-			ProgressWindow.Update("Stage...");
-			Commands.Stage(repo, "*");
-			repo.Commit(version, sign, sign);
+			Cmd(repo.Info.WorkingDirectory, "add . --verbose");
+			Cmd(repo.Info.WorkingDirectory, "commit --author " + "Sys<" + Environment.MachineName + "> -m\"" + version + "\"");
 
 			/// 生成标准版提交,并设置标签
-			sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
+			var sign = new Signature(GlobalShared.Settings.User, Environment.MachineName, DateTime.Now);
 			var parent = repo.Tags.OrderByDescending((o) =>
 			{
 				if(System.Version.TryParse(o.FriendlyName, out var ver))
@@ -194,6 +142,119 @@ namespace VMS
 			Serilog.Log.Verbose("Publish {version} {message}", version, message);
 		});
 
+		/// <summary>
+		/// 文件更改状态
+		/// </summary>
+		/// <param name="repoPath">仓库目录</param>
+		/// <returns>文件更改列表</returns>
+		public static ObservableCollection<CommitFileStatus> FileStatus(string repoPath)
+		{
+			var status = new ObservableCollection<CommitFileStatus>();
+			Cmd(repoPath, "status --porcelain -z -uall", new DataReceivedEventHandler((s, e) =>
+			{
+				if(string.IsNullOrWhiteSpace(e.Data))
+					return;
+
+				foreach(var line in e.Data.Split('\0'))
+				{
+					foreach(var pair in STATUS_FLAG)
+					{
+						if(line.StartsWith(pair.Key))
+						{
+							status.Add(new CommitFileStatus { FileStatus = pair.Value, FilePath = line.Remove(0, pair.Key.Length) });
+						}
+					}
+				}
+			}));
+			return status;
+		}
+
+		/// <summary>
+		/// 仓库状态
+		/// </summary>
+		/// <param name="repoPath">仓库目录</param>
+		/// <returns>状态</returns>
+		public static (int Ahead, int Behind, bool IsDirty) RepoStatus(string repoPath)
+		{
+			bool IsDirty = false;
+			var status = new (string Flag, int Num)[] { ("ahead ", 0), ("behind ", 0) };
+			Cmd(repoPath, "status --porcelain -b", new DataReceivedEventHandler((s, e) =>
+			{
+				if(string.IsNullOrWhiteSpace(e.Data))
+					return;
+
+				var line = e.Data;
+				if(line.StartsWith("## "))
+				{
+					for(int i = 0; i < status.Length; i++)
+					{
+						if(!line.Contains(status[i].Flag))
+							continue;
+
+						int begin = line.IndexOf(status[i].Flag) + status[i].Flag.Length;
+						int lenth = line.IndexOfAny(new char[] { ',', ']' }, begin) - begin;
+						if(begin > 0 && lenth > 0)
+						{
+							int.TryParse(line.Substring(begin, lenth), out status[i].Num);
+						}
+					}
+					return;
+				}
+
+				if(!IsDirty)
+				{
+					foreach(var pair in STATUS_FLAG)
+					{
+						if(line.StartsWith(pair.Key))
+						{
+							IsDirty = true;
+							break;
+						}
+					}
+				}
+			}));
+			return (status[0].Num, status[1].Num, IsDirty);
+		}
+
+		/// <summary>
+		/// 更新并签出指定版本的工程
+		/// </summary>
+		/// <param name="repo">Git仓库</param>
+		/// <param name="mark">签出标识字符串,由<paramref name="type"/>决定类型 </param>
+		/// <param name="type">签出类型</param>
+		public static void Checkout(Repository repo, string mark, Type type)
+		{
+			if(repo == null)
+				return;
+
+			var committishOrBranchSpec = type switch
+			{
+				Type.Branch => mark,
+				Type.Tag => repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha,
+				_ => mark,
+			};
+
+			Cmd(repo.Info.WorkingDirectory, "checkout " + committishOrBranchSpec + " --force --progress");
+			if(type == Type.Branch)
+			{
+				Cmd(repo.Info.WorkingDirectory, "branch --set-upstream-to=origin/" + committishOrBranchSpec);
+			}
+			Sync(repo.Info.WorkingDirectory);
+
+			/// 运行批处理文件
+			var cmdFile = repo.Info.WorkingDirectory + "/GitUpdate.bat";
+			if(File.Exists(cmdFile))
+			{
+				Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = repo.Info.WorkingDirectory, CreateNoWindow = true, UseShellExecute = false });
+			}
+		}
+
+		/// <summary>
+		/// Git命令行工具
+		/// </summary>
+		/// <param name="workDir">仓库目录</param>
+		/// <param name="cmd">命令</param>
+		/// <param name="dataReceivedHandler">数据回传处理方法</param>
 		public static void Cmd(string workDir, string cmd, DataReceivedEventHandler dataReceivedHandler = null)
 		{
 			using var process = new Process();
@@ -216,20 +277,28 @@ namespace VMS
 				if(string.IsNullOrWhiteSpace(msg))
 					return;
 
-				foreach(var prefix in ErrorPrefixes)
+				if(string.IsNullOrEmpty(errors))
 				{
-					if(msg.StartsWith(prefix))
+					foreach(var prefix in ErrorPrefixes)
 					{
-						errors += msg;
-						break;
+						if(msg.StartsWith(prefix))
+						{
+							errors += msg;
+							break;
+						}
 					}
+				}
+				else
+				{
+					errors += msg;
 				}
 
 				Serilog.Log.Verbose(msg);
 				ProgressWindow.Update(msg);
 			});
 
-			Serilog.Log.Information("git {cmd} {workDir} <==", cmd, workDir);
+			ProgressWindow.Update("git " + cmd);
+			Serilog.Log.Information("git {cmd} {workDir} ==>", cmd, workDir);
 			process.OutputDataReceived += dataHandler;
 			process.ErrorDataReceived += dataHandler;
 			process.Start();
@@ -240,135 +309,7 @@ namespace VMS
 			{
 				throw new Exception(errors);
 			}
-			Serilog.Log.Verbose("git {cmd} ==>", cmd);
-		}
-
-		//public static ObservableCollection<CommitFileStatus> Status(string repoPath)
-		//{
-		//	var status = new ObservableCollection<CommitFileStatus>();
-		//	Cmd(repoPath, "status --porcelain -z -uall", new DataReceivedEventHandler((s, e) =>
-		//	{
-		//		if(string.IsNullOrWhiteSpace(e.Data))
-		//			return;
-
-		//		foreach(var line in e.Data.Split('\0'))
-		//		{
-		//			foreach(var pair in STATUS_FLAG)
-		//			{
-		//				if(line.StartsWith(pair.Key))
-		//				{
-		//					status.Add(new CommitFileStatus { FileStatus = pair.Value, FilePath = line.Remove(0, pair.Key.Length) });
-		//				}
-		//			}
-		//		}
-		//	}));
-		//	return status;
-		//}
-
-		//public static (int Ahead, int Behind) TrackingDetails(string repoPath)
-		//{
-		//	var status = new (string Flag, int Num)[] { ("ahead ", 0), ("behind ", 0) };
-		//	Cmd(repoPath, "status --porcelain -b -uno", new DataReceivedEventHandler((s, e) =>
-		//	{
-		//		if(string.IsNullOrWhiteSpace(e.Data) || !e.Data.StartsWith("## "))
-		//			return;
-
-		//		var msg = e.Data;
-		//		for(int i = 0; i < status.Length; i++)
-		//		{
-		//			if(!msg.Contains(status[i].Flag))
-		//				continue;
-
-		//			int begin = msg.IndexOf(status[i].Flag) + status[i].Flag.Length;
-		//			int lenth = msg.IndexOfAny(new char[] { ',', ']' }, begin) - begin;
-		//			if(begin > 0 && lenth > 0)
-		//			{
-		//				int.TryParse(msg.Substring(begin, lenth), out status[i].Num);
-		//			}
-		//		}
-		//	}));
-		//	return (status[0].Num, status[1].Num);
-		//}
-
-		/// <summary>
-		/// 更新并签出指定版本的工程
-		/// </summary>
-		/// <param name="repo">Git仓库</param>
-		/// <param name="mark">签出标识字符串,由<paramref name="type"/>决定类型 </param>
-		/// <param name="type">签出类型</param>
-		public static void Checkout(Repository repo, string mark, Type type)
-		{
-			string committishOrBranchSpec;
-			switch(type)
-			{
-			case Type.Branch:
-				committishOrBranchSpec = mark;
-				if(repo.Branches[committishOrBranchSpec]?.IsTracking == true && repo.Branches[committishOrBranchSpec]?.TrackingDetails.AheadBy > 0)
-				{
-					Cmd(repo.Info.WorkingDirectory, "push origin " + committishOrBranchSpec + " --verbose --progress");  //同步前先推送,防止本地更改被远程覆盖
-				}
-				Commands.Fetch(repo, "origin", new string[] { "refs/heads/" + committishOrBranchSpec + ":refs/heads/" + committishOrBranchSpec }, GitFetchOptions, null);
-				break;
-
-			case Type.Tag:
-				committishOrBranchSpec = repo.Tags.FirstOrDefault(s => s.FriendlyName.Equals(mark))?.Target.Sha;
-				break;
-
-			default:
-				committishOrBranchSpec = mark;
-				break;
-			}
-
-			Commands.Checkout(repo, committishOrBranchSpec, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
-			if(type == Type.Branch && !repo.Head.IsTracking)
-			{
-				repo.Branches.Update(repo.Head, (s) => { s.TrackedBranch = "refs/remotes/origin/" + repo.Head.FriendlyName; });
-			}
-
-			/// 运行批处理文件
-			var cmdFile = repo.Info.WorkingDirectory + "/GitUpdate.bat";
-			if(File.Exists(cmdFile))
-			{
-				Process.Start(new ProcessStartInfo { FileName = cmdFile, WorkingDirectory = repo.Info.WorkingDirectory, CreateNoWindow = true, UseShellExecute = false });
-			}
-		}
-
-		private static UsernamePasswordCredentials GetCredential(string url, string usernameFromUrl, SupportedCredentialTypes types)
-		{
-			string user = null, password = null;
-			if(GlobalShared.Settings.CredentialPairs.ContainsKey((url, usernameFromUrl)))
-			{
-				var (User, Password) = GlobalShared.Settings.CredentialPairs[(url, usernameFromUrl)];
-				user = User;
-				password = Password;
-			}
-			else
-			{
-				Application.Current.Dispatcher.Invoke(delegate
-				{
-					var window = new InputWindow
-					{
-						ShowInTaskbar = false,
-						Title = "请输入仓库账号和密码:" + url,
-						Owner = Application.Current.MainWindow.IsLoaded ? Application.Current.MainWindow : null
-					};
-
-					var userBox = new TextBox { Text = usernameFromUrl, Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center, Background = null };
-					var passwordBox = new PasswordBox { Margin = new Thickness(5), VerticalAlignment = VerticalAlignment.Center };
-					window.InputGrid.Children.Add(userBox);
-					window.InputGrid.Children.Add(passwordBox);
-					window.ShowDialog();
-					user = userBox.Text;
-					password = passwordBox.Password;
-				});
-
-				if(!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(password))
-				{
-					GlobalShared.Settings.CredentialPairs.Add((url, usernameFromUrl), (user, password));
-					GlobalShared.WriteSetting();
-				}
-			}
-			return new UsernamePasswordCredentials() { Username = user, Password = password };
+			Serilog.Log.Verbose("git {cmd} <==", cmd);
 		}
 		#endregion
 
