@@ -41,7 +41,7 @@ namespace VMS
 		public static void Sync(string repoPath)
 		{
 			/// 创建仓库
-			if(Repository.Discover(repoPath) == null)
+			if(Directory.GetFiles(repoPath).Length == 0 && Directory.GetDirectories(repoPath).Length == 0)
 			{
 				string url = null;
 				Application.Current.Dispatcher.Invoke(delegate
@@ -238,8 +238,8 @@ namespace VMS
 			if(type == Type.Branch)
 			{
 				Cmd(repo.Info.WorkingDirectory, "branch --set-upstream-to=origin/" + committishOrBranchSpec);
+				Sync(repo.Info.WorkingDirectory);
 			}
-			Sync(repo.Info.WorkingDirectory);
 
 			/// 运行批处理文件
 			var cmdFile = repo.Info.WorkingDirectory + "/GitUpdate.bat";

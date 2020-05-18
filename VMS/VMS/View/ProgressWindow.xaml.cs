@@ -62,17 +62,16 @@ namespace VMS.View
 			{
 				try
 				{
-					completed?.Invoke();
 					if(e.Error != null)
-					{
 						throw e.Error;
-					}
+
+					completed?.Invoke();
 				}
 				catch(Exception x)
 				{
 					isCompleted = false;
 					Serilog.Log.Error(x, "线程异常!");
-					MessageBox.Show(x.Message + "\n" + x.StackTrace, "线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
+					MessageBox.Show(x.Message, "线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 				finally
 				{
