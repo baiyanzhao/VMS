@@ -369,29 +369,24 @@ namespace VMS.View
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
+			var result = MessageBoxResult.None;
 			foreach(var item in RepoData.RepoList)
 			{
 				if(Git.RepoStatus(item.LocalRepoPath).IsDirty)
 				{
-					if(Settings.IsAutoCommit)
+					result = result == MessageBoxResult.None ? MessageBox.Show(Application.Current.MainWindow, " 是否立即提交?\n\n 是: 弹出提交界面\n 否: 执行自动提交后退出程序 !!\n 取消: 直接退出程序", item.Title + " 尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Yes) : result;
+					switch(result)
 					{
+					case MessageBoxResult.Yes:
+						RepoData.CurrentRepo = item;
+						Commit();
+						break;
+					case MessageBoxResult.No:
 						ProgressWindow.Show(null, () => Git.Sync(item.LocalRepoPath));
 						Git.Commit(null, item.LocalRepoPath, DateTime.Now.ToString());
-					}
-					else
-					{
-						switch(MessageBox.Show(Application.Current.MainWindow, " 是否立即提交?\n\n'是', 弹出提交界面\n'否', 直接退出程序\n'取消', 不进行任何操作.", item.Title + " 尚有文件未提交", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
-						{
-						case MessageBoxResult.Yes:
-							RepoData.CurrentRepo = item;
-							Commit();
-							break;
-						case MessageBoxResult.Cancel:
-							e.Cancel = true;
-							return;
-						default:
-							return;
-						}
+						return;
+					default:
+						return;
 					}
 				}
 			}

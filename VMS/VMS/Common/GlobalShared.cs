@@ -24,7 +24,7 @@ namespace VMS
 		#region 方法
 		private static Setting GetSetting()
 		{
-			var set = ReadObject<Setting>(SetFilePath) ?? new Setting { IsAutoCommit = false };
+			var set = ReadObject<Setting>(SetFilePath) ?? new Setting();
 			set.RepoPathList ??= new List<string>();
 			set.LatestMessage ??= new List<string>();
 			set.PackageFolder ??= Path.GetTempPath() + @"Package\";

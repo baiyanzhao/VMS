@@ -13,6 +13,5 @@ namespace VMS.Model
 		public string CompareToolPath { get; set; }
 		public string MSBuildPath { get; set; }
 		public List<string> LatestMessage { get; set; }
-		public bool IsAutoCommit { get; set; }
 	}
 }
