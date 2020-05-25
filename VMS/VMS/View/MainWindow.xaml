@@ -156,7 +156,7 @@
 					<GradientStop Color="#FFD4E1EC" Offset="0.03" />
 				</LinearGradientBrush>
 			</DockPanel.Background>
-			<Button Margin="0,0" DockPanel.Dock="Bottom" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >
+			<Button Margin="2" DockPanel.Dock="Bottom" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Set_Click" ToolTip="用户设置" >
 				<DockPanel>
 					<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="设置"/>
 					<Image Margin="4,2" Source="/Images/Set.png" Stretch="Uniform"/>
@@ -188,7 +188,7 @@
 						<Image Margin="4,2" Source="/Images/Upload.png" Stretch="Uniform"/>
 					</DockPanel>
 				</Button>
-				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="直接上传服务器" >
 					<DockPanel>
 						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="极速提交" Foreground="DarkGray"/>
 						<Image Margin="4,2" Source="/Images/Lightning.png" Stretch="Uniform"/>
@@ -200,7 +200,7 @@
 						<Image Margin="4,2" Source="/Images/Package.png" Stretch="Uniform"/>
 					</DockPanel>
 				</Button>
-				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Publish_Click" ToolTip="根据测试版修订发布标准版" >
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Publish_Click" ToolTip="基于测试版发布标准版" >
 					<DockPanel>
 						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="发布"/>
 						<Image Margin="4,2" Source="/Images/Publish.png" Stretch="Uniform"/>

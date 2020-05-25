@@ -31,8 +31,8 @@
 							</Setter>
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="False">
-							<Setter TargetName="Face" Property="Background" Value="#A5FFFFFF"/>
-							<Setter TargetName="Face" Property="Opacity" Value="0.5"/>
+							<Setter TargetName="Face" Property="Background" Value="#64FFFFFF"/>
+							<Setter TargetName="Face" Property="Opacity" Value="0.8"/>
 						</Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>

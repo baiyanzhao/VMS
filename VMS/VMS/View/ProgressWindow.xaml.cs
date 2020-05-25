@@ -75,7 +75,7 @@ namespace VMS.View
 
 					isCompleted = false;
 					Serilog.Log.Error(x, "线程异常!");
-					MessageBox.Show(x.Message, "线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
+					MessageBox.Show(owner, x.Message, "线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 				finally
 				{
