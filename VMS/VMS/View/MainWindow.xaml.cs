@@ -419,7 +419,7 @@ namespace VMS.View
 		private void ImmediateCommit_Click(object sender, RoutedEventArgs e)
 		{
 			var instance = Application.Current.MainWindow as MainWindow;
-			if(MessageBox.Show(instance, "快速提交自动上传当前打开的全部仓库,而不自动更新任何版本信息.\n并在提交完成后关闭计算机！\n\n 确定执行快速提交吗?", "快速提交并关机", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+			if(MessageBox.Show(instance, "直接上传当前打开的全部仓库,而不自动更新任何版本信息.\n并在提交完成后关闭计算机！\n\n 确定执行极速提交吗?", "直接上传并关机", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
 				return;
 
 			foreach(var item in RepoData.RepoList)
