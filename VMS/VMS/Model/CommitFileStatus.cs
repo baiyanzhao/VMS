@@ -72,7 +72,7 @@ namespace VMS.ViewModel
 						File.WriteAllBytes(filePath, bytes);
 					}
 
-					Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + filePath + "\" \"" + GlobalShared.LocalRepoPath + FilePath + "\"" + " /lro");
+					Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + filePath + "\" \"" + GlobalShared.LocalRepoPath + FilePath + "\"");
 				}
 				catch(Exception x)
 				{

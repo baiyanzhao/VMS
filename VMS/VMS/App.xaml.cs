@@ -23,6 +23,17 @@ namespace VMS
 				Environment.Exit(0);
 			};
 
+			/// 系统关机拦截
+			SessionEnding += (s, e) =>
+			{
+				e.Cancel = true;
+				MessageBox.Show(Current.MainWindow.IsLoaded ? Current.MainWindow : null, "请在退出程序后再关机!", "程序阻止关机");
+				if(View.ProgressWindow.Worker != null)
+					return;
+
+				MainWindow?.Close();
+			};
+
 			Exit += delegate
 			{
 				SingleInstance<App>.Cleanup();
@@ -59,16 +70,6 @@ namespace VMS
 		{
 			ShowMainWindow();
 			return true;
-		}
-
-		//系统关机拦截
-		void App_SessionEnding(object sender, SessionEndingCancelEventArgs e)
-		{
-			e.Cancel = true;
-			if(View.ProgressWindow.Worker != null)
-				return;
-
-			MainWindow?.Close();
 		}
 	}
 }

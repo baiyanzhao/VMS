@@ -8,7 +8,7 @@
     <ProjectGuid>{F3451163-61D4-40EB-BF97-349855859BDF}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>VMS</RootNamespace>
-    <AssemblyName>TSVNCache</AssemblyName>
+    <AssemblyName>VerGit</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -19,7 +19,7 @@
     </NuGetPackageImportStamp>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <TargetFrameworkProfile />
-    <PublishUrl>ftp://192.168.1.49:8330/</PublishUrl>
+    <PublishUrl>ftp://192.168.1.49:8330/VerGit/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -29,8 +29,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://192.168.1.49/VMS/</InstallUrl>
-    <UpdateUrl>http://192.168.1.49/VMS/</UpdateUrl>
+    <InstallUrl>http://192.168.1.49/VerGit/</InstallUrl>
+    <UpdateUrl>http://192.168.1.49/VerGit/</UpdateUrl>
     <SupportUrl>http://192.168.1.49/Packages/</SupportUrl>
     <ProductName>版本管理</ProductName>
     <PublisherName>Ainuo</PublisherName>
@@ -39,8 +39,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>20</ApplicationRevision>
-    <ApplicationVersion>3.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>4</ApplicationRevision>
+    <ApplicationVersion>5.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>

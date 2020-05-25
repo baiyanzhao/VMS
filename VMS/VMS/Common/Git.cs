@@ -82,8 +82,8 @@ namespace VMS
 
 			/// 同步仓库
 			Cmd(repoPath, "fetch --progress");
-			var (Ahead, Behind, Dirty) = RepoStatus(repoPath);
-			if(Behind > 0) //拉取上游分支
+			var status = RepoStatus(repoPath);
+			if(status.Behind > 0) //拉取上游分支
 			{
 				Cmd(repoPath, "stash clear");
 				Cmd(repoPath, "stash --include-untracked");
@@ -91,7 +91,7 @@ namespace VMS
 				Cmd(repoPath, "stash pop");
 			}
 
-			if(Ahead > 0) //推送未上传的提交
+			if(status.Ahead > 0) //推送未上传的提交
 			{
 				Cmd(repoPath, "push --verbose --progress");
 			}
@@ -105,7 +105,7 @@ namespace VMS
 		public static bool Commit(Window owner, string repoPath, string message) => ProgressWindow.Show(owner, delegate
 		{
 			Cmd(repoPath, "add . --verbose");
-			Cmd(repoPath, "commit --author " + GlobalShared.Settings.User + "<" + Environment.MachineName + "> -m\"" + message + "\"");
+			Cmd(repoPath, "commit --author=\"" + GlobalShared.Settings.User + "<" + Environment.MachineName + ">\" -m\"" + message + "\"");
 			Cmd(repoPath, "push --verbose --progress");
 			Serilog.Log.Verbose("Commit {repoPath} {message}", repoPath, message);
 		});
@@ -174,9 +174,9 @@ namespace VMS
 		/// </summary>
 		/// <param name="repoPath">仓库目录</param>
 		/// <returns>状态</returns>
-		public static (int Ahead, int Behind, bool IsDirty) RepoStatus(string repoPath)
+		public static (int Ahead, int Behind, bool IsDirty, bool IsTracking) RepoStatus(string repoPath)
 		{
-			bool IsDirty = false;
+			bool IsDirty = false, IsTracking = false;
 			var status = new (string Flag, int Num)[] { ("ahead ", 0), ("behind ", 0) };
 			Cmd(repoPath, "status --porcelain -b", new DataReceivedEventHandler((s, e) =>
 			{
@@ -186,6 +186,7 @@ namespace VMS
 				var line = e.Data;
 				if(line.StartsWith("## "))
 				{
+					IsTracking = line.Contains("...origin/");
 					for(int i = 0; i < status.Length; i++)
 					{
 						if(!line.Contains(status[i].Flag))
@@ -213,7 +214,7 @@ namespace VMS
 					}
 				}
 			}));
-			return (status[0].Num, status[1].Num, IsDirty);
+			return (status[0].Num, status[1].Num, IsDirty, IsTracking);
 		}
 
 		/// <summary>

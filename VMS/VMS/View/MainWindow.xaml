@@ -5,7 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:local="clr-namespace:VMS.Model"
 	xmlns:ikriv="clr-namespace:IKriv.Windows.Controls.Behaviors"
-	mc:Ignorable="d" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Title="版本管理" Loaded="Window_Loaded" Closing="Window_Closing" Icon="/TSVNCache;component/VMS.ico">
+	mc:Ignorable="d" FontSize="16" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="600" Title="版本管理" Loaded="Window_Loaded" Closing="Window_Closing" Icon="/VerGit;component/VMS.ico">
 	<Window.Resources>
 		<Style TargetType="DataGridCell">
 			<Setter Property="Focusable" Value="True"/>
@@ -25,7 +25,7 @@
 	<Grid Name="Panel" Background="AliceBlue">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
-			<ColumnDefinition Width="72"/>
+			<ColumnDefinition Width="64"/>
 		</Grid.ColumnDefinitions>
 		<TabControl Name="RepoTab" Margin="1,2,0,1" ikriv:TabContent.IsCached="True" ItemsSource="{Binding RepoList}" SelectedItem="{Binding CurrentRepo, Mode=TwoWay}">
 			<TabControl.ItemTemplate>
@@ -184,13 +184,13 @@
 				</Button>
 				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="Commit_Click" ToolTip="将更改上传到服务器" >
 					<DockPanel>
-						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="提交"/>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="提交" Foreground="DarkBlue"/>
 						<Image Margin="4,2" Source="/Images/Upload.png" Stretch="Uniform"/>
 					</DockPanel>
 				</Button>
-				<Button Visibility="Hidden" Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
+				<Button Style="{StaticResource ImageButton}" VerticalAlignment="Center" Click="ImmediateCommit_Click" ToolTip="将更改上传到服务器" >
 					<DockPanel>
-						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="快速提交"/>
+						<TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" Text="极速提交" Foreground="DarkGray"/>
 						<Image Margin="4,2" Source="/Images/Lightning.png" Stretch="Uniform"/>
 					</DockPanel>
 				</Button>

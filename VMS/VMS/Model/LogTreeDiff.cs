@@ -38,7 +38,7 @@ namespace VMS.Model
 			var info = parameter as LogTreeDiff;
 			try
 			{
-				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid, info.Tree.OldPath) + "\" \"" + CreateFile(info.Tree.Oid, info.FilePath) + "\"" + " /ro");
+				Process.Start(GlobalShared.Settings.CompareToolPath, " \"" + CreateFile(info.Tree.OldOid, info.Tree.OldPath) + "\" \"" + CreateFile(info.Tree.Oid, info.FilePath) + "\"");
 			}
 			catch(Exception x)
 			{
