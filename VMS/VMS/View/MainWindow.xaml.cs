@@ -369,6 +369,9 @@ namespace VMS.View
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
+			if(Settings.IsDirectExit)
+				return;
+
 			foreach(var item in RepoData.RepoList)
 			{
 				var status = Git.RepoStatus(item.LocalRepoPath);

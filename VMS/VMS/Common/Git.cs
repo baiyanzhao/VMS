@@ -299,7 +299,7 @@ namespace VMS
 			});
 
 			ProgressWindow.Update("git " + cmd);
-			Serilog.Log.Information("git {cmd} {workDir} ==>", cmd, workDir);
+			Serilog.Log.Information("git {cmd} {workDir} [", cmd, workDir);
 			process.OutputDataReceived += dataHandler;
 			process.ErrorDataReceived += dataHandler;
 			process.Start();
@@ -310,7 +310,7 @@ namespace VMS
 			{
 				throw new Exception(errors);
 			}
-			Serilog.Log.Verbose("git {cmd} <==", cmd);
+			Serilog.Log.Verbose("] git {cmd}", cmd);
 		}
 		#endregion
 

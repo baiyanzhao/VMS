@@ -14,5 +14,7 @@ namespace VMS.Model
 		public string MSBuildPath { get; set; }
 		public List<string> LatestMessage { get; set; }
 		public bool IsAutoCommit { get; set; }
+		public bool IsTipsCommit { get; set; }
+		public bool IsDirectExit { get; set; }
 	}
 }

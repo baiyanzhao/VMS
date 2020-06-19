@@ -18,7 +18,7 @@ namespace VMS
 			DispatcherUnhandledException += (s, e) =>
 			{
 				Log.Fatal(e.Exception, "UnhandledException");
-				MessageBox.Show(e.Exception.Message + Environment.NewLine + e.Exception, "Exception");
+				MessageBox.Show(e.Exception.Message, "Exception", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
 				(Current.MainWindow as IDisposable)?.Dispose();
 				Environment.Exit(0);
 			};
@@ -27,11 +27,10 @@ namespace VMS
 			SessionEnding += (s, e) =>
 			{
 				e.Cancel = true;
-				MessageBox.Show(Current.MainWindow.IsLoaded ? Current.MainWindow : null, "请在退出程序后再关机!", "程序阻止关机");
 				if(View.ProgressWindow.Worker != null)
 					return;
 
-				MainWindow?.Close();
+				Environment.Exit(0);
 			};
 
 			Exit += delegate
