@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using Microsoft.Shell;
+using Serilog;
 
 namespace VMS
 {
@@ -13,10 +14,22 @@ namespace VMS
 		private const string Unique = "VMS_Unique_Application_String";
 		public App()
 		{
+			Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File("log/" + DateTime.Now.ToLongDateString() + "/" + DateTime.Now.Ticks + ".log").CreateLogger();
 			DispatcherUnhandledException += (s, e) =>
 			{
-				MessageBox.Show(e.Exception.Message + Environment.NewLine + e.Exception, "Exception");
+				Log.Fatal(e.Exception, "UnhandledException");
+				MessageBox.Show(e.Exception.Message, "Exception", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
 				(Current.MainWindow as IDisposable)?.Dispose();
+				Environment.Exit(0);
+			};
+
+			/// 系统关机拦截
+			SessionEnding += (s, e) =>
+			{
+				e.Cancel = true;
+				if(View.ProgressWindow.Worker != null)
+					return;
+
 				Environment.Exit(0);
 			};
 
@@ -27,6 +40,16 @@ namespace VMS
 
 			if(!SingleInstance<App>.InitializeAsFirstInstance(Unique))
 			{
+				Environment.Exit(0);
+			}
+
+			try
+			{
+				Git.Cmd(null, "lfs version");
+			}
+			catch
+			{
+				MessageBox.Show("未正确安装Git\n 请下载安装完整版 Git For Windows", "缺少依赖项!", MessageBoxButton.OK, MessageBoxImage.Error);
 				Environment.Exit(0);
 			}
 		}
@@ -46,16 +69,6 @@ namespace VMS
 		{
 			ShowMainWindow();
 			return true;
-		}
-
-		//系统关机拦截
-		void App_SessionEnding(object sender, SessionEndingCancelEventArgs e)
-		{
-			e.Cancel = true;
-			if(View.ProgressWindow.Worker != null)
-				return;
-
-			MainWindow?.Close();
 		}
 	}
 }

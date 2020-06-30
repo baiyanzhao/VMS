@@ -18,14 +18,15 @@ namespace VMS
 		private static string SetFilePath => ApplicationDeployment.IsNetworkDeployed ? Path.Combine(ApplicationDeployment.CurrentDeployment.DataDirectory, FILE_SETTING_LOCAL) : FILE_SETTING_LOCAL;
 		public static Setting Settings { get; } = GetSetting();
 		public static RepoTabData RepoData { get; } = new RepoTabData();
-		public static string LoaclRepoPath => RepoData.CurrentRepo?.LocalRepoPath;
+		public static string LocalRepoPath => RepoData.CurrentRepo?.LocalRepoPath;
 		#endregion
 
 		#region 方法
 		private static Setting GetSetting()
 		{
-			var set = ReadObject<Setting>(SetFilePath) ?? new Setting();
+			var set = ReadObject<Setting>(SetFilePath) ?? new Setting { IsAutoCommit = false, IsTipsCommit = true, IsDirectExit = false };
 			set.RepoPathList ??= new List<string>();
+			set.LatestMessage ??= new List<string>();
 			set.PackageFolder ??= Path.GetTempPath() + @"Package\";
 			set.CompareToolPath ??= @"D:\Program Files\Beyond Compare 4\BCompare.exe";
 			set.MSBuildPath ??= @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
@@ -42,10 +43,10 @@ namespace VMS
 		{
 			try
 			{
-				using(Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-				{
-					new DataContractJsonSerializer(typeof(T)).WriteObject(stream, val);
-				}
+				File.Delete(path);
+				using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+				new DataContractJsonSerializer(typeof(T)).WriteObject(stream, val);
+				File.SetAttributes(path, FileAttributes.Hidden);
 				return true;
 			}
 			catch
@@ -65,7 +66,7 @@ namespace VMS
 
 			try
 			{
-				using Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+				using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 				val = new DataContractJsonSerializer(typeof(T)).ReadObject(stream) as T;
 			}
 			catch(Exception e)
@@ -79,7 +80,7 @@ namespace VMS
 		/// <summary>
 		/// 工程版本信息
 		/// </summary>
-		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(LoaclRepoPath, FILE_VERSION_INFO));
+		public static VersionInfo ReadVersionInfo() => ReadObject<VersionInfo>(Path.Combine(LocalRepoPath, FILE_VERSION_INFO));
 
 		/// <summary>
 		/// 工程版本信息
@@ -88,11 +89,13 @@ namespace VMS
 		{
 			try
 			{
-				using var repo = new Repository(LoaclRepoPath);
+				using var repo = new Repository(LocalRepoPath);
 				return ReadVersionInfo(repo.Lookup<Commit>(sha));
 			}
-			catch
-			{ }
+			catch(Exception e)
+			{
+				System.Diagnostics.Debug.WriteLine(e);
+			}
 
 			return null;
 		}
@@ -105,15 +108,17 @@ namespace VMS
 			VersionInfo version = null;
 			try
 			{
-				var obj = commit?.Tree["Version.json"]?.Target as Blob;
-				version = obj == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(obj.GetContentStream()) as VersionInfo;
+				var stream = (commit?.Tree["Version.json"]?.Target as Blob)?.GetContentStream();
+				version = stream == null ? null : new DataContractJsonSerializer(typeof(VersionInfo)).ReadObject(stream) as VersionInfo;
 				if(version != null)
 				{
 					version.CommitMessage = commit.Message;
 				}
 			}
-			catch
-			{ }
+			catch(Exception e)
+			{
+				System.Diagnostics.Debug.WriteLine(e);
+			}
 
 			return version;
 		}
@@ -122,23 +127,23 @@ namespace VMS
 		/// 更新版本,并写入文件
 		/// </summary>
 		/// <param name="info"></param>
-		public static void WriteVersionInfo(VersionInfo info) => WriteObject(Path.Combine(LoaclRepoPath, FILE_VERSION_INFO), info);
+		public static void WriteVersionInfo(VersionInfo info) => WriteObject(Path.Combine(LocalRepoPath, FILE_VERSION_INFO), info);
 
 		/// <summary>
 		/// 获取当前提交的更改列表
 		/// </summary>
 		/// <param name="sha">Git Sha</param>
 		/// <returns></returns>
-		public static IEnumerable<CommitDiffInfo> GetDiffList(string sha)
+		public static IEnumerable<LogTreeDiff> GetDiffList(string sha)
 		{
-			var diffInfo = new ObservableCollection<CommitDiffInfo>();
+			var diffInfo = new ObservableCollection<LogTreeDiff>();
 			try
 			{
-				using var repo = new Repository(LoaclRepoPath);
+				using var repo = new Repository(LocalRepoPath);
 				var commit = repo.Lookup<Commit>(sha);
 				foreach(var item in repo.Diff.Compare<TreeChanges>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree))
 				{
-					diffInfo.Add(new CommitDiffInfo(item));
+					diffInfo.Add(new LogTreeDiff(item));
 				}
 			}
 			catch
@@ -146,7 +151,6 @@ namespace VMS
 
 			return diffInfo;
 		}
-
-#endregion
+		#endregion
 	}
 }

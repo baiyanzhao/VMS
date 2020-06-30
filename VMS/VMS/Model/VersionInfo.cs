@@ -14,9 +14,11 @@ namespace VMS.Model
 			public string Value { get; set; }
 		}
 
-		public class StringPair
+		public class VersionProperty
 		{
 			public string Label { get; set; }
+			public string Title { get; set; }
+			public string Time { get; set; }
 			public string Value { get; set; }
 		}
 
@@ -24,9 +26,8 @@ namespace VMS.Model
 		public Version VersionBase { get; set; }
 		public string Customer { get; set; }
 		public string OrderNumber { get; set; }
-		public List<StringPair> VersionList { get; set; }
+		public List<VersionProperty> VersionList { get; set; }
 		public ObservableCollection<StringProperty> KeyWords { get; set; }
-		public string LatestMessage { get; set; }
 		[System.Runtime.Serialization.IgnoreDataMember]
 		public string CommitMessage { get; set; }
 	}

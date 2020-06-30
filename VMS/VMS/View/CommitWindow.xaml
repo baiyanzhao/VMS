@@ -24,10 +24,12 @@
 					<TextBox Text="{Binding Customer}" Margin="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 				</DockPanel>
 				<DockPanel DockPanel.Dock="Top" Margin="5,5,0,0">
-					<TextBlock Text="订单编号" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+					<TextBlock Text="评审单号" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 					<TextBox Text="{Binding OrderNumber}" Margin="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBox Name="Message" Text="{Binding LatestMessage}" DockPanel.Dock="Top" Margin="5,5,0,2" TextWrapping="Wrap" AcceptsReturn="True">
+
+				<Button DockPanel.Dock="Top" Content="最近信息" Margin="5,5,0,0" Click="LatestMessage_Click"/>
+				<TextBox Name="Message" DockPanel.Dock="Top" Margin="5,1,0,2" TextWrapping="Wrap" AcceptsReturn="True">
 					<TextBox.Style>
 						<Style TargetType="TextBox">
 							<Style.Triggers>
@@ -84,7 +86,7 @@
 			</DockPanel>
 		</Grid>
 
-		<GridSplitter Grid.Row="1" Margin="2" Height="2" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+		<GridSplitter Grid.Row="1" Margin="2" Height="1" Background="RoyalBlue" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
 		<DataGrid Name="FileGrid" Margin="5" Grid.Row="1" ItemsSource="{Binding}" Background="{x:Null}" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
 			<DataGrid.CellStyle>
 				<Style TargetType="{x:Type DataGridCell}">
@@ -95,6 +97,9 @@
 						<Setter.Value>
 							<ControlTemplate TargetType="{x:Type DataGridCell}">
 								<Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+									<Border.InputBindings>
+										<MouseBinding Gesture="LeftDoubleClick" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+									</Border.InputBindings>
 									<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
 								</Border>
 							</ControlTemplate>
@@ -112,10 +117,31 @@
 				<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
 				<DataGridTextColumn Header="大小(KB)" Width="Auto" Binding="{Binding FileSize}" Foreground="DarkBlue"/>
 				<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
-				<DataGridTemplateColumn Width="36">
+				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding}"/>
+							<Button Content="还原" ToolTip="还原到未修订版本" Foreground="DarkRed" Focusable="False" Command="{Binding Revoke}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn Width="40">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Button Content="忽略" ToolTip="忽略此文件更改" Foreground="DarkRed" Focusable="False" Command="{Binding Ignore}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn Width="40">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Button Content="浏览" ToolTip="打开所在文件夹" Focusable="False" Command="{Binding Explore}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn Width="40">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Button Content="对比" ToolTip="与未修订版本比较差异" Focusable="False" Command="{Binding Diff}" CommandParameter="{Binding DataContext, ElementName=FileGrid}"/>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>

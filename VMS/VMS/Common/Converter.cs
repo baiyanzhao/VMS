@@ -9,35 +9,23 @@ namespace VMS
 	/// </summary>
 	public class EmptyStringConvert : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return !string.IsNullOrWhiteSpace(value as string);
-		}
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => !string.IsNullOrWhiteSpace(value as string);
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 	}
 
 	/// <summary>
 	/// 转化版本号
 	/// </summary>
-	class VersionConverter : IValueConverter
+	internal class VersionConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => value switch
 		{
-			return value switch
-			{
-				Version version => version.ToString(2),
-				_ => value,
-			};
-		}
+			Version version => version.ToString(2),
+			_ => value,
+		};
 
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			return null;
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
 	}
 
 	/// <summary>
@@ -45,15 +33,9 @@ namespace VMS
 	/// </summary>
 	public class BranchDetailConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			return GlobalShared.ReadVersionInfo(value as string);
-		}
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => GlobalShared.ReadVersionInfo(value as string);
 
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			return null;
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
 	}
 
 	/// <summary>
@@ -61,14 +43,8 @@ namespace VMS
 	/// </summary>
 	public class CommitDiffConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			return GlobalShared.GetDiffList(value as string);
-		}
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => GlobalShared.GetDiffList(value as string);
 
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			return null;
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
 	}
 }

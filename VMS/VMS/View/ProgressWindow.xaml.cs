@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
@@ -19,15 +18,9 @@ namespace VMS.View
 			InitializeComponent();
 		}
 
-		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			e.Handled = true;   //屏蔽所有按键
-		}
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e) => e.Handled = true;   //屏蔽所有按键
 
-		public static void Update(string msg)
-		{
-			Worker?.ReportProgress(0, msg);
-		}
+		public static void Update(string msg) => Worker?.ReportProgress(0, msg);
 
 		/// <summary>
 		/// 弹出进度条
@@ -38,7 +31,14 @@ namespace VMS.View
 		/// <returns>是否完成任务</returns>
 		public static bool Show(Window owner, Action work, Action completed = null)
 		{
-			bool isCompleted = true;
+			if(Worker != null)
+			{
+				work?.Invoke();
+				return true;
+			}
+
+			var isCompleted = true;
+			owner = (owner == null && Application.Current.MainWindow.IsLoaded) ? Application.Current.MainWindow : owner;
 			var dlg = new ProgressWindow() { Owner = owner };
 			if(owner == null)
 			{
@@ -64,14 +64,18 @@ namespace VMS.View
 				{
 					completed?.Invoke();
 					if(e.Error != null)
-					{
 						throw e.Error;
-					}
 				}
 				catch(Exception x)
 				{
+					if(e.Error != null)
+					{
+						x = e.Error;
+					}
+
 					isCompleted = false;
-					MessageBox.Show(x.Message + "\n" + x.StackTrace, "后台线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
+					Serilog.Log.Error(x, "线程异常!");
+					MessageBox.Show(owner, x.Message, "线程异常!", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 				finally
 				{

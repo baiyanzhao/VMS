@@ -14,7 +14,7 @@ namespace VMS.View
 		public SettingWindow()
 		{
 			InitializeComponent();
-			Title = "源程序版本管理软件 v" + (ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString() : System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+			Title = "版本管理 LFS v" + (ApplicationDeployment.IsNetworkDeployed ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString() : System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
 			Closing += (s, e) =>
 			{
 				foreach(var item in TopPannel.Children.OfType<TextBox>())

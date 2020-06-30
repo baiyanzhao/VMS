@@ -5,7 +5,7 @@
 
 	<Style x:Key="ImageButton" TargetType="{x:Type Button}">
 		<Setter Property="Margin" Value="2,0"/>
-		<Setter Property="FontSize" Value="14"/>
+		<Setter Property="FontSize" Value="13"/>
 		<Setter Property="Foreground" Value="Black"/>
 		<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 		<Setter Property="Template">
@@ -31,8 +31,8 @@
 							</Setter>
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="False">
-							<Setter TargetName="Face" Property="Background" Value="#A5FFFFFF"/>
-							<Setter TargetName="Face" Property="Opacity" Value="0.5"/>
+							<Setter TargetName="Face" Property="Background" Value="#64FFFFFF"/>
+							<Setter TargetName="Face" Property="Opacity" Value="0.8"/>
 						</Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
