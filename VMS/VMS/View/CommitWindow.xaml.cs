@@ -61,5 +61,7 @@ namespace VMS.View
 			window.InputGrid.Children.Add(listBox);
 			window.ShowDialog();
 		}
+
+		private void DataGrid_LoadingRow(object sender, System.Windows.Controls.DataGridRowEventArgs e) => e.Row.Header = string.Format("{0,4} ", e.Row.GetIndex() + 1);
 	}
 }

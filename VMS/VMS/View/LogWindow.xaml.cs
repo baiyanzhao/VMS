@@ -11,5 +11,7 @@ namespace VMS.View
 		{
 			InitializeComponent();
 		}
+
+		private void DataGrid_LoadingRow(object sender, System.Windows.Controls.DataGridRowEventArgs e) => e.Row.Header = string.Format("{0,4} ",e.Row.GetIndex() + 1);
 	}
 }

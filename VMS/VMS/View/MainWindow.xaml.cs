@@ -157,7 +157,6 @@ namespace VMS.View
 			var commitWindow = new CommitWindow() { Owner = instance, Title = RepoData.CurrentRepo?.Title };
 			commitWindow.FileGrid.DataContext = status;
 			commitWindow.Version.DataContext = versionInfo;
-			commitWindow.Info.Text = status?.Count.ToString();
 			if(commitWindow.ShowDialog() != true)
 				return false;
 			#endregion
@@ -185,7 +184,7 @@ namespace VMS.View
 				versionInfo.VersionList = new List<VersionInfo.VersionProperty>();
 				foreach(var assembly in assemblyList)
 				{
-					assembly.HitVersion(-1);
+					assembly.HitVersion(null);
 					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
 				}
 			}
@@ -197,7 +196,7 @@ namespace VMS.View
 				versionInfo.VersionList = new List<VersionInfo.VersionProperty>();
 				foreach(var assembly in assemblyList)
 				{
-					assembly.HitVersion(branchVersion == null ? 0 : branchVersion.Build);
+					assembly.HitVersion(versionInfo.VersionNow);
 					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
 				}
 			}
@@ -248,7 +247,6 @@ namespace VMS.View
 			var commitWindow = new CommitWindow() { Owner = instance, Title = "基于" + versionInfo.VersionBase + " 新建分支" };
 			commitWindow.FileGrid.DataContext = null;
 			commitWindow.Version.DataContext = versionInfo;
-			commitWindow.Info.Text = null;
 			if(commitWindow.ShowDialog() != true)
 				return;
 
@@ -467,7 +465,7 @@ namespace VMS.View
 		/// </summary>
 		private void Package_Click(object sender, RoutedEventArgs e)
 		{
-			if(Commit() == false)
+			if(Git.RepoStatus(LocalRepoPath).IsDirty && Commit() == false)
 				return;
 
 			ProgressWindow.Show(this, delegate
@@ -551,7 +549,6 @@ namespace VMS.View
 			var commitWindow = new CommitWindow() { Owner = instance, Title = RepoData.CurrentRepo?.Title };
 			commitWindow.FileGrid.DataContext = null;
 			commitWindow.Version.DataContext = versionInfo;
-			commitWindow.Info.Text = null;
 			if(commitWindow.ShowDialog() != true)
 				return;
 
@@ -560,7 +557,14 @@ namespace VMS.View
 			#endregion
 
 			#region 提交标准版
+			versionInfo.VersionList = new List<VersionInfo.VersionProperty>();
 			versionInfo.VersionNow = versionInfo.VersionNow == null ? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor + 1, 0, 0);
+			foreach(var assembly in AssemblyInfo.GetInfos(LocalRepoPath))
+			{
+				assembly.MarkModified();
+				assembly.HitVersion(versionInfo.VersionNow);
+				versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
+			}
 			WriteVersionInfo(versionInfo);  //升级版本文件
 			Git.Publish(instance, repo, versionInfo.VersionNow.ToString() + " " + commitWindow.Message.Text, versionInfo.VersionNow.ToString(3));
 			RepoData.CurrentRepo?.Update();

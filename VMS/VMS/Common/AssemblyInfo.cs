@@ -32,7 +32,7 @@ namespace VMS
 		/// <summary>
 		/// 当前版本
 		/// </summary>
-		public System.Version Version { get; set; }
+		public Version Version { get; set; }
 
 		/// <summary>
 		/// 工程标题
@@ -54,15 +54,20 @@ namespace VMS
 			/// C工程版本格式为: static const char VERSION[] = "1.0.0.0";
 			/// C#工程版本格式为: [assembly: AssemblyFileVersion("1.3.0.0")]
 			TypeMarkList.Clear();
-			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.C, Directory = "Inc", File = "Version.h", TitleKey = "static const char TITLE[] = \"", VersionKey = "static const char VERSION[] = \"", AssemblyKey = null, TimeKey="static const char UPDATE_TIME[] = \"" });
-			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.CSharp, Directory = "Properties", File = "AssemblyInfo.cs", TitleKey = "[assembly: AssemblyProduct(\"", VersionKey = "[assembly: AssemblyFileVersion(\"", AssemblyKey = "[assembly: AssemblyVersion(\"", TimeKey= "[assembly: AssemblyCopyright(\"" });
+			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.C, Directory = "Inc", File = "Version.h", TitleKey = "static const char TITLE[] = \"", VersionKey = "static const char VERSION[] = \"", AssemblyKey = null, TimeKey = "static const char UPDATE_TIME[] = \"" });
+			TypeMarkList.Add(new TypeMark { Type = TypeMark.ProjectType.CSharp, Directory = "Properties", File = "AssemblyInfo.cs", TitleKey = "[assembly: AssemblyProduct(\"", VersionKey = "[assembly: AssemblyFileVersion(\"", AssemblyKey = "[assembly: AssemblyVersion(\"", TimeKey = "[assembly: AssemblyCopyright(\"" });
 		}
+
+		/// <summary>
+		/// 标记项目已修改
+		/// </summary>
+		public void MarkModified() => IsModified = true;
 
 		/// <summary>
 		/// 更新当前版本,如果工程修改则递增Revision,并修改Build,同时更新相应文件
 		/// </summary>
 		/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
-		public void HitVersion(int versionBuild)
+		public void HitVersion(Version verRepo)
 		{
 			var encoding = FileEncoding.EncodingType.GetType(FilePath);
 			var lines = File.ReadAllLines(FilePath, encoding);
@@ -78,13 +83,12 @@ namespace VMS
 				if(Mark.AssemblyKey != null && lines[i].IndexOf(Mark.AssemblyKey) == 0)
 				{
 					var strVersion = lines[i].Substring(Mark.AssemblyKey.Length).Split(new char[] { '\"' })[0];
-					if(System.Version.TryParse(strVersion, out var version))
+					if(Version.TryParse(strVersion, out var version))
 					{
-						if(IsModified && versionBuild >= 0)
+						if(IsModified && verRepo != null)
 						{
-							var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
-							version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
-							lines[i] = lines[i].Replace(strVersion, version.ToString());
+							var revision = version.Major == verRepo.Major && version.Minor == verRepo.Minor && version.Build == verRepo.Build ? version.Revision + 1 : 0;
+							lines[i] = lines[i].Replace(strVersion, new Version(verRepo.Major, verRepo.Minor, verRepo.Build, revision).ToString());
 						}
 					}
 				}
@@ -93,12 +97,12 @@ namespace VMS
 				if(Mark.VersionKey != null && lines[i].IndexOf(Mark.VersionKey) == 0)
 				{
 					var strVersion = lines[i].Substring(Mark.VersionKey.Length).Split(new char[] { '\"' })[0];
-					if(System.Version.TryParse(strVersion, out var version))
+					if(Version.TryParse(strVersion, out var version))
 					{
-						if(IsModified && versionBuild >= 0)
+						if(IsModified && verRepo != null)
 						{
-							var revision = version.Build == versionBuild ? version.Revision + 1 : 0;
-							Version = (new System.Version(version.Major, version.Minor, versionBuild, revision));
+							var revision = version.Major == verRepo.Major && version.Minor == verRepo.Minor && version.Build == verRepo.Build ? version.Revision + 1 : 0;
+							Version = new Version(verRepo.Major, verRepo.Minor, verRepo.Build, revision);
 							lines[i] = lines[i].Replace(strVersion, Version.ToString());
 						}
 						else
@@ -112,7 +116,7 @@ namespace VMS
 				if(Mark.TimeKey != null && lines[i].IndexOf(Mark.TimeKey) == 0)
 				{
 					var strTime = lines[i].Substring(Mark.TimeKey.Length).Split(new char[] { '\"' })[0];
-					if(IsModified && versionBuild >= 0)
+					if(IsModified && verRepo != null)
 					{
 						Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 						lines[i] = lines[i].Replace(strTime, Time);

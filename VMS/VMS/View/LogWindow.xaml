@@ -21,7 +21,7 @@
 		</Style>
 	</Window.Resources>
 	<Grid>
-		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="True" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" >
+		<DataGrid Margin="2" ItemsSource="{Binding}" Background="#3278A080" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="Vertical" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="True" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" HorizontalScrollBarVisibility="Disabled" VerticalGridLinesBrush="LightGray" SelectionMode="Single" >
 			<DataGrid.RowDetailsTemplate>
 				<DataTemplate>
 					<TabControl Margin="24,0,0,0">
@@ -78,7 +78,7 @@
 										</Style>
 									</DataGrid.RowStyle>
 								</DataGrid>
-								<TextBox Margin="5,0" Grid.Column="3" FontSize="16" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True" Text="{Binding CommitMessage}"/>
+								<TextBox Margin="5,0" Grid.Column="3" FontSize="14" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True" Text="{Binding CommitMessage}"/>
 							</Grid>
 						</TabItem>
 						<TabItem>
@@ -86,7 +86,7 @@
 								<TextBlock FontSize="14" Foreground="DarkSlateBlue" Text="更改"/>
 							</TabItem.Header>
 
-							<DataGrid BorderThickness="0" DataContext="{Binding Path=Sha, Converter={StaticResource CommitDiffConverter}}" ItemsSource="{Binding}" Background="{x:Null}" MaxHeight="240" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
+							<DataGrid BorderThickness="0" DataContext="{Binding Path=Sha, Converter={StaticResource CommitDiffConverter}}" ItemsSource="{Binding}" Background="{x:Null}" MaxHeight="240" AlternatingRowBackground="AliceBlue" HeadersVisibility="All" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" LoadingRow="DataGrid_LoadingRow" >
 								<DataGrid.CellStyle>
 									<Style TargetType="{x:Type DataGridCell}">
 										<Setter Property="Background" Value="Transparent"/>

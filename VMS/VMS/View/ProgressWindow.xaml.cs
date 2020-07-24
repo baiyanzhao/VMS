@@ -20,7 +20,13 @@ namespace VMS.View
 
 		private void Window_PreviewKeyDown(object sender, KeyEventArgs e) => e.Handled = true;   //屏蔽所有按键
 
-		public static void Update(string msg) => Worker?.ReportProgress(0, msg);
+		public static void Update(string msg)
+		{
+			if(Worker?.IsBusy == true)
+			{
+				Worker.ReportProgress(0, msg);
+			}
+		}
 
 		/// <summary>
 		/// 弹出进度条

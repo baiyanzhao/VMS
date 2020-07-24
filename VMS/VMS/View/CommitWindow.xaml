@@ -70,10 +70,6 @@
 					<TextBlock Text="版本:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 					<TextBlock Text="{Binding VersionNow}" Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Blue" />
 				</StackPanel>
-				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,5,0,0">
-					<TextBlock Text="更改:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-					<TextBlock Name="Info" Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" />
-				</StackPanel>
 
 				<Button DockPanel.Dock="Bottom" Click="Commit_Click" IsEnabled="{Binding Text, ElementName=Message, Converter={StaticResource EmptyStringConvert}}" IsDefault="True" Margin="5,2" HorizontalAlignment="Right" Width="75" Focusable="False">
 					<Button.Content>
@@ -87,7 +83,7 @@
 		</Grid>
 
 		<GridSplitter Grid.Row="1" Margin="2" Height="1" Background="RoyalBlue" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
-		<DataGrid Name="FileGrid" Margin="5" Grid.Row="1" ItemsSource="{Binding}" Background="{x:Null}" AlternatingRowBackground="AliceBlue" HeadersVisibility="Column" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" >
+		<DataGrid Name="FileGrid" Margin="5" Grid.Row="1" ItemsSource="{Binding}" Background="{x:Null}" AlternatingRowBackground="AliceBlue" HeadersVisibility="All" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserSortColumns="True" CanUserResizeRows="False" LoadingRow="DataGrid_LoadingRow" >
 			<DataGrid.CellStyle>
 				<Style TargetType="{x:Type DataGridCell}">
 					<Setter Property="Background" Value="Transparent"/>
@@ -100,7 +96,7 @@
 									<Border.InputBindings>
 										<MouseBinding Gesture="LeftDoubleClick" Command="{Binding Diff}" CommandParameter="{Binding}"/>
 									</Border.InputBindings>
-									<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+									<ContentPresenter VerticalAlignment="Center" Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
 								</Border>
 							</ControlTemplate>
 						</Setter.Value>
