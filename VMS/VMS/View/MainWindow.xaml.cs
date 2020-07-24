@@ -231,7 +231,8 @@ namespace VMS.View
 			if(info == null)
 				return;
 
-			if(Git.RepoStatus(LocalRepoPath).IsDirty)
+			using var repo = new Repository(LocalRepoPath);
+			if(Git.RepoStatus(LocalRepoPath).IsDirty && repo.RetrieveStatus().IsDirty)
 			{
 				MessageBox.Show("当前版本已修改,请提交或撤销更改后重试!", "版本冲突");
 				return;
@@ -255,7 +256,6 @@ namespace VMS.View
 			#endregion
 
 			#region 更新版本信息
-			using var repo = new Repository(LocalRepoPath);
 			var build = repo.Branches.Max((o) =>
 			{
 				if(o.IsRemote && System.Version.TryParse(o.FriendlyName.Split('/').Last(), out var ver) && ver.Major == info.Version.Major && ver.Minor == info.Version.Minor)
@@ -391,14 +391,14 @@ namespace VMS.View
 			foreach(var item in RepoData.RepoList)
 			{
 				var status = Git.RepoStatus(item.LocalRepoPath);
-				if(status.IsDirty && status.IsTracking)
+				using var repo = new Repository(item.LocalRepoPath);
+				if(status.IsDirty && status.IsTracking && repo.RetrieveStatus().IsDirty)
 				{
 					if(Settings.IsAutoCommit)
 					{
 						ProgressWindow.Show(null, delegate
 						{
 							Git.Sync(item.LocalRepoPath);
-							using var repo = new Repository(item.LocalRepoPath);
 							Git.Commit(null, repo, DateTime.Now.ToString());
 						});
 					}
