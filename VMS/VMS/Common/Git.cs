@@ -172,7 +172,7 @@ namespace VMS
 					return ver;
 				return null;
 			}).FirstOrDefault()?.Target as Commit;  //获取标准版最新版本
-			var cmt = repo.ObjectDatabase.CreateCommit(sign, sign, message, repo.Head.Tip.Tree, parent == null ? new Commit[] { } : new Commit[] { parent }, false);
+			var cmt = repo.ObjectDatabase.CreateCommit(sign, sign, message, repo.Head.Tip.Tree, parent == null ? new Commit[] { } : new Commit[] { parent }, true);
 			var tag = repo.ApplyTag(version, cmt.Sha);
 
 			/// 内测版合并同步
