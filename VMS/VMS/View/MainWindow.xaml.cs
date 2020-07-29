@@ -116,10 +116,7 @@ namespace VMS.View
 			using var repo = new Repository(LocalRepoPath);
 			var instance = Application.Current.MainWindow as MainWindow;
 
-			ProgressWindow.Show(instance, delegate
-			{
-				entries = repo?.RetrieveStatus();
-			});
+			ProgressWindow.Show(instance, () => { entries = repo?.RetrieveStatus(); });
 			if(entries == null || !entries.IsDirty)
 				return null;
 
@@ -138,7 +135,7 @@ namespace VMS.View
 					status.Add(new CommitFileStatus() { FilePath = item.FilePath, FileStatus = item.State });
 					foreach(var assembly in assemblyList)
 					{
-						if(assembly.IsModified == false && item.FilePath.Replace('\\', '/').Contains(assembly.ProjectPath))
+						if(assembly.IsModified == false && item.FilePath.Replace('\\', '/').StartsWith(assembly.ProjectPath))
 						{
 							assembly.IsModified = true;
 							break;
@@ -177,29 +174,25 @@ namespace VMS.View
 			#endregion
 
 			#region 更新版本信息
+			System.Version hit = null; 
 			if(string.Equals(repo.Head.FriendlyName, "master")) //maser分支更新次版本号
 			{
 				versionInfo.VersionNow = versionInfo.VersionNow == null ? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor + 1, 0, 0);
-
-				versionInfo.VersionList = new List<VersionInfo.VersionProperty>();
-				foreach(var assembly in assemblyList)
-				{
-					assembly.HitVersion(null);
-					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
-				}
 			}
 			else //其它分支更新修订号
 			{
 				_ = System.Version.TryParse(repo.Head.FriendlyName, out var branchVersion);
 				versionInfo.VersionNow = versionInfo.VersionNow == null ? branchVersion ?? new System.Version(1, 0, 0, 0) : new System.Version(versionInfo.VersionNow.Major, versionInfo.VersionNow.Minor, versionInfo.VersionNow.Build, versionInfo.VersionNow.Revision + 1);
-
-				versionInfo.VersionList = new List<VersionInfo.VersionProperty>();
-				foreach(var assembly in assemblyList)
-				{
-					assembly.HitVersion(versionInfo.VersionNow);
-					versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
-				}
+				hit = versionInfo.VersionNow;
 			}
+
+			versionInfo.VersionList = new List<VersionInfo.VersionProperty>();
+			foreach(var assembly in assemblyList)
+			{
+				assembly.HitVersion(hit);
+				versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
+			}
+			versionInfo.VersionList.Sort((x, y) => -string.Compare(x.Time, y.Time));
 			WriteVersionInfo(versionInfo);
 			#endregion
 
@@ -262,6 +255,7 @@ namespace VMS.View
 					return ver.Build;
 				return 0;
 			}) + 1; //计算当前版本定制号
+
 			var version = new System.Version(info.Version.Major, info.Version.Minor, build, 0);
 			var name = version.ToString(3);
 			if(repo.Branches[name] != null)

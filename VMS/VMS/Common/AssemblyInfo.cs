@@ -69,6 +69,7 @@ namespace VMS
 		/// <param name="versionBuild">版本定制号. >=0 时,更新版本号; 否则仅获取版本号</param>
 		public void HitVersion(Version verRepo)
 		{
+			IsModified = IsModified && verRepo != null;
 			var encoding = FileEncoding.EncodingType.GetType(FilePath);
 			var lines = File.ReadAllLines(FilePath, encoding);
 			for(var i = 0; i < lines.Length; i++)
@@ -85,7 +86,7 @@ namespace VMS
 					var strVersion = lines[i].Substring(Mark.AssemblyKey.Length).Split(new char[] { '\"' })[0];
 					if(Version.TryParse(strVersion, out var version))
 					{
-						if(IsModified && verRepo != null)
+						if(IsModified)
 						{
 							var revision = version.Major == verRepo.Major && version.Minor == verRepo.Minor && version.Build == verRepo.Build ? version.Revision + 1 : 0;
 							lines[i] = lines[i].Replace(strVersion, new Version(verRepo.Major, verRepo.Minor, verRepo.Build, revision).ToString());
@@ -99,7 +100,7 @@ namespace VMS
 					var strVersion = lines[i].Substring(Mark.VersionKey.Length).Split(new char[] { '\"' })[0];
 					if(Version.TryParse(strVersion, out var version))
 					{
-						if(IsModified && verRepo != null)
+						if(IsModified)
 						{
 							var revision = version.Major == verRepo.Major && version.Minor == verRepo.Minor && version.Build == verRepo.Build ? version.Revision + 1 : 0;
 							Version = new Version(verRepo.Major, verRepo.Minor, verRepo.Build, revision);
@@ -116,7 +117,7 @@ namespace VMS
 				if(Mark.TimeKey != null && lines[i].IndexOf(Mark.TimeKey) == 0)
 				{
 					var strTime = lines[i].Substring(Mark.TimeKey.Length).Split(new char[] { '\"' })[0];
-					if(IsModified && verRepo != null)
+					if(IsModified)
 					{
 						Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 						lines[i] = lines[i].Replace(strTime, Time);
@@ -127,7 +128,11 @@ namespace VMS
 					}
 				}
 			}
-			File.WriteAllLines(FilePath, lines, encoding);
+
+			if(IsModified)
+			{
+				File.WriteAllLines(FilePath, lines, encoding);
+			}
 		}
 
 		/// <summary>
