@@ -3,6 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using LibGit2Sharp;
 
 namespace VMS.Model
@@ -24,6 +27,7 @@ namespace VMS.Model
 		public string FilePath => Tree.Path;
 		public string State => Tree.Status.ToString();
 		public string Ext => Path.GetExtension(FilePath);
+		public ImageSource Icon => Imaging.CreateBitmapSourceFromHIcon(NativeMethods.GetIcon(FilePath, false).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
 		#endregion
 
 		#region 命令

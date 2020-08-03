@@ -126,6 +126,7 @@ namespace VMS
 			Commands.Fetch(repo, "origin", Array.Empty<string>(), GitFetchOptions, null);
 			if(repo.Head.TrackingDetails.BehindBy > 0) //以Sys名称拉取上游分支
 			{
+				repo.Stashes.Add(new Signature("Pull", Environment.MachineName, DateTime.Now), StashModifiers.IncludeUntracked);
 				Commands.Pull(repo, new Signature("Sys", Environment.MachineName, DateTime.Now), new PullOptions { FetchOptions = GitFetchOptions, MergeOptions = new MergeOptions { FileConflictStrategy = CheckoutFileConflictStrategy.Theirs, MergeFileFavor = MergeFileFavor.Theirs } });
 			}
 
@@ -180,7 +181,8 @@ namespace VMS
 			repo.Merge(cmt, sign, new MergeOptions { CommitOnSuccess = true, FileConflictStrategy = CheckoutFileConflictStrategy.Theirs, MergeFileFavor = MergeFileFavor.Theirs });
 
 			/// 上传更改
-			Cmd(repo.Info.WorkingDirectory, "push origin refs/* --verbose --progress");
+			Cmd(repo.Info.WorkingDirectory, "push origin --verbose --progress");
+			Cmd(repo.Info.WorkingDirectory, "push origin --verbose --progress " + version);
 			Serilog.Log.Verbose("Publish {version} {message}", version, message);
 		});
 

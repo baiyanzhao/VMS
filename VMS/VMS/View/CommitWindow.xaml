@@ -109,7 +109,16 @@
 				</Style>
 			</DataGrid.CellStyle>
 			<DataGrid.Columns>
-				<DataGridTextColumn Header="文件" Width="*" Binding="{Binding FilePath}"/>
+				<DataGridTemplateColumn Header="文件" Width="*" SortMemberPath="FilePath" ClipboardContentBinding="{Binding FilePath, Mode=OneWay}">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<Image Source="{Binding Icon, Mode=OneTime}" Height="16" Margin="0,0,5,0" UseLayoutRounding="True" SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+								<TextBlock Text="{Binding FilePath, Mode=OneTime}"/>
+							</StackPanel>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
 				<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
 				<DataGridTextColumn Header="大小(KB)" Width="Auto" Binding="{Binding FileSize}" Foreground="DarkBlue"/>
 				<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>

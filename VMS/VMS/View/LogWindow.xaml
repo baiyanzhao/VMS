@@ -9,12 +9,19 @@
 		<Style TargetType="DataGridCell">
 			<Setter Property="Focusable" Value="True"/>
 			<Setter Property="Foreground" Value="Black"/>
-			<Setter Property="Background" Value="{x:Null}"/>
+			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type DataGridCell}">
-						<ContentPresenter Margin="5,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+						<Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" SnapsToDevicePixels="True">
+							<ContentPresenter Margin="5,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsSelected" Value="True">
+								<Setter Property="Background" Value="#1F808080"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
@@ -36,44 +43,42 @@
 									<ColumnDefinition/>
 									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
-								<StackPanel Orientation="Vertical" Margin="5,0">
+								<StackPanel Orientation="Vertical" Margin="5,5,0,0">
 									<StackPanel Orientation="Horizontal">
 										<TextBlock FontSize="12" Text="基础版本: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionBase}" VerticalAlignment="Center" />
+										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding VersionBase,Mode=OneTime}" VerticalAlignment="Center" />
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
 										<TextBlock FontSize="12" Text="当前版本: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionNow}" VerticalAlignment="Center" />
+										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding VersionNow,Mode=OneTime}" VerticalAlignment="Center" />
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
 										<TextBlock FontSize="12" Text="客户名称: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
+										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding Customer,Mode=OneTime}" VerticalAlignment="Center" />
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
 										<TextBlock FontSize="12" Text="评审单号: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
+										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding OrderNumber,Mode=OneTime}" VerticalAlignment="Center" />
 									</StackPanel>
 								</StackPanel>
-								<DataGrid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" ItemsSource="{Binding VersionList}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
+								<DataGrid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" ItemsSource="{Binding VersionList}" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
 									<DataGrid.RowStyle>
 										<Style TargetType="{x:Type DataGridRow}">
 											<Setter Property="Background" Value="{x:Null}"/>
-											<Setter Property="IsHitTestVisible" Value="False"/>
 											<Setter Property="VerticalAlignment" Value="Center"/>
 										</Style>
 									</DataGrid.RowStyle>
 									<DataGrid.Columns>
-										<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Label}" />
-										<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Title}" />
-										<DataGridTextColumn Foreground="Black" FontSize="12" Binding="{Binding Time}" />
+										<DataGridTextColumn FontSize="12" Binding="{Binding Label}" />
+										<DataGridTextColumn FontSize="12" Binding="{Binding Title}" />
+										<DataGridTextColumn FontSize="12" Binding="{Binding Time}" />
 										<DataGridTextColumn Foreground="DarkBlue" FontSize="14" Binding="{Binding Value}" />
 									</DataGrid.Columns>
 								</DataGrid>
-								<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
+								<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
 									<DataGrid.RowStyle>
 										<Style TargetType="{x:Type DataGridRow}">
 											<Setter Property="Background" Value="{x:Null}"/>
-											<Setter Property="IsHitTestVisible" Value="False"/>
 											<Setter Property="VerticalAlignment" Value="Center"/>
 										</Style>
 									</DataGrid.RowStyle>
@@ -112,7 +117,16 @@
 									</Style>
 								</DataGrid.CellStyle>
 								<DataGrid.Columns>
-									<DataGridTextColumn Header="文件" Width="*" Binding="{Binding FilePath}"/>
+									<DataGridTemplateColumn Header="文件" Width="*" SortMemberPath="FilePath" ClipboardContentBinding="{Binding FilePath, Mode=OneWay}">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel Orientation="Horizontal">
+													<Image Source="{Binding Icon, Mode=OneTime}" Height="16" Margin="0,0,5,0" UseLayoutRounding="True" SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+													<TextBlock Text="{Binding FilePath, Mode=OneTime}"/>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
 									<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
 									<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
 									<DataGridTemplateColumn Width="36">

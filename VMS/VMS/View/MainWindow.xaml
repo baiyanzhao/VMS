@@ -9,14 +9,20 @@
 	<Window.Resources>
 		<Style TargetType="DataGridCell">
 			<Setter Property="Focusable" Value="True"/>
-			<!--<Setter Property="VerticalContentAlignment" Value="Center"/>-->
 			<Setter Property="Foreground" Value="Black"/>
-			<Setter Property="Background" Value="{x:Null}"/>
+			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type DataGridCell}">
-						<ContentPresenter Margin="5,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+						<Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" SnapsToDevicePixels="True">
+							<ContentPresenter Margin="5,2" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsSelected" Value="True">
+								<Setter Property="Background" Value="#1F808080"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
@@ -73,26 +79,25 @@
 										<StackPanel Orientation="Vertical" Margin="2,0">
 											<StackPanel Orientation="Horizontal">
 												<TextBlock FontSize="12" Text="基础版本: " Foreground="Black" VerticalAlignment="Center" />
-												<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionBase}" VerticalAlignment="Center" />
+												<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Foreground="Black" Text="{Binding VersionBase,Mode=OneTime}" VerticalAlignment="Center" />
 											</StackPanel>
 											<StackPanel Orientation="Horizontal">
 												<TextBlock FontSize="12" Text="当前版本: " Foreground="Black" VerticalAlignment="Center" />
-												<TextBlock FontSize="16" Foreground="Black" Text="{Binding VersionNow}" VerticalAlignment="Center" />
+												<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Foreground="Black" Text="{Binding VersionNow,Mode=OneTime}" VerticalAlignment="Center" />
 											</StackPanel>
 											<StackPanel Orientation="Horizontal">
 												<TextBlock FontSize="12" Text="客户名称: " Foreground="Black" VerticalAlignment="Center" />
-												<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding Customer}" VerticalAlignment="Center" />
+												<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Foreground="RoyalBlue" Text="{Binding Customer,Mode=OneTime}" VerticalAlignment="Center" />
 											</StackPanel>
 											<StackPanel Orientation="Horizontal">
 												<TextBlock FontSize="12" Text="评审单号: " Foreground="Black" VerticalAlignment="Center" />
-												<TextBlock FontSize="16" Foreground="RoyalBlue" Text="{Binding OrderNumber}" VerticalAlignment="Center" />
+												<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Foreground="RoyalBlue" Text="{Binding OrderNumber,Mode=OneTime}" VerticalAlignment="Center" />
 											</StackPanel>
 										</StackPanel>
-										<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsHitTestVisible="False" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="18">
+										<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="16">
 											<DataGrid.RowStyle>
 												<Style TargetType="{x:Type DataGridRow}">
 													<Setter Property="Background" Value="{x:Null}"/>
-													<Setter Property="IsHitTestVisible" Value="False"/>
 													<Setter Property="VerticalAlignment" Value="Center"/>
 												</Style>
 											</DataGrid.RowStyle>

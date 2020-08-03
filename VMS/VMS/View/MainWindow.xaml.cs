@@ -204,8 +204,9 @@ namespace VMS.View
 			{
 				ProgressWindow.Show(instance, delegate
 				{
-					Git.Cmd(repo.Info.WorkingDirectory, "tag " + versionInfo.VersionNow.ToString(3));
-					Git.Cmd(repo.Info.WorkingDirectory, "push origin --tags --verbose --progress");
+					var tagName = versionInfo.VersionNow.ToString(3);
+					Git.Cmd(repo.Info.WorkingDirectory, "tag " + tagName);
+					Git.Cmd(repo.Info.WorkingDirectory, "push origin --verbose --progress " + tagName);
 				});
 			}
 			#endregion
