@@ -39,8 +39,8 @@ namespace VMS
 
 		[DllImport("User32.dll", EntryPoint = "DestroyIcon")]
 		public static extern int DestroyIcon(IntPtr hIcon);
-		#region API 参数的常量定义
 
+		#region API 参数的常量定义
 		public enum FileInfoFlags : uint
 		{
 			SHGFI_ICON = 0x000000100,  //  get icon
@@ -80,6 +80,7 @@ namespace VMS
 			FILE_ATTRIBUTE_ENCRYPTED = 0x00004000
 		}
 		#endregion
+
 		/// <summary>
 		/// 获取文件类型的关联图标
 		/// </summary>
@@ -89,38 +90,39 @@ namespace VMS
 		public static Icon GetIcon(string fileName, bool isLargeIcon)
 		{
 			var shfi = new SHFILEINFO();
-			IntPtr hI;
-
 			if(isLargeIcon)
-				hI = SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (uint)FileInfoFlags.SHGFI_LARGEICON);
+				_ = SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (uint)FileInfoFlags.SHGFI_LARGEICON);
 			else
-				hI = SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (uint)FileInfoFlags.SHGFI_SMALLICON);
+				_ = SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (uint)FileInfoFlags.SHGFI_SMALLICON);
 
 			var icon = Icon.FromHandle(shfi.hIcon).Clone() as Icon;
 
 			DestroyIcon(shfi.hIcon); //释放资源
 			return icon;
 		}
+
 		/// <summary>  
 		/// 获取文件夹图标
 		/// </summary>  
 		/// <returns>图标</returns>  
 		public static Icon GetDirectoryIcon(bool isLargeIcon)
 		{
-			var _SHFILEINFO = new SHFILEINFO();
-			IntPtr _IconIntPtr;
+			IntPtr pIcon;
+			var shfi = new SHFILEINFO();
 			if(isLargeIcon)
 			{
-				_IconIntPtr = SHGetFileInfo(@"", 0, ref _SHFILEINFO, (uint)Marshal.SizeOf(_SHFILEINFO), ((uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_LARGEICON));
+				pIcon = SHGetFileInfo(@"", 0, ref shfi, (uint)Marshal.SizeOf(shfi), ((uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_LARGEICON));
 			}
 			else
 			{
-				_IconIntPtr = SHGetFileInfo(@"", 0, ref _SHFILEINFO, (uint)Marshal.SizeOf(_SHFILEINFO), ((uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_SMALLICON));
+				pIcon = SHGetFileInfo(@"", 0, ref shfi, (uint)Marshal.SizeOf(shfi), ((uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_SMALLICON));
 			}
-			if(_IconIntPtr.Equals(IntPtr.Zero))
+
+			if(pIcon.Equals(IntPtr.Zero))
 				return null;
-			var _Icon = System.Drawing.Icon.FromHandle(_SHFILEINFO.hIcon);
-			return _Icon;
+
+			var icon = Icon.FromHandle(shfi.hIcon);
+			return icon;
 		}
 		#endregion
 	}

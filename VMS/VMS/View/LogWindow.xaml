@@ -104,7 +104,7 @@
 														<Border.InputBindings>
 															<MouseBinding Gesture="LeftDoubleClick" Command="{Binding Diff}" CommandParameter="{Binding}"/>
 														</Border.InputBindings>
-														<ContentPresenter Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+														<ContentPresenter VerticalAlignment="Center" Margin="1,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
 													</Border>
 												</ControlTemplate>
 											</Setter.Value>
