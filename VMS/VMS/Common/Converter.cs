@@ -16,20 +16,6 @@ namespace VMS
 	}
 
 	/// <summary>
-	/// 转化主版本号
-	/// </summary>
-	internal class VersionMajorConverter : IValueConverter
-	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value switch
-		{
-			Version version => version.ToString(1),
-			_ => DependencyProperty.UnsetValue,
-		};
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => null;
-	}
-
-	/// <summary>
 	/// 转化次版本号
 	/// </summary>
 	internal class VersionMinorConverter : IValueConverter

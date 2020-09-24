@@ -709,7 +709,7 @@ namespace VMS.View
 			//数据绑定加载后再分组,防止分组折叠后,部分列显示不完整
 			if(sender is DataGrid grid && grid.Items.GroupDescriptions.Count <= 0)
 			{
-				grid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionMajorConverter()));
+				grid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version.Major"));
 				grid.Items.GroupDescriptions.Add(new PropertyGroupDescription("Version", new VersionMinorConverter()));
 				grid.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Version", System.ComponentModel.ListSortDirection.Ascending));
 			}

@@ -34,32 +34,27 @@ namespace VMS.View
 				Height = 540,
 				Width = 800,
 				ShowInTaskbar = false,
-				Title = "历史记录",
+				Title = "Latest Message",
 				Owner = this
 			};
 
 			var listBox = new ListBox { Height = 450, Width = 770, VerticalAlignment = VerticalAlignment.Center, Background = null };
 			listBox.ItemsSource = GlobalShared.Settings.LatestMessage;
-			listBox.MouseDoubleClick += delegate
-			{
-				window.DialogResult = true;
-				Message.Text = listBox.SelectedValue?.ToString();
-			};
+			listBox.MouseDoubleClick += (s, e) => CloseLatestMessage();
 
 			var btn = new Button { Content = "确定", VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(2, 2, 120, 2), Padding = new Thickness(12, 0, 12, 0) };
-			btn.Click += delegate
-			{
-				window.DialogResult = true;
-				if(listBox.SelectedValue == null)
-					return;
-
-				Message.Text = listBox.SelectedValue.ToString();
-			};
+			btn.Click += (s, e) => CloseLatestMessage();
 
 			Grid.SetRow(btn, 1);
 			window.Panel.Children.Add(btn);
 			window.InputGrid.Children.Add(listBox);
 			window.ShowDialog();
+
+			void CloseLatestMessage()
+			{
+				window.DialogResult = true;
+				Message.Text += listBox.SelectedValue?.ToString();
+			}
 		}
 
 		private void DataGrid_LoadingRow(object sender, System.Windows.Controls.DataGridRowEventArgs e) => e.Row.Header = string.Format("{0,4} ", e.Row.GetIndex() + 1);
