@@ -20,16 +20,28 @@ namespace VMS.ViewModel
 		public string FilePath { get; set; }
 		public FileStatus FileStatus { get; set; }
 		public string State => FileStatus.ToString();
-		public int FileSize
+		public long FileSize
 		{
 			get
 			{
 				var info = new FileInfo(GlobalShared.LocalRepoPath + FilePath);
-				return info.Exists ? Convert.ToInt32(Math.Ceiling(info.Length / 1024.0)) : 0;
+				return info.Exists ? info.Length : 0;
 			}
 		}
+
+		public string FileSizeText => FileSize switch
+		{
+			long s when s < 1024 => string.Format("{0:N0}B", FileSize),
+			long s when s < 10240 => string.Format("{0:N2}kB", FileSize / 1024.0),
+			long s when s < 102400 => string.Format("{0:N1}kB", FileSize / 1024.0),
+			long s when s < 1024 * 1024 => string.Format("{0:N0}kB", FileSize / 1024.0),
+			long s when s < 1024 * 10240 => string.Format("{0:N2}MB", FileSize / 1024.0 / 1024.0),
+			long s when s < 1024 * 102400 => string.Format("{0:N1}MB", FileSize / 1024.0 / 1024.0),
+			_ => string.Format("{0:N0}MB", FileSize / 1024.0 / 1024.0),
+		};
+
 		public string Ext => Path.GetExtension(FilePath);
-		public ImageSource Icon => Imaging.CreateBitmapSourceFromHIcon(NativeMethods.GetIcon(FilePath, false).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+		public ImageSource Icon => Imaging.CreateBitmapSourceFromHIcon(NativeMethods.GetIcon(FilePath, false), Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
 
 		/// <summary>
 		/// 对比差异

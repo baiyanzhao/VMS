@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -81,7 +82,6 @@ namespace VMS.View
 		public void Dispose()
 		{
 			_taskbar.Dispose();
-			_lfsFilter.Dispose();
 			GC.SuppressFinalize(this);
 		}
 
@@ -192,7 +192,6 @@ namespace VMS.View
 				assembly.HitVersion(hit);
 				versionInfo.VersionList.Add(new VersionInfo.VersionProperty() { Label = Path.GetFileName(assembly.ProjectPath), Title = assembly.Title, Time = assembly.Time, Value = assembly.Version.ToString() });
 			}
-			versionInfo.VersionList.Sort((x, y) => -string.Compare(x.Time, y.Time));
 			WriteVersionInfo(versionInfo);
 			#endregion
 
@@ -355,7 +354,7 @@ namespace VMS.View
 		#region 事件方法
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			if(Settings.User == null)
+			if(string.IsNullOrWhiteSpace(Settings.User))
 			{
 				ShowSetWindow();
 			}
@@ -386,14 +385,14 @@ namespace VMS.View
 			foreach(var item in RepoData.RepoList)
 			{
 				var status = Git.RepoStatus(item.LocalRepoPath);
-				using var repo = new Repository(item.LocalRepoPath);
-				if(status.IsDirty && status.IsTracking && repo.RetrieveStatus().IsDirty)
+				if(status.IsDirty && status.IsTracking)
 				{
 					if(Settings.IsAutoCommit)
 					{
 						ProgressWindow.Show(null, delegate
 						{
 							Git.Sync(item.LocalRepoPath);
+							using var repo = new Repository(item.LocalRepoPath);
 							Git.Commit(null, repo, DateTime.Now.ToString());
 						});
 					}
@@ -416,9 +415,9 @@ namespace VMS.View
 			}
 		}
 
-		private void Open_Click(object sender, RoutedEventArgs e) => Process.Start(Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories).FirstOrDefault() ?? LocalRepoPath);
+		private void Open_Click(object sender, RoutedEventArgs e) => Process.Start("explorer", Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories).FirstOrDefault() ?? LocalRepoPath);
 
-		private void Explorer_Click(object sender, RoutedEventArgs e) => Process.Start(LocalRepoPath);
+		private void Explorer_Click(object sender, RoutedEventArgs e) => Process.Start("explorer", LocalRepoPath);
 
 		private void Commit_Click(object sender, RoutedEventArgs e)
 		{
@@ -465,45 +464,17 @@ namespace VMS.View
 
 			ProgressWindow.Show(this, delegate
 			{
-				var processList = new List<Process>();
 				var version = ReadVersionInfo()?.VersionNow?.ToString();
 				var folder = Path.Combine(Settings.PackageFolder, version + "\\");
-				var rarPath = Path.Combine(Environment.CurrentDirectory, "Package\\");
 				Directory.CreateDirectory(folder);
 
-				/// 生成解决方案
-				processList.Clear();
-				foreach(var item in Directory.GetFiles(LocalRepoPath, "*.sln", SearchOption.AllDirectories))
-				{
-					var dir = Path.GetDirectoryName(item);
-					var arg = string.Format("\"{0}\" /t:Clean;Publish /p:Configuration=Release /p:ApplicationVersion=\"{1}\" /noconsolelogger", item, version);
-					Serilog.Log.Information("\"{MSBuildPath}\" {arg}", Settings.MSBuildPath, arg);
-					processList.Add(Process.Start(new ProcessStartInfo
-					{
-						FileName = Settings.MSBuildPath,
-						Arguments = arg,
-						WorkingDirectory = dir,
-						UseShellExecute = false,
-						CreateNoWindow = true,
-						WindowStyle = ProcessWindowStyle.Hidden
-					}));
-				}
-
-				foreach(var process in processList)
-				{
-					ProgressWindow.Update(process.StartInfo.WorkingDirectory);
-					process.WaitForExit();
-				}
-
 				/// 生成自解压安装包
-				processList.Clear();
-				foreach(var item in Directory.GetFiles(LocalRepoPath, "Pack.bat", SearchOption.AllDirectories))
+				Parallel.ForEach(Directory.GetFiles(LocalRepoPath, "Pack.bat", SearchOption.AllDirectories), item =>
 				{
 					var dir = Path.GetDirectoryName(item);
 					var name = item.Substring(LocalRepoPath.Length).Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).First();
-					var arg = string.Format("\"{0}\" \"{1}\" \"{2}\"", rarPath, Path.Combine(folder, name + " v" + version), folder);
-					Serilog.Log.Information("{item} {arg}", item, arg);
-					processList.Add(Process.Start(new ProcessStartInfo
+					var arg = string.Format("\"{0}\" \"{1}\" \"{2}\" \"{3}\"", LocalRepoPath, Path.Combine(folder, name + " v" + version), folder, version);
+					Process.Start(new ProcessStartInfo
 					{
 						FileName = item,
 						Arguments = arg,
@@ -511,17 +482,13 @@ namespace VMS.View
 						UseShellExecute = true,
 						CreateNoWindow = false,
 						WindowStyle = ProcessWindowStyle.Normal
-					}));
-				}
-
-				foreach(var process in processList)
-				{
-					ProgressWindow.Update(process.StartInfo.WorkingDirectory);
-					process.WaitForExit();
-				}
+					}).WaitForExit();
+					ProgressWindow.Update(dir);
+					Serilog.Log.Information("\"{item}\" {arg}", item, arg);
+				});
 
 				/// 打开安装包目录
-				Process.Start(Settings.PackageFolder);
+				Process.Start("explorer", Settings.PackageFolder);
 			});
 		}
 
@@ -570,7 +537,7 @@ namespace VMS.View
 
 		private void AddRepo_Click(object sender, RoutedEventArgs e)
 		{
-			var dlg = new FolderBrowserForWPF.Dialog() { Title = "打开空文件夹以创建仓库 或 打开已有仓库文件夹]" };
+			var dlg = new FolderBrowserForWPF.Dialog() { Title = "打开空文件夹以创建仓库 或 打开仓库所在文件夹]" };
 			if(dlg.ShowDialog() != true)
 				return;
 

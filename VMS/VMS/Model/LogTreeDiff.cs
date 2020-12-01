@@ -27,7 +27,7 @@ namespace VMS.Model
 		public string FilePath => Tree.Path;
 		public string State => Tree.Status.ToString();
 		public string Ext => Path.GetExtension(FilePath);
-		public ImageSource Icon => Imaging.CreateBitmapSourceFromHIcon(NativeMethods.GetIcon(FilePath, false).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+		public ImageSource Icon => Imaging.CreateBitmapSourceFromHIcon(NativeMethods.GetIcon(FilePath, false), Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
 		#endregion
 
 		#region 命令

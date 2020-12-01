@@ -119,8 +119,8 @@
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
-				<DataGridTextColumn Header="扩展名" Width="Auto" Binding="{Binding Ext}"/>
-				<DataGridTextColumn Header="大小(KB)" Width="Auto" Binding="{Binding FileSize}" Foreground="DarkBlue"/>
+				<DataGridTextColumn Header="扩展名" MinWidth="48" Width="Auto" CanUserResize="True" Binding="{Binding Ext}"/>
+				<DataGridTextColumn Header="大小" MinWidth="48" Width="Auto" CanUserResize="False" Binding="{Binding FileSizeText}" SortMemberPath="FileSize" Foreground="DarkBlue"/>
 				<DataGridTextColumn Header="状态" Width="Auto" Binding="{Binding State}" Foreground="SteelBlue"/>
 				<DataGridTemplateColumn Width="40">
 					<DataGridTemplateColumn.CellTemplate>

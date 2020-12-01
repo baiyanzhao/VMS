@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,6 +14,7 @@ namespace VMS.View
 	public sealed partial class ProgressWindow : Window
 	{
 		public static BackgroundWorker Worker { get; private set; } = null;
+		private static readonly List<Action> Actions = new List<Action>();
 
 		public ProgressWindow()
 		{
@@ -20,12 +23,42 @@ namespace VMS.View
 
 		private void Window_PreviewKeyDown(object sender, KeyEventArgs e) => e.Handled = true;   //屏蔽所有按键
 
+		/// <summary>
+		/// 更新进度信息
+		/// </summary>
+		/// <param name="msg">信息</param>
 		public static void Update(string msg)
 		{
 			if(Worker?.IsBusy == true)
 			{
 				Worker.ReportProgress(0, msg);
 			}
+		}
+
+		/// <summary>
+		/// 追加并行任务
+		/// </summary>
+		/// <param name="action"></param>
+		public static void CreatePrarallel(Action action)
+		{
+			if(Worker?.IsBusy == true)
+			{
+				Actions.Add(action);
+			}
+			else
+			{
+				var worker = new BackgroundWorker();
+				worker.DoWork += delegate
+				{
+					action?.Invoke();
+				};
+			}
+		}
+
+		public static void WaitPrarallel()
+		{
+			Parallel.ForEach(Actions, s => s.Invoke());
+			Actions.Clear();
 		}
 
 		/// <summary>
@@ -69,6 +102,7 @@ namespace VMS.View
 				try
 				{
 					completed?.Invoke();
+					Parallel.ForEach(Actions, s => s.Invoke());
 					if(e.Error != null)
 						throw e.Error;
 				}
@@ -88,12 +122,14 @@ namespace VMS.View
 					dlg.Close();
 				}
 			};
-			_ = NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionFlag.System | NativeMethods.ExecutionFlag.Continus);
+
+			NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionFlag.System | NativeMethods.ExecutionFlag.Continus);
+			Actions.Clear();
 			Worker.RunWorkerAsync();
 			dlg.ShowDialog();
 			Worker.Dispose();
 			Worker = null;
-			_ = NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionFlag.Continus);
+			NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionFlag.Continus);
 			return isCompleted;
 		}
 	}

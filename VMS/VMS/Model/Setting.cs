@@ -11,7 +11,6 @@ namespace VMS.Model
 		public List<string> RepoPathList { get; set; }
 		public string PackageFolder { get; set; }
 		public string CompareToolPath { get; set; }
-		public string MSBuildPath { get; set; }
 		public List<string> LatestMessage { get; set; }
 		public Dictionary<(string Url, string UsernameFromUrl), (string User, string Password)> CredentialPairs { get; set; }
 		public bool IsAutoCommit { get; set; }

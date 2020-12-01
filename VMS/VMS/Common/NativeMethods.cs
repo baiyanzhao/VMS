@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace VMS
@@ -84,45 +83,17 @@ namespace VMS
 		/// <summary>
 		/// 获取文件类型的关联图标
 		/// </summary>
-		/// <param name="fileName">文件类型的扩展名或文件的绝对路径</param>
+		/// <param name="fileName">文件类型的扩展名或文件的绝对路径.空字符串表示获取文件夹图标</param>
 		/// <param name="isLargeIcon">是否返回大图标</param>
 		/// <returns>获取到的图标</returns>
-		public static Icon GetIcon(string fileName, bool isLargeIcon)
+		public static IntPtr GetIcon(string fileName, bool isLargeIcon)
 		{
 			var shfi = new SHFILEINFO();
-			if(isLargeIcon)
-				_ = SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (uint)FileInfoFlags.SHGFI_LARGEICON);
-			else
-				_ = SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (uint)FileInfoFlags.SHGFI_SMALLICON);
-
-			var icon = Icon.FromHandle(shfi.hIcon).Clone() as Icon;
-
-			DestroyIcon(shfi.hIcon); //释放资源
-			return icon;
-		}
-
-		/// <summary>  
-		/// 获取文件夹图标
-		/// </summary>  
-		/// <returns>图标</returns>  
-		public static Icon GetDirectoryIcon(bool isLargeIcon)
-		{
-			IntPtr pIcon;
-			var shfi = new SHFILEINFO();
-			if(isLargeIcon)
-			{
-				pIcon = SHGetFileInfo(@"", 0, ref shfi, (uint)Marshal.SizeOf(shfi), ((uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_LARGEICON));
-			}
-			else
-			{
-				pIcon = SHGetFileInfo(@"", 0, ref shfi, (uint)Marshal.SizeOf(shfi), ((uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_SMALLICON));
-			}
-
-			if(pIcon.Equals(IntPtr.Zero))
-				return null;
-
-			var icon = Icon.FromHandle(shfi.hIcon);
-			return icon;
+			uint flag = (uint)FileInfoFlags.SHGFI_ICON | (uint)FileInfoFlags.SHGFI_LARGEICON;
+			flag |= isLargeIcon ? (uint)FileInfoFlags.SHGFI_LARGEICON : (uint)FileInfoFlags.SHGFI_SMALLICON;
+			flag |= string.IsNullOrWhiteSpace(fileName) ? 0x00 : (uint)FileInfoFlags.SHGFI_USEFILEATTRIBUTES;
+			SHGetFileInfo(fileName, 0, ref shfi, (uint)Marshal.SizeOf(shfi), flag);
+			return shfi.hIcon;
 		}
 		#endregion
 	}

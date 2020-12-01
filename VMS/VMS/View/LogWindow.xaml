@@ -39,29 +39,11 @@
 							<Grid Background="#3278A080" DataContext="{Binding Path=Sha, Converter={StaticResource BranchDetailConverter}}">
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="Auto"/>
-									<ColumnDefinition Width="Auto"/>
 									<ColumnDefinition/>
 									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
-								<StackPanel Orientation="Vertical" Margin="5,5,0,0">
-									<StackPanel Orientation="Horizontal">
-										<TextBlock FontSize="12" Text="基础版本: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding VersionBase,Mode=OneTime}" VerticalAlignment="Center" />
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<TextBlock FontSize="12" Text="当前版本: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding VersionNow,Mode=OneTime}" VerticalAlignment="Center" />
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<TextBlock FontSize="12" Text="客户名称: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding Customer,Mode=OneTime}" VerticalAlignment="Center" />
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<TextBlock FontSize="12" Text="评审单号: " Foreground="Black" VerticalAlignment="Center" />
-										<TextBox IsReadOnly="True" BorderThickness="0" Background="{x:Null}" FontSize="14" Text="{Binding OrderNumber,Mode=OneTime}" VerticalAlignment="Center" />
-									</StackPanel>
-								</StackPanel>
-								<DataGrid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" ItemsSource="{Binding VersionList}" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" AutoGenerateColumns="False" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
+								<DataGrid Grid.Column="0" ItemsSource="{Binding VersionList}" HorizontalAlignment="Center" VerticalAlignment="Top" IsReadOnly="True" AutoGenerateColumns="False"
+										Background="{x:Null}" HeadersVisibility="Column" FontSize="12" CanUserResizeColumns="False" CanUserResizeRows="False" HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray">
 									<DataGrid.RowStyle>
 										<Style TargetType="{x:Type DataGridRow}">
 											<Setter Property="Background" Value="{x:Null}"/>
@@ -69,13 +51,13 @@
 										</Style>
 									</DataGrid.RowStyle>
 									<DataGrid.Columns>
-										<DataGridTextColumn FontSize="12" Binding="{Binding Label}" />
-										<DataGridTextColumn FontSize="12" Binding="{Binding Title}" />
-										<DataGridTextColumn FontSize="12" Binding="{Binding Time}" />
-										<DataGridTextColumn Foreground="DarkBlue" FontSize="14" Binding="{Binding Value}" />
+										<DataGridTextColumn Header="型号" Binding="{Binding Label}" />
+										<DataGridTextColumn Header="名称" Binding="{Binding Title}" />
+										<DataGridTextColumn Header="更新时间" Binding="{Binding Time}" />
+										<DataGridTextColumn Header="版本" FontSize="14" Foreground="DarkBlue" Binding="{Binding Value}" />
 									</DataGrid.Columns>
 								</DataGrid>
-								<DataGrid Grid.Column="2" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
+								<DataGrid Grid.Column="1" HorizontalAlignment="Center" ItemsSource="{Binding KeyWords}" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" HeadersVisibility="None" GridLinesVisibility="None" FontSize="12">
 									<DataGrid.RowStyle>
 										<Style TargetType="{x:Type DataGridRow}">
 											<Setter Property="Background" Value="{x:Null}"/>
@@ -83,7 +65,7 @@
 										</Style>
 									</DataGrid.RowStyle>
 								</DataGrid>
-								<TextBox Margin="5,0" Grid.Column="3" FontSize="14" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True" Text="{Binding CommitMessage}"/>
+								<TextBox Margin="5,0" Grid.Column="2" FontSize="14" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True" Text="{Binding CommitMessage}"/>
 							</Grid>
 						</TabItem>
 						<TabItem>

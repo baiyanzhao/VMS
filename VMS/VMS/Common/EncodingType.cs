@@ -17,7 +17,7 @@ namespace FileEncoding
 		/// </summary> 
 		/// <param name=“file“>文件路径</param> 
 		/// <returns>文件的编码类型</returns> 
-		public static System.Text.Encoding GetType(string file)
+		public static Encoding GetType(string file)
 		{
 			using var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
 			return GetType(fs);
@@ -28,7 +28,7 @@ namespace FileEncoding
 		/// </summary> 
 		/// <param name=“fs“>文件流</param> 
 		/// <returns>文件的编码类型</returns> 
-		public static System.Text.Encoding GetType(FileStream fs)
+		public static Encoding GetType(FileStream fs)
 		{
 			//var Unicode = new byte[] { 0xFF, 0xFE, 0x41 };
 			//var UnicodeBIG = new byte[] { 0xFE, 0xFF, 0x00 };

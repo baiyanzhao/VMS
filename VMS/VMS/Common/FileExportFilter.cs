@@ -7,104 +7,71 @@ using LibGit2Sharp;
 
 namespace VMS
 {
-	internal class FileExportFilter : Filter, IDisposable
+	internal class FileExportFilter : Filter
 	{
-		private Process process;
-		private FilterMode mode;
-
 		public FileExportFilter(string name, IEnumerable<FilterAttributeEntry> attributes)
 			: base(name, attributes)
 		{
 		}
 
-		public void Dispose() => process?.Dispose();
-
-		protected override void Create(string path, string root, FilterMode mode)
-		{
-			this.mode = mode;
-			try
-			{
-				// launch git-lfs
-				process = new Process();
-				process.StartInfo.FileName = "git";
-				process.StartInfo.Arguments = string.Format("lfs {0} {1}", mode == FilterMode.Clean ? "clean" : "smudge", path);
-				process.StartInfo.WorkingDirectory = root + "/.git/";
-				process.StartInfo.RedirectStandardInput = true;
-				process.StartInfo.RedirectStandardOutput = true;
-				process.StartInfo.RedirectStandardError = true;
-				process.StartInfo.CreateNoWindow = true;
-				process.StartInfo.UseShellExecute = false;
-				process.Start();
-			}
-			catch(Exception e)
-			{
-				MessageBox.Show("LFS Create Error: " + e.Message);
-			}
-		}
-
 		protected override void Clean(string path, string root, Stream input, Stream output)
 		{
-			try
-			{
-				input.CopyTo(process.StandardInput.BaseStream); // write file data to stdin
-				input.Flush();
-			}
-			catch(Exception e)
-			{
-				MessageBox.Show("LFS Clean Error: " + e.Message);
-			}
-		}
+			var process = ProcLFS("clean", path, root, input);
+			process.WaitForExit(); //wait for git-lfs to finish
 
-		protected override void Complete(string path, string root, Stream output)
-		{
-			try
-			{
-				// finalize stdin and wait for git-lfs to finish
-				process.StandardInput.Flush();
-				process.StandardInput.Close();
-				if(mode == FilterMode.Clean)
-				{
-					process.WaitForExit();
-
-					// write git-lfs pointer for 'clean' to git or file data for 'smudge' to working copy
-					process.StandardOutput.BaseStream.CopyTo(output);
-					process.StandardOutput.BaseStream.Flush();
-					process.StandardOutput.Close();
-					output.Flush();
-					output.Close();
-				}
-				else
-				{
-					// write git-lfs pointer for 'clean' to git or file data for 'smudge' to working copy
-					process.StandardOutput.BaseStream.CopyTo(output);
-					process.StandardOutput.BaseStream.Flush();
-					process.StandardOutput.Close();
-					output.Flush();
-					output.Close();
-
-					process.WaitForExit();
-				}
-
-				process.Dispose();
-				View.ProgressWindow.Update(path);
-			}
-			catch(Exception e)
-			{
-				MessageBox.Show("LFS Complete Error: " + e.Message);
-			}
+			// write git-lfs pointer for 'clean' to git or file data for 'smudge' to working copy
+			process.StandardOutput.BaseStream.CopyTo(output);
+			process.StandardOutput.BaseStream.Flush();
+			process.StandardOutput.Close();
+			output.Flush();
+			output.Close();
+			process.Dispose();
 		}
 
 		protected override void Smudge(string path, string root, Stream input, Stream output)
 		{
-			try
+			var process = ProcLFS("smudge", path, root, input);
+			output.Close(); //No used, create a new Prarallel Stream
+			View.ProgressWindow.CreatePrarallel(delegate
 			{
-				input.CopyTo(process.StandardInput.BaseStream); // write git-lfs pointer to stdin
-				input.Flush();
-			}
-			catch(Exception e)
-			{
-				MessageBox.Show("LFS Smudge Error: " + e.Message);
-			}
+				try
+				{
+					View.ProgressWindow.Update(path);
+					using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+					process.StandardOutput.BaseStream.CopyTo(stream);
+					process.StandardOutput.BaseStream.Flush();
+					process.StandardOutput.Close();
+				}
+				catch(Exception e)
+				{
+					MessageBox.Show("LFS Smudge Error: " + e.Message);
+				}
+				finally
+				{
+					process.WaitForExit();
+					process.Dispose();
+				}
+			});
+		}
+
+		private static Process ProcLFS(string mode, string path, string root, Stream input)
+		{
+			var process = new Process();
+			process.StartInfo.FileName = "git";
+			process.StartInfo.Arguments = string.Format("lfs {0} {1}", mode, path);
+			process.StartInfo.WorkingDirectory = root + "/.git/";
+			process.StartInfo.RedirectStandardInput = true;
+			process.StartInfo.RedirectStandardOutput = true;
+			process.StartInfo.RedirectStandardError = true;
+			process.StartInfo.CreateNoWindow = true;
+			process.StartInfo.UseShellExecute = false;
+			process.Start();
+
+			input.CopyTo(process.StandardInput.BaseStream); //Smudge: write git-lfs pointer to stdin; Clean: write file data to stdin
+			input.Flush();
+			process.StandardInput.Flush();
+			process.StandardInput.Close();
+			return process;
 		}
 	}
 }

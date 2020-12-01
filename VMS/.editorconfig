@@ -1,4 +1,4 @@
-# 如果要从更高级别的目录继承 .editorconfig 设置，请删除以下行
+﻿# 如果要从更高级别的目录继承 .editorconfig 设置，请删除以下行
 root = true
 
 # c# 文件
@@ -53,12 +53,17 @@ dotnet_style_prefer_conditional_expression_over_return = true:silent
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
 
 # 字段首选项
 dotnet_style_readonly_field = true:suggestion
 
 # 参数首选项
 dotnet_code_quality_unused_parameters = all:suggestion
+
+# 禁止显示首选项
+dotnet_remove_unnecessary_suppression_exclusions = none
 
 #### c# 编码约定 ####
 
@@ -80,6 +85,8 @@ csharp_style_expression_bodied_properties = true:suggestion
 # 模式匹配首选项
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+csharp_style_prefer_pattern_matching = true:silent
 csharp_style_prefer_switch_expression = true:suggestion
 
 # Null 检查首选项
@@ -102,7 +109,7 @@ csharp_style_prefer_index_operator = true:suggestion
 csharp_style_prefer_range_operator = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
-csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+csharp_style_unused_value_expression_statement_preference = discard_variable:none
 
 # "using" 指令首选项
 csharp_using_directive_placement = outside_namespace:silent
@@ -158,17 +165,17 @@ csharp_preserve_single_line_statements = false
 
 # 命名规则
 
-dotnet_naming_rule.interface_should_be_以_i_开始.severity = suggestion
-dotnet_naming_rule.interface_should_be_以_i_开始.symbols = interface
-dotnet_naming_rule.interface_should_be_以_i_开始.style = 以_i_开始
+dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
+dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
+dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
 
-dotnet_naming_rule.类型_should_be_帕斯卡拼写法.severity = suggestion
-dotnet_naming_rule.类型_should_be_帕斯卡拼写法.symbols = 类型
-dotnet_naming_rule.类型_should_be_帕斯卡拼写法.style = 帕斯卡拼写法
+dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
 
-dotnet_naming_rule.非字段成员_should_be_帕斯卡拼写法.severity = suggestion
-dotnet_naming_rule.非字段成员_should_be_帕斯卡拼写法.symbols = 非字段成员
-dotnet_naming_rule.非字段成员_should_be_帕斯卡拼写法.style = 帕斯卡拼写法
+dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
+dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
 # 符号规范
 
@@ -176,22 +183,52 @@ dotnet_naming_symbols.interface.applicable_kinds = interface
 dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.interface.required_modifiers = 
 
-dotnet_naming_symbols.类型.applicable_kinds = class, struct, interface, enum
-dotnet_naming_symbols.类型.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.类型.required_modifiers = 
+dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
+dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_symbols.types.required_modifiers = 
 
-dotnet_naming_symbols.非字段成员.applicable_kinds = property, event, method
-dotnet_naming_symbols.非字段成员.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.非字段成员.required_modifiers = 
+dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
+dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_symbols.non_field_members.required_modifiers = 
 
 # 命名样式
 
-dotnet_naming_style.帕斯卡拼写法.required_prefix = 
-dotnet_naming_style.帕斯卡拼写法.required_suffix = 
-dotnet_naming_style.帕斯卡拼写法.word_separator = 
-dotnet_naming_style.帕斯卡拼写法.capitalization = pascal_case
+dotnet_naming_style.pascal_case.required_prefix = 
+dotnet_naming_style.pascal_case.required_suffix = 
+dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-dotnet_naming_style.以_i_开始.required_prefix = I
-dotnet_naming_style.以_i_开始.required_suffix = 
-dotnet_naming_style.以_i_开始.word_separator = 
-dotnet_naming_style.以_i_开始.capitalization = pascal_case
+dotnet_naming_style.begins_with_i.required_prefix = I
+dotnet_naming_style.begins_with_i.required_suffix = 
+dotnet_naming_style.begins_with_i.word_separator = 
+dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+# CA1305: 指定 IFormatProvider
+dotnet_diagnostic.CA1305.severity = none
+
+# CA1307: 指定 StringComparison
+dotnet_diagnostic.CA1307.severity = none
+
+# CA1034: 嵌套类型应不可见
+dotnet_diagnostic.CA1034.severity = none
+
+# CA1031: 不捕获常规异常类型
+dotnet_diagnostic.CA1031.severity = none
+
+# CA2227: 集合属性应为只读
+dotnet_diagnostic.CA2227.severity = none
+
+# CA1303: 请不要将文本作为本地化参数传递
+dotnet_diagnostic.CA1303.severity = none
+
+# CA1056: URI 属性不应是字符串
+dotnet_diagnostic.CA1056.severity = none
+
+# CA1000: 不要在泛型类型中声明静态成员
+dotnet_diagnostic.CA1000.severity = none
+
+# IDE0058: 永远不会使用表达式值
+dotnet_diagnostic.IDE0058.severity = none
+
+# Default severity for analyzer diagnostics with category 'Performance'
+dotnet_analyzer_diagnostic.category-Performance.severity = silent

@@ -134,6 +134,7 @@ namespace VMS
 			{
 				Cmd(repo.Info.WorkingDirectory, "push --verbose --progress");
 			}
+			ProgressWindow.WaitPrarallel();
 		}
 
 		/// <summary>
